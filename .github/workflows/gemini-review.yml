@@ -1,0 +1,99 @@
+name: Gemini Code Review (Dev API)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install libraries
+        run: pip install google-generativeai PyGithub
+
+      - name: Run Gemini Review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          python -c "
+import os
+import google.generativeai as genai
+from github import Github
+
+# --- KONFIGURATION ---
+api_key = os.environ['GEMINI_API_KEY']
+genai.configure(api_key=api_key)
+
+# HIER das Modell wählen. 
+# Empfehlung: 'gemini-1.5-pro' (Stabil & Stark)
+# Experimentell: 'gemini-exp-1121' oder 'gemini-3-pro-preview' (wenn verfügbar)
+MODEL_NAME = 'gemini-3-pro-preview' 
+
+try:
+    model = genai.GenerativeModel(MODEL_NAME)
+except Exception as e:
+    print(f'Fehler beim Laden des Modells {MODEL_NAME}. Fallback auf Flash.')
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+# --- GITHUB VERBINDUNG ---
+g = Github(os.environ['GITHUB_TOKEN'])
+repo = g.get_repo(os.environ['REPO_NAME'])
+pr = repo.get_pull(int(os.environ['PR_NUMBER']))
+
+# --- DIFF LADEN ---
+diff_text = ''
+files_analyzed = []
+for file in pr.get_files():
+    # Überspringe gelöschte Dateien oder reine Lock-Files
+    if file.patch and not file.filename.endswith('lock'): 
+        files_analyzed.append(file.filename)
+        diff_text += f'\n\n--- DATEI: {file.filename} ---\n{file.patch}\n'
+
+if not diff_text:
+    print('Keine review-relevanten Änderungen gefunden.')
+    exit()
+
+# --- GEMINI FRAGEN ---
+prompt = f'''
+Du bist ein erfahrener Tech Lead und Code Reviewer für das Projekt 'mealtrack'.
+Deine Aufgabe ist es, den folgenden Code-Diff eines Pull Requests zu prüfen.
+
+Bitte achte besonders auf:
+1. 🐛 **Logikfehler & Bugs** (Kritisch)
+2. 🛡️ **Sicherheit** (SQL Injection, XSS, Sensitive Data Leaks)
+3. 🧹 **Clean Code** (Lesbarkeit, Redundanz, Benennung)
+
+Antworte in klarem Markdown-Format. 
+Sei freundlich, aber präzise. 
+Wenn der Code gut aussieht, gib ein kurzes 'LGTM' (Looks Good To Me) mit Begründung.
+
+Dateien im Review: {', '.join(files_analyzed)}
+
+HIER IST DER CODE-DIFF:
+{diff_text[:60000]} 
+'''
+# (Limit auf 60k Zeichen gesetzt, Pro-Modelle vertragen aber bis zu 1 Mio)
+
+try:
+    response = model.generate_content(prompt)
+    review_body = response.text
+except Exception as e:
+    review_body = f'❌ **Fehler bei der KI-Anfrage:** {str(e)}\n\nBitte prüfe den API Key oder das Modell-Limit.'
+
+# --- KOMMENTAR POSTEN ---
+header = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
+pr.create_issue_comment(header + review_body)
+"
