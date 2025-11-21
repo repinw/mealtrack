@@ -38,7 +38,7 @@ jobs:
           genai.configure(api_key=api_key)
 
           # Modell-Auswahl
-          MODEL_NAME = 'gemini-1.5-pro' 
+          MODEL_NAME = 'gemini-3-pro-preview' 
 
           try:
               model = genai.GenerativeModel(MODEL_NAME)
