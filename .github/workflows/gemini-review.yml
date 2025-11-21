@@ -1,4 +1,4 @@
-name: Gemini Code Review (Dev API)
+name: Gemini Code Review (2.5 Pro + Tests)
 
 on:
   pull_request:
@@ -29,23 +29,14 @@ jobs:
           from github import Github
 
           # --- KONFIGURATION ---
-          # Hier lesen wir den API Key sicher aus den Umgebungsvariablen
           api_key = os.environ.get('GEMINI_API_KEY')
           if not api_key:
               print("Kein API Key gefunden!")
               exit(1)
-              
+          
           genai.configure(api_key=api_key)
-
-          # Modell-Auswahl
-          MODEL_NAME = 'gemini-2.5-pro' 
-
-          try:
-              model = genai.GenerativeModel(MODEL_NAME)
-          except Exception as e:
-              print(f"Fehler beim Laden von {MODEL_NAME}, fallback auf Flash.")
-              model = genai.GenerativeModel('gemini-1.5-flash')
-
+          MODEL_NAME = 'gemini-2.5-pro' # Dein funktionierendes Modell
+          
           # --- GITHUB VERBINDUNG ---
           g = Github(os.environ['GITHUB_TOKEN'])
           repo = g.get_repo(os.environ['REPO_NAME'])
@@ -54,36 +45,55 @@ jobs:
           # --- DIFF LADEN ---
           diff_text = ''
           files_analyzed = []
+          has_test_files = False
+          
           for file in pr.get_files():
               if file.patch and not file.filename.endswith('lock'): 
                   files_analyzed.append(file.filename)
                   diff_text += f'\n\n--- DATEI: {file.filename} ---\n{file.patch}\n'
+                  
+                  # Grober Check: Sind Test-Dateien im PR dabei?
+                  if "test" in file.filename.lower() or "_spec" in file.filename.lower():
+                      has_test_files = True
 
           if not diff_text:
-              print('Keine Änderungen gefunden.')
+              print('Keine relevanten Änderungen gefunden.')
               exit(0)
 
-          # --- GEMINI FRAGEN ---
+          # --- GEMINI PROMPT ANPASSUNG ---
+          # Hier sagen wir Gemini, dass es streng auf Tests achten soll
+          
           prompt = f'''
-          Du bist ein erfahrener Tech Lead und Code Reviewer für das Projekt 'mealtrack'.
-          Deine Aufgabe ist es, den folgenden Code-Diff eines Pull Requests zu prüfen.
-
-          Bitte achte besonders auf:
-          1. 🐛 **Logikfehler & Bugs**
-          2. 🛡️ **Sicherheit**
-          3. 🧹 **Clean Code**
-
-          Antworte in klarem Markdown-Format. 
-          Sei freundlich, aber präzise.
-          Wenn alles gut ist, schreibe nur kurz 'LGTM'.
-
-          Dateien: {', '.join(files_analyzed)}
-
-          CODE-DIFF:
-          {diff_text[:60000]} 
+          Du bist ein strenger Senior Code Reviewer für das Projekt 'mealtrack'.
+          
+          Deine Aufgabe:
+          1. Reviewe den Code auf Bugs, Sicherheit und Clean Code.
+          2. PRÜFE AUF TESTS: Wurden für neue Logik oder Funktionen Tests geschrieben?
+             (Hinweis: Im aktuellen PR sind Test-Dateien enthalten: {has_test_files})
+          
+          Struktur deiner Antwort (in Markdown):
+          
+          ### 🛡️ Review Zusammenfassung
+          Gib ein kurzes Urteil ab. Wenn Tests fehlen, schreibe groß: **⚠️ TESTS FEHLEN**
+          
+          ### 🐛 Bugs & Anmerkungen
+          Liste kritische Fehler oder Sicherheitslücken auf.
+          
+          ### 🧪 Fehlende Tests & Szenarien
+          Analysiere die neuen Funktionen und liste konkret auf, welche Tests geschrieben werden MÜSSEN.
+          Gib Tipps für:
+          - **Happy Path** (Normalfall)
+          - **Edge Cases** (Null-Werte, leere Listen, negative Zahlen)
+          - **Error Handling** (Was passiert bei Fehlern?)
+          
+          Dateien im PR: {', '.join(files_analyzed)}
+          
+          CODE DIFF:
+          {diff_text[:90000]} 
           '''
 
           try:
+              model = genai.GenerativeModel(MODEL_NAME)
               response = model.generate_content(prompt)
               review_body = response.text
           except Exception as e:
