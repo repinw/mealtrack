@@ -41,6 +41,10 @@ void main() {
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
       });
+      test('FridgeItem.create should handle empty rawText', () {
+        final item = FridgeItem.create(rawText: '');
+        expect(item.rawText, '');
+      });
     });
 
     // Testet die Gleichheit basierend auf Equatable
@@ -75,6 +79,25 @@ void main() {
 
         expect(item1, isNot(equals(item2)));
         expect(item1.hashCode, isNot(equals(item2.hashCode)));
+      });
+
+      test('two instances with all properties set should be equal', () {
+        final date = DateTime.now();
+        final item1 = FridgeItem(
+          id: '1',
+          rawText: 'a',
+          entryDate: date,
+          isConsumed: true,
+          consumptionDate: date,
+        );
+        final item2 = FridgeItem(
+          id: '1',
+          rawText: 'a',
+          entryDate: date,
+          isConsumed: true,
+          consumptionDate: date,
+        );
+        expect(item1, equals(item2));
       });
     });
 

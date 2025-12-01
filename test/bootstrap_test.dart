@@ -10,12 +10,12 @@ import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 /// Sie akzeptiert einen optionalen `path` für die Hive-Initialisierung,
 /// um in einer reinen Dart-Testumgebung ohne `path_provider` zu funktionieren.
 /// Der Parameter `forceError` wird verwendet, um einen Fehler zu simulieren.
-Future<bool> bootstrapForTest({String? path, bool forceError = false}) async {
+Future<bool> bootstrapForTest({required String path, bool forceError = false}) async {
   try {
     // Im Test verwenden wir einen manuellen Pfad, in der echten App `initFlutter`.
     // Wenn path null ist, wird initFlutter aufgerufen (simuliert den App-Start).
     // Wenn path nicht null ist, wird init(path) aufgerufen (für den Test).
-    path == null ? await Hive.initFlutter() : Hive.init(path);
+    Hive.init(path);
 
     // Wir registrieren den Adapter nur, wenn er nicht bereits registriert ist.
     if (!Hive.isAdapterRegistered(FridgeItemAdapter().typeId)) {
