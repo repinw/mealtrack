@@ -4,8 +4,6 @@ import 'package:uuid/uuid.dart';
 
 part 'fridge_item.g.dart';
 
-const uuid = Uuid();
-
 @HiveType(typeId: 1)
 class FridgeItem extends HiveObject with EquatableMixin {
   FridgeItem({
