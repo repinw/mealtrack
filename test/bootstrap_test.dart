@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/config/bootstrap.dart';
 import 'package:mealtrack/core/data/hive_initializer.dart';
 import 'package:mocktail/mocktail.dart';
@@ -46,7 +47,7 @@ void main() {
         // Assert: Überprüfe, ob das Ergebnis true ist.
         expect(result, isTrue);
         // Überprüfe, ob die Box tatsächlich geöffnet wurde.
-        expect(Hive.isBoxOpen('inventory'), isTrue);
+        expect(Hive.isBoxOpen(inventoryBoxName), isTrue);
       },
     );
     test(

@@ -26,6 +26,9 @@ class FridgeItem extends HiveObject with EquatableMixin {
     Uuid? uuid,
     DateTime Function()? now,
   }) {
+    if (rawText.trim().isEmpty) {
+      throw ArgumentError.value(rawText, 'rawText', 'darf nicht leer sein');
+    }
     return FridgeItem(
       id: (uuid ?? const Uuid()).v4(),
       rawText: rawText,
@@ -60,4 +63,9 @@ class FridgeItem extends HiveObject with EquatableMixin {
 
   @override
   bool? get stringify => true;
+
+  void markAsConsumed({DateTime? consumptionTime}) {
+    isConsumed = true;
+    consumptionDate = consumptionTime ?? DateTime.now();
+  }
 }

@@ -85,9 +85,18 @@ void main() {
         expect(item.entryDate, specificDate);
       });
 
-      test('FridgeItem.create should handle empty rawText', () {
-        final item = FridgeItem.create(rawText: '');
-        expect(item.rawText, '');
+      test('throws ArgumentError if rawText is empty or whitespace', () {
+        // Test mit einem leeren String
+        expect(
+          () => FridgeItem.create(rawText: ''),
+          throwsA(isA<ArgumentError>()),
+        );
+
+        // Test mit einem String, der nur Leerzeichen enthält
+        expect(
+          () => FridgeItem.create(rawText: '   '),
+          throwsA(isA<ArgumentError>()),
+        );
       });
     });
 
@@ -170,6 +179,40 @@ void main() {
         expect(itemString, contains(false.toString()));
       });
     });
+
+    group('Methods', () {
+      test('markAsConsumed sets consumption status and date', () {
+        // Arrange
+        final item = FridgeItem.create(rawText: 'Käse');
+        expect(item.isConsumed, isFalse);
+        expect(item.consumptionDate, isNull);
+
+        // Act
+        item.markAsConsumed();
+
+        // Assert
+        expect(item.isConsumed, isTrue);
+        expect(item.consumptionDate, isA<DateTime>());
+        // Check if the date is very recent
+        expect(
+          item.consumptionDate!.difference(DateTime.now()).inSeconds.abs(),
+          lessThan(2),
+        );
+      });
+
+      test('markAsConsumed uses provided consumption time', () {
+        // Arrange
+        final item = FridgeItem.create(rawText: 'Wurst');
+        final specificConsumptionTime = DateTime(2025, 12, 24, 18, 0, 0);
+
+        // Act
+        item.markAsConsumed(consumptionTime: specificConsumptionTime);
+
+        // Assert
+        expect(item.isConsumed, isTrue);
+        expect(item.consumptionDate, equals(specificConsumptionTime));
+      });
+    });
   });
 
   group('Hive Persistence', () {
@@ -219,8 +262,10 @@ void main() {
       expect(updatedItem.rawText, 'Joghurt (fast leer)');
       expect(updatedItem.isConsumed, isTrue);
       // Vergleiche Millisekunden, da die Präzision beim Speichern variieren kann.
-      expect(updatedItem.consumptionDate!.millisecondsSinceEpoch,
-          consumptionTime.millisecondsSinceEpoch);
+      expect(
+        updatedItem.consumptionDate!.millisecondsSinceEpoch,
+        consumptionTime.millisecondsSinceEpoch,
+      );
     });
   });
 }
