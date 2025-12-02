@@ -65,6 +65,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
   bool? get stringify => true;
 
   void markAsConsumed({DateTime? consumptionTime}) {
+    if (isConsumed) return;
     isConsumed = true;
     consumptionDate = consumptionTime ?? DateTime.now();
   }

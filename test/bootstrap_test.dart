@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/config/bootstrap.dart';
 import 'package:mealtrack/core/data/hive_initializer.dart';
+import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Eine Test-Implementierung des [HiveInitializer], die ein temporäres
@@ -64,6 +65,25 @@ void main() {
 
         // Assert: Überprüfe, ob das Ergebnis false ist.
         expect(result, isFalse);
+      },
+    );
+
+    test(
+      'sollte nicht fehlschlagen, wenn der Adapter bereits registriert ist',
+      () async {
+        // Arrange: Führe bootstrap einmal aus, um den Adapter zu registrieren.
+        await bootstrap(TestHiveInitializer(tempDir.path));
+        expect(Hive.isAdapterRegistered(FridgeItemAdapter().typeId), isTrue);
+
+        // Act: Führe bootstrap ein zweites Mal aus.
+        // Wir müssen Hive zuerst schließen, da der Test-Setup dies normalerweise tut
+        // und der Initializer Hive.init() erneut aufrufen wird.
+        await Hive.close();
+        final result = await bootstrap(TestHiveInitializer(tempDir.path));
+
+        // Assert: Die Funktion sollte immer noch erfolgreich sein.
+        expect(result, isTrue);
+        expect(Hive.isBoxOpen(inventoryBoxName), isTrue);
       },
     );
   });

@@ -212,6 +212,26 @@ void main() {
         expect(item.isConsumed, isTrue);
         expect(item.consumptionDate, equals(specificConsumptionTime));
       });
+
+      test('does not change consumptionDate if already consumed', () {
+        // Arrange
+        final item = FridgeItem.create(rawText: 'Milch');
+        final firstConsumptionTime = DateTime(2025, 1, 1);
+
+        // Act: Markiere das Item zum ersten Mal als verbraucht.
+        item.markAsConsumed(consumptionTime: firstConsumptionTime);
+
+        // Assert: Überprüfe den initialen Zustand.
+        expect(item.isConsumed, isTrue);
+        expect(item.consumptionDate, firstConsumptionTime);
+
+        // Act again: Versuche, es erneut mit einer anderen Zeit zu markieren.
+        item.markAsConsumed(consumptionTime: DateTime(2025, 2, 2));
+
+        // Assert again: Das Datum darf sich nicht geändert haben.
+        expect(item.isConsumed, isTrue);
+        expect(item.consumptionDate, firstConsumptionTime);
+      });
     });
   });
 
@@ -266,6 +286,23 @@ void main() {
         updatedItem.consumptionDate!.millisecondsSinceEpoch,
         consumptionTime.millisecondsSinceEpoch,
       );
+    });
+
+    test('can be deleted from a Hive box', () async {
+      // Arrange: Erstelle ein Item und speichere es.
+      final item = FridgeItem.create(rawText: 'Alte Socken');
+      await box.put(item.id, item);
+
+      // Stelle sicher, dass das Item vor dem Löschen vorhanden ist.
+      final itemToDelete = box.get(item.id);
+      expect(itemToDelete, isNotNull);
+
+      // Act: Lösche das Item.
+      await itemToDelete!.delete();
+
+      // Assert: Überprüfe, ob das Item nicht mehr in der Box ist.
+      final deletedItem = box.get(item.id);
+      expect(deletedItem, isNull);
     });
   });
 }
