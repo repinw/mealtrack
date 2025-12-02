@@ -2,8 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:uuid/uuid.dart';
+
+class MockUuid extends Mock implements Uuid {}
 
 void main() {
   late Directory tempDir;
@@ -28,6 +31,7 @@ void main() {
 
     // Testet den Standardkonstruktor
     test('can be instantiated with default values', () {
+      // ignore: invalid_use_of_internal_member
       final item = FridgeItem(id: id, rawText: rawText, entryDate: entryDate);
 
       expect(item.id, id);
@@ -59,6 +63,28 @@ void main() {
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
       });
+
+      test('uses provided uuid and now function', () {
+        // Arrange: Erstelle Mocks für Uuid und die now-Funktion
+        final mockUuid = MockUuid();
+        final specificDate = DateTime(2025, 10, 20, 10, 0, 0);
+        DateTime mockNow() => specificDate;
+
+        // Definiere das Verhalten des Uuid-Mocks
+        when(() => mockUuid.v4()).thenReturn('mocked-uuid');
+
+        // Act: Erstelle das Item mit den Mocks
+        final item = FridgeItem.create(
+          rawText: 'Test Item',
+          uuid: mockUuid,
+          now: mockNow,
+        );
+
+        // Assert: Überprüfe, ob die gemockten Werte verwendet wurden
+        expect(item.id, 'mocked-uuid');
+        expect(item.entryDate, specificDate);
+      });
+
       test('FridgeItem.create should handle empty rawText', () {
         final item = FridgeItem.create(rawText: '');
         expect(item.rawText, '');
@@ -68,11 +94,13 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
+        // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
           rawText: rawText,
           entryDate: entryDate,
         );
+        // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: id,
           rawText: rawText,
@@ -84,11 +112,13 @@ void main() {
       });
 
       test('two instances with different properties should not be equal', () {
+        // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
           rawText: rawText,
           entryDate: entryDate,
         );
+        // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: 'another-id',
           rawText: rawText,
@@ -101,6 +131,7 @@ void main() {
 
       test('two instances with all properties set should be equal', () {
         final date = DateTime.now();
+        // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: '1',
           rawText: 'a',
@@ -108,6 +139,7 @@ void main() {
           isConsumed: true,
           consumptionDate: date,
         );
+        // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: '1',
           rawText: 'a',
@@ -122,6 +154,7 @@ void main() {
     // Testet die toString() Methode (via Equatable's stringify)
     group('toString', () {
       test('returns a string with all properties', () {
+        // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: id,
           rawText: rawText,
@@ -136,6 +169,58 @@ void main() {
         expect(itemString, contains(entryDate.toString()));
         expect(itemString, contains(false.toString()));
       });
+    });
+  });
+
+  group('Hive Persistence', () {
+    const boxName = 'fridge_item_persistence_test';
+    late Box<FridgeItem> box;
+
+    // Öffnet vor jedem Test eine saubere Box
+    setUp(() async {
+      box = await Hive.openBox<FridgeItem>(boxName);
+    });
+
+    // Schließt und löscht die Box nach jedem Test
+    tearDown(() async {
+      await box.deleteFromDisk();
+    });
+
+    test('can be written to and read from a Hive box', () async {
+      // Arrange
+      final originalItem = FridgeItem.create(rawText: 'Frische Milch');
+
+      // Act
+      await box.put(originalItem.id, originalItem);
+      final retrievedItem = box.get(originalItem.id);
+
+      // Assert
+      expect(retrievedItem, isNotNull);
+      expect(retrievedItem, equals(originalItem));
+    });
+
+    test('can be updated in a Hive box', () async {
+      // Arrange: Erstelle ein Item und speichere es.
+      final item = FridgeItem.create(rawText: 'Joghurt');
+      await box.put(item.id, item);
+
+      // Act: Hole das Item, modifiziere es und speichere es erneut.
+      final itemToUpdate = box.get(item.id)!;
+      final consumptionTime = DateTime.now();
+
+      itemToUpdate.rawText = 'Joghurt (fast leer)';
+      itemToUpdate.isConsumed = true;
+      itemToUpdate.consumptionDate = consumptionTime;
+      await itemToUpdate.save(); // Wichtig: .save() aufrufen für HiveObject
+
+      // Assert: Hole das Item erneut und überprüfe die Änderungen.
+      final updatedItem = box.get(item.id)!;
+
+      expect(updatedItem.rawText, 'Joghurt (fast leer)');
+      expect(updatedItem.isConsumed, isTrue);
+      // Vergleiche Millisekunden, da die Präzision beim Speichern variieren kann.
+      expect(updatedItem.consumptionDate!.millisecondsSinceEpoch,
+          consumptionTime.millisecondsSinceEpoch);
     });
   });
 }

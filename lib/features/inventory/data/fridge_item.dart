@@ -1,11 +1,15 @@
 import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 part 'fridge_item.g.dart';
 
 @HiveType(typeId: 1)
 class FridgeItem extends HiveObject with EquatableMixin {
+  /// Dieser Konstruktor ist nur für die interne Verwendung und für die Hive-Serialisierung gedacht.
+  /// Um eine neue Instanz zu erstellen, verwende die [FridgeItem.create] Factory.
+  @internal
   FridgeItem({
     required this.id,
     required this.rawText,
