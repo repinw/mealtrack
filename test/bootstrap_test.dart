@@ -46,13 +46,5 @@ void main() {
         expect(Hive.isBoxOpen('inventory'), isTrue);
       },
     );
-
-    test(
-      'sollte false zurückgeben, wenn ein Fehler bei der Initialisierung auftritt',
-      () async {
-        // Dieser Test ist nach der Korrektur von bootstrap nicht mehr sinnvoll,
-        // da der Adapter nicht mehr doppelt registriert werden kann.
-      },
-    );
   });
 }
