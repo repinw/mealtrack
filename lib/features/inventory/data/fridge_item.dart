@@ -46,11 +46,6 @@ class FridgeItem extends HiveObject with EquatableMixin {
   DateTime? consumptionDate;
 
   @override
-  String toString() {
-    return 'FridgeItem(id: $id, rawText: $rawText, entryDate: $entryDate, isConsumed: $isConsumed)';
-  }
-
-  @override
   List<Object?> get props => [
     id,
     rawText,

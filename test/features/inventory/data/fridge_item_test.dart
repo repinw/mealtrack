@@ -1,8 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:uuid/uuid.dart';
 
 void main() {
+  late Directory tempDir;
+
+  // Initialisiert Hive in einem temporären Verzeichnis für alle Tests in dieser Datei.
+  setUpAll(() async {
+    tempDir = await Directory.systemTemp.createTemp('hive_fridge_item_test_');
+    Hive.init(tempDir.path);
+    Hive.registerAdapter(FridgeItemAdapter());
+  });
+
+  // Räumt das temporäre Verzeichnis nach allen Tests auf.
+  tearDownAll(() async {
+    await Hive.close();
+    await tempDir.delete(recursive: true);
+  });
+
   group('FridgeItem', () {
     const id = 'test-uuid';
     const rawText = '2 Eier';
@@ -104,14 +122,19 @@ void main() {
     // Testet die toString() Methode (via Equatable's stringify)
     group('toString', () {
       test('returns a string with all properties', () {
-        final item = FridgeItem(id: id, rawText: rawText, entryDate: entryDate);
+        final item = FridgeItem(
+          id: id,
+          rawText: rawText,
+          entryDate: entryDate,
+          isConsumed: false,
+        );
 
         final itemString = item.toString();
 
         expect(itemString, contains(id));
         expect(itemString, contains(rawText));
         expect(itemString, contains(entryDate.toString()));
-        expect(itemString, contains('isConsumed: false'));
+        expect(itemString, contains(false.toString()));
       });
     });
   });
