@@ -5,6 +5,7 @@ import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/shared/widgets/initialization_error_app.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
   final isInitialized = await bootstrap(AppHiveInitializer());
   runApp(isInitialized ? const MealTrack() : const InitializationErrorApp());
 }

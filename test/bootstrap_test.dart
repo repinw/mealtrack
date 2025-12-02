@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mealtrack/core/config/bootstrap.dart';
 import 'package:mealtrack/core/data/hive_initializer.dart';
+import 'package:mocktail/mocktail.dart';
 
 /// Eine Test-Implementierung des [HiveInitializer], die ein temporäres
 /// Verzeichnis verwendet und die test-sichere `Hive.init()`-Methode aufruft.
@@ -14,6 +15,8 @@ class TestHiveInitializer implements HiveInitializer {
   @override
   Future<void> init() async => Hive.init(path);
 }
+
+class MockHiveInitializer extends Mock implements HiveInitializer {}
 
 void main() {
   // Für jeden Test wird ein temporäres Verzeichnis für die Hive-Box erstellt.
@@ -44,6 +47,22 @@ void main() {
         expect(result, isTrue);
         // Überprüfe, ob die Box tatsächlich geöffnet wurde.
         expect(Hive.isBoxOpen('inventory'), isTrue);
+      },
+    );
+    test(
+      'sollte false zurückgeben, wenn hiveInitializer.init eine Exception wirft',
+      () async {
+        // Arrange: Erstelle einen Mock, der einen Fehler wirft.
+        final mockInitializer = MockHiveInitializer();
+        when(
+          () => mockInitializer.init(),
+        ).thenThrow(Exception('Festplatte voll'));
+
+        // Act: Führe die Bootstrap-Funktion aus.
+        final result = await bootstrap(mockInitializer);
+
+        // Assert: Überprüfe, ob das Ergebnis false ist.
+        expect(result, isFalse);
       },
     );
   });
