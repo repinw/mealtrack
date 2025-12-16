@@ -7,7 +7,7 @@ class ScannedItem extends Equatable {
     required this.totalPrice,
     this.unitPrice,
     this.weight,
-    this.discounts = const {},
+    this.discounts = const [],
   });
 
   final String name;
@@ -20,7 +20,7 @@ class ScannedItem extends Equatable {
 
   final String? weight;
 
-  final Map<String, double> discounts;
+  final List<Map<String, dynamic>> discounts;
 
   @override
   List<Object?> get props => [
@@ -48,11 +48,15 @@ class ScannedItem extends Equatable {
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
       weight: json['weight'] as String?,
       discounts: discountsList != null
-          ? {
-              for (var item in discountsList)
-                item['name'] as String: (item['amount'] as num).toDouble(),
-            }
-          : const {},
+          ? List.unmodifiable(
+              discountsList.map(
+                (e) => {
+                  'name': e['name'] as String,
+                  'amount': (e['amount'] as num).toDouble(),
+                },
+              ),
+            )
+          : const [],
     );
   }
 }
