@@ -21,6 +21,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     this.unitPrice,
     this.weight,
     this.consumptionDate,
+    this.discounts = const [],
   });
 
   /// Erstellt eine neue Instanz von [FridgeItem] mit einer generierten UUID und dem aktuellen Datum.
@@ -33,6 +34,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     int quantity = 1,
     double? unitPrice,
     String? weight,
+    List<Map<String, dynamic>>? discounts,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
@@ -45,8 +47,10 @@ class FridgeItem extends HiveObject with EquatableMixin {
       storeName: storeName,
       quantity: quantity,
       unitPrice: unitPrice,
+      weight: weight,
       entryDate: (now ?? DateTime.now)(),
       isConsumed: false,
+      discounts: discounts ?? const [],
     );
   }
 
@@ -77,6 +81,9 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(8)
   String? weight;
 
+  @HiveField(9)
+  List<Map<String, dynamic>> discounts;
+
   @override
   List<Object?> get props => [
     id,
@@ -84,6 +91,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     entryDate,
     isConsumed,
     consumptionDate,
+    discounts,
   ];
 
   @override

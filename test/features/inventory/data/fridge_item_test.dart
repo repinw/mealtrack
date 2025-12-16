@@ -55,6 +55,7 @@ void main() {
       expect(item.weight, weight);
       expect(item.isConsumed, isFalse);
       expect(item.consumptionDate, isNull);
+      expect(item.discounts, isEmpty);
     });
 
     // Testet die .create() Factory
@@ -80,20 +81,26 @@ void main() {
         expect(item.quantity, 1);
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
+        expect(item.discounts, isEmpty);
       });
 
       test('creates an instance with all optional values', () {
+        final discounts = [
+          {'name': 'Rabatt', 'amount': 0.50}
+        ];
         final item = FridgeItem.create(
           rawText: 'Milch',
           storeName: 'Lidl',
           quantity: 5,
           unitPrice: 1.29,
           weight: '1L',
+          discounts: discounts,
         );
 
         expect(item.quantity, 5);
         expect(item.unitPrice, 1.29);
         expect(item.weight, '1L');
+        expect(item.discounts, discounts);
       });
 
       test('uses provided uuid and now function', () {
@@ -137,6 +144,9 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
+        final discounts = [
+          {'name': 'Rabatt', 'amount': 1.0}
+        ];
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
@@ -144,6 +154,7 @@ void main() {
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
+          discounts: discounts,
         );
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
@@ -152,6 +163,7 @@ void main() {
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
+          discounts: discounts,
         );
 
         expect(item1, equals(item2));
@@ -299,11 +311,15 @@ void main() {
 
     test('can be written to and read from a Hive box', () async {
       // Arrange
+      final discounts = [
+        {'name': 'Aktion', 'amount': 0.33}
+      ];
       final originalItem = FridgeItem.create(
         rawText: 'Frische Milch',
         storeName: 'Edeka',
         quantity: 2,
         unitPrice: 1.19,
+        discounts: discounts,
       );
 
       // Act
@@ -316,6 +332,7 @@ void main() {
       expect(retrievedItem!.storeName, 'Edeka');
       expect(retrievedItem.quantity, 2);
       expect(retrievedItem.unitPrice, 1.19);
+      expect(retrievedItem.discounts, discounts);
     });
 
     test('can be updated in a Hive box', () async {
