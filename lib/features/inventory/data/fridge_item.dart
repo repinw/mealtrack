@@ -16,6 +16,10 @@ class FridgeItem extends HiveObject with EquatableMixin {
     required this.rawText,
     required this.entryDate,
     this.isConsumed = false,
+    required this.storeName,
+    required this.quantity,
+    this.unitPrice,
+    this.weight,
     this.consumptionDate,
   });
 
@@ -25,14 +29,22 @@ class FridgeItem extends HiveObject with EquatableMixin {
   factory FridgeItem.create({
     required String rawText,
     Uuid? uuid,
+    required String storeName,
+    int quantity = 1,
+    double? unitPrice,
+    String? weight,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
       throw ArgumentError.value(rawText, 'rawText', 'darf nicht leer sein');
     }
+
     return FridgeItem(
       id: (uuid ?? const Uuid()).v4(),
       rawText: rawText,
+      storeName: storeName,
+      quantity: quantity,
+      unitPrice: unitPrice,
       entryDate: (now ?? DateTime.now)(),
       isConsumed: false,
     );
@@ -52,6 +64,18 @@ class FridgeItem extends HiveObject with EquatableMixin {
 
   @HiveField(4)
   DateTime? consumptionDate;
+
+  @HiveField(5)
+  String storeName;
+
+  @HiveField(6)
+  int quantity;
+
+  @HiveField(7)
+  double? unitPrice;
+
+  @HiveField(8)
+  String? weight;
 
   @override
   List<Object?> get props => [

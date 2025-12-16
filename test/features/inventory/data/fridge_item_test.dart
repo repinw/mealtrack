@@ -28,15 +28,31 @@ void main() {
     const id = 'test-uuid';
     const rawText = '2 Eier';
     final entryDate = DateTime(2025, 12, 1);
+    const storeName = 'Supermarkt';
+    const quantity = 2;
+    const unitPrice = 0.50;
+    const weight = '100g';
 
     // Testet den Standardkonstruktor
     test('can be instantiated with default values', () {
       // ignore: invalid_use_of_internal_member
-      final item = FridgeItem(id: id, rawText: rawText, entryDate: entryDate);
+      final item = FridgeItem(
+        id: id,
+        rawText: rawText,
+        entryDate: entryDate,
+        storeName: storeName,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        weight: weight,
+      );
 
       expect(item.id, id);
       expect(item.rawText, rawText);
       expect(item.entryDate, entryDate);
+      expect(item.storeName, storeName);
+      expect(item.quantity, quantity);
+      expect(item.unitPrice, unitPrice);
+      expect(item.weight, weight);
       expect(item.isConsumed, isFalse);
       expect(item.consumptionDate, isNull);
     });
@@ -44,7 +60,7 @@ void main() {
     // Testet die .create() Factory
     group('FridgeItem.create factory', () {
       test('creates an instance with generated values', () {
-        final item = FridgeItem.create(rawText: 'Milch');
+        final item = FridgeItem.create(rawText: 'Milch', storeName: 'Lidl');
 
         // Überprüft, ob die ID ein gültiges UUID v4 Format hat.
         expect(
@@ -60,8 +76,24 @@ void main() {
           item.entryDate.difference(DateTime.now()).inSeconds.abs(),
           lessThan(2),
         );
+        expect(item.storeName, 'Lidl');
+        expect(item.quantity, 1);
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
+      });
+
+      test('creates an instance with all optional values', () {
+        final item = FridgeItem.create(
+          rawText: 'Milch',
+          storeName: 'Lidl',
+          quantity: 5,
+          unitPrice: 1.29,
+          weight: '1L',
+        );
+
+        expect(item.quantity, 5);
+        expect(item.unitPrice, 1.29);
+        expect(item.weight, '1L');
       });
 
       test('uses provided uuid and now function', () {
@@ -76,6 +108,7 @@ void main() {
         // Act: Erstelle das Item mit den Mocks
         final item = FridgeItem.create(
           rawText: 'Test Item',
+          storeName: 'Test Store',
           uuid: mockUuid,
           now: mockNow,
         );
@@ -83,18 +116,19 @@ void main() {
         // Assert: Überprüfe, ob die gemockten Werte verwendet wurden
         expect(item.id, 'mocked-uuid');
         expect(item.entryDate, specificDate);
+        expect(item.storeName, 'Test Store');
       });
 
       test('throws ArgumentError if rawText is empty or whitespace', () {
         // Test mit einem leeren String
         expect(
-          () => FridgeItem.create(rawText: ''),
+          () => FridgeItem.create(rawText: '', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
         );
 
         // Test mit einem String, der nur Leerzeichen enthält
         expect(
-          () => FridgeItem.create(rawText: '   '),
+          () => FridgeItem.create(rawText: '   ', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -108,12 +142,16 @@ void main() {
           id: id,
           rawText: rawText,
           entryDate: entryDate,
+          storeName: storeName,
+          quantity: quantity,
         );
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: id,
           rawText: rawText,
           entryDate: entryDate,
+          storeName: storeName,
+          quantity: quantity,
         );
 
         expect(item1, equals(item2));
@@ -126,12 +164,16 @@ void main() {
           id: id,
           rawText: rawText,
           entryDate: entryDate,
+          storeName: storeName,
+          quantity: quantity,
         );
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: 'another-id',
           rawText: rawText,
           entryDate: entryDate,
+          storeName: storeName,
+          quantity: quantity,
         );
 
         expect(item1, isNot(equals(item2)));
@@ -147,6 +189,8 @@ void main() {
           entryDate: date,
           isConsumed: true,
           consumptionDate: date,
+          storeName: 'S',
+          quantity: 1,
         );
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
@@ -155,6 +199,8 @@ void main() {
           entryDate: date,
           isConsumed: true,
           consumptionDate: date,
+          storeName: 'S',
+          quantity: 1,
         );
         expect(item1, equals(item2));
       });
@@ -169,6 +215,8 @@ void main() {
           rawText: rawText,
           entryDate: entryDate,
           isConsumed: false,
+          storeName: storeName,
+          quantity: quantity,
         );
 
         final itemString = item.toString();
@@ -183,7 +231,7 @@ void main() {
     group('Methods', () {
       test('markAsConsumed sets consumption status and date', () {
         // Arrange
-        final item = FridgeItem.create(rawText: 'Käse');
+        final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
 
@@ -202,7 +250,7 @@ void main() {
 
       test('markAsConsumed uses provided consumption time', () {
         // Arrange
-        final item = FridgeItem.create(rawText: 'Wurst');
+        final item = FridgeItem.create(rawText: 'Wurst', storeName: 'Aldi');
         final specificConsumptionTime = DateTime(2025, 12, 24, 18, 0, 0);
 
         // Act
@@ -215,7 +263,7 @@ void main() {
 
       test('does not change consumptionDate if already consumed', () {
         // Arrange
-        final item = FridgeItem.create(rawText: 'Milch');
+        final item = FridgeItem.create(rawText: 'Milch', storeName: 'Aldi');
         final firstConsumptionTime = DateTime(2025, 1, 1);
 
         // Act: Markiere das Item zum ersten Mal als verbraucht.
@@ -251,7 +299,12 @@ void main() {
 
     test('can be written to and read from a Hive box', () async {
       // Arrange
-      final originalItem = FridgeItem.create(rawText: 'Frische Milch');
+      final originalItem = FridgeItem.create(
+        rawText: 'Frische Milch',
+        storeName: 'Edeka',
+        quantity: 2,
+        unitPrice: 1.19,
+      );
 
       // Act
       await box.put(originalItem.id, originalItem);
@@ -260,11 +313,14 @@ void main() {
       // Assert
       expect(retrievedItem, isNotNull);
       expect(retrievedItem, equals(originalItem));
+      expect(retrievedItem!.storeName, 'Edeka');
+      expect(retrievedItem.quantity, 2);
+      expect(retrievedItem.unitPrice, 1.19);
     });
 
     test('can be updated in a Hive box', () async {
       // Arrange: Erstelle ein Item und speichere es.
-      final item = FridgeItem.create(rawText: 'Joghurt');
+      final item = FridgeItem.create(rawText: 'Joghurt', storeName: 'Netto');
       await box.put(item.id, item);
 
       // Act: Hole das Item, modifiziere es und speichere es erneut.
@@ -274,6 +330,7 @@ void main() {
       itemToUpdate.rawText = 'Joghurt (fast leer)';
       itemToUpdate.isConsumed = true;
       itemToUpdate.consumptionDate = consumptionTime;
+      itemToUpdate.storeName = 'Netto (Updated)';
       await itemToUpdate.save(); // Wichtig: .save() aufrufen für HiveObject
 
       // Assert: Hole das Item erneut und überprüfe die Änderungen.
@@ -281,6 +338,7 @@ void main() {
 
       expect(updatedItem.rawText, 'Joghurt (fast leer)');
       expect(updatedItem.isConsumed, isTrue);
+      expect(updatedItem.storeName, 'Netto (Updated)');
       // Vergleiche Millisekunden, da die Präzision beim Speichern variieren kann.
       expect(
         updatedItem.consumptionDate!.millisecondsSinceEpoch,
@@ -290,7 +348,7 @@ void main() {
 
     test('can be deleted from a Hive box', () async {
       // Arrange: Erstelle ein Item und speichere es.
-      final item = FridgeItem.create(rawText: 'Alte Socken');
+      final item = FridgeItem.create(rawText: 'Alte Socken', storeName: 'Home');
       await box.put(item.id, item);
 
       // Stelle sicher, dass das Item vor dem Löschen vorhanden ist.
