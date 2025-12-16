@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
 
-/// Repräsentiert einen einzelnen Posten, der von einem Kassenbon gescannt wurde.
 class ScannedItem extends Equatable {
   const ScannedItem({
     required this.name,
@@ -9,26 +7,20 @@ class ScannedItem extends Equatable {
     required this.totalPrice,
     this.unitPrice,
     this.weight,
-    this.discounts = const [],
+    this.discounts = const {},
   });
 
-  /// Der Name des Produkts.
   final String name;
 
-  /// Die Menge (z.B. 2x). Standard ist 1.
   final int quantity;
 
-  /// Der Gesamtpreis für diesen Posten (Menge * Einzelpreis).
   final double totalPrice;
 
-  /// Der Einzelpreis, falls explizit angegeben.
   final double? unitPrice;
 
-  /// Das extrahierte Gewicht oder Volumen (z.B. "500g").
   final String? weight;
 
-  /// Eine Liste von Rabatten, die auf diesen Posten angewendet werden.
-  final List<Discount> discounts;
+  final Map<String, double> discounts;
 
   @override
   List<Object?> get props => [
@@ -55,11 +47,12 @@ class ScannedItem extends Equatable {
       totalPrice: (json['totalPrice'] as num).toDouble(),
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
       weight: json['weight'] as String?,
-      discounts:
-          discountsList
-              ?.map((d) => Discount.fromJson(d as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      discounts: discountsList != null
+          ? {
+              for (var item in discountsList)
+                item['name'] as String: (item['amount'] as num).toDouble(),
+            }
+          : const {},
     );
   }
 }
