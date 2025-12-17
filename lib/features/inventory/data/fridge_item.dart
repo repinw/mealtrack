@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
+import 'package:mealtrack/features/inventory/data/discount.dart';
 
 part 'fridge_item.g.dart';
 
@@ -16,8 +17,13 @@ class FridgeItem extends HiveObject with EquatableMixin {
     required this.rawText,
     required this.entryDate,
     this.isConsumed = false,
+    required this.storeName,
+    required this.quantity,
+    this.unitPrice,
+    this.weight,
     this.consumptionDate,
-  });
+    List<Discount>? discounts,
+  }) : discounts = discounts ?? [];
 
   /// Erstellt eine neue Instanz von [FridgeItem] mit einer generierten UUID und dem aktuellen Datum.
   ///
@@ -25,16 +31,36 @@ class FridgeItem extends HiveObject with EquatableMixin {
   factory FridgeItem.create({
     required String rawText,
     Uuid? uuid,
+    required String storeName,
+    int quantity = 1,
+    double? unitPrice,
+    String? weight,
+    List<Discount>? discounts,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
       throw ArgumentError.value(rawText, 'rawText', 'darf nicht leer sein');
     }
+    if (storeName.trim().isEmpty) {
+      throw ArgumentError.value(storeName, 'storeName', 'darf nicht leer sein');
+    }
+    if (quantity <= 0) {
+      throw ArgumentError.value(quantity, 'quantity', 'muss größer als 0 sein');
+    }
+    if (unitPrice != null && unitPrice < 0) {
+      throw ArgumentError.value(unitPrice, 'unitPrice', 'darf nicht negativ sein');
+    }
+
     return FridgeItem(
       id: (uuid ?? const Uuid()).v4(),
       rawText: rawText,
+      storeName: storeName,
+      quantity: quantity,
+      unitPrice: unitPrice,
+      weight: weight,
       entryDate: (now ?? DateTime.now)(),
       isConsumed: false,
+      discounts: discounts ?? [],
     );
   }
 
@@ -53,6 +79,21 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(4)
   DateTime? consumptionDate;
 
+  @HiveField(5, defaultValue: 'Unbekannt')
+  String storeName;
+
+  @HiveField(6, defaultValue: 1)
+  int quantity;
+
+  @HiveField(7)
+  double? unitPrice;
+
+  @HiveField(8)
+  String? weight;
+
+  @HiveField(9, defaultValue: <Discount>[])
+  List<Discount> discounts;
+
   @override
   List<Object?> get props => [
     id,
@@ -60,6 +101,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     entryDate,
     isConsumed,
     consumptionDate,
+    discounts,
   ];
 
   @override
