@@ -87,7 +87,7 @@ void main() {
       });
 
       test('creates an instance with all optional values', () {
-        final discounts = [const Discount(name: 'Rabatt', amount: 0.50)];
+        final discounts = [Discount(name: 'Rabatt', amount: 0.50)];
         final item = FridgeItem.create(
           rawText: 'Milch',
           storeName: 'Lidl',
@@ -153,11 +153,19 @@ void main() {
 
       test('throws ArgumentError if quantity is less than or equal to 0', () {
         expect(
-          () => FridgeItem.create(rawText: 'Milch', storeName: 'Lidl', quantity: 0),
+          () => FridgeItem.create(
+            rawText: 'Milch',
+            storeName: 'Lidl',
+            quantity: 0,
+          ),
           throwsA(isA<ArgumentError>()),
         );
         expect(
-          () => FridgeItem.create(rawText: 'Milch', storeName: 'Lidl', quantity: -1),
+          () => FridgeItem.create(
+            rawText: 'Milch',
+            storeName: 'Lidl',
+            quantity: -1,
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -166,7 +174,7 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
-        final discounts = [const Discount(name: 'Rabatt', amount: 1.0)];
+        final discounts = [Discount(name: 'Rabatt', amount: 1.0)];
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
@@ -313,6 +321,67 @@ void main() {
         expect(item.consumptionDate, firstConsumptionTime);
       });
     });
+
+    group('Bug Fixes & Edge Cases', () {
+      test('discounts list should be mutable after creation', () {
+        final item = FridgeItem.create(rawText: 'Test', storeName: 'Test');
+        final discount = Discount(name: 'Sale', amount: 1.0);
+
+        // Dieser Aufruf darf keinen UnsupportedError werfen
+        item.discounts.add(discount);
+
+        expect(item.discounts, contains(discount));
+      });
+
+      test('throws ArgumentError if unitPrice is negative', () {
+        expect(
+          () => FridgeItem.create(
+            rawText: 'Brot',
+            storeName: 'Bäcker',
+            unitPrice: -2.50,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('Discount validation', () {
+        expect(
+          () => Discount(name: '', amount: 10),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          () => Discount(name: '   ', amount: 10),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          () => Discount(name: 'Valid', amount: -1),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test(
+        'Constructor handles null discounts by defaulting to empty mutable list',
+        () {
+          // ignore: invalid_use_of_internal_member
+          final item = FridgeItem(
+            id: 'id',
+            rawText: 'text',
+            entryDate: DateTime.now(),
+            storeName: 'store',
+            quantity: 1,
+            discounts: null, // Simuliert null von Hive/JSON
+          );
+
+          expect(item.discounts, isNotNull);
+          expect(item.discounts, isEmpty);
+          // Sicherstellen, dass die Liste veränderbar ist
+          expect(
+            () => item.discounts.add(Discount(name: 'D', amount: 1)),
+            returnsNormally,
+          );
+        },
+      );
+    });
   });
 
   group('Hive Persistence', () {
@@ -331,7 +400,7 @@ void main() {
 
     test('can be written to and read from a Hive box', () async {
       // Arrange
-      final discounts = [const Discount(name: 'Aktion', amount: 0.33)];
+      final discounts = [Discount(name: 'Aktion', amount: 0.33)];
       final originalItem = FridgeItem.create(
         rawText: 'Frische Milch',
         storeName: 'Edeka',
