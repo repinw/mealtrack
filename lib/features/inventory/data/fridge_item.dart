@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
+import 'package:mealtrack/features/inventory/data/discount.dart';
 
 part 'fridge_item.g.dart';
 
@@ -34,11 +35,17 @@ class FridgeItem extends HiveObject with EquatableMixin {
     int quantity = 1,
     double? unitPrice,
     String? weight,
-    List<Map<String, dynamic>>? discounts,
+    List<Discount>? discounts,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
       throw ArgumentError.value(rawText, 'rawText', 'darf nicht leer sein');
+    }
+    if (storeName.trim().isEmpty) {
+      throw ArgumentError.value(storeName, 'storeName', 'darf nicht leer sein');
+    }
+    if (quantity <= 0) {
+      throw ArgumentError.value(quantity, 'quantity', 'muss größer als 0 sein');
     }
 
     return FridgeItem(
@@ -69,10 +76,10 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(4)
   DateTime? consumptionDate;
 
-  @HiveField(5)
+  @HiveField(5, defaultValue: 'Unbekannt')
   String storeName;
 
-  @HiveField(6)
+  @HiveField(6, defaultValue: 1)
   int quantity;
 
   @HiveField(7)
@@ -82,7 +89,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
   String? weight;
 
   @HiveField(9)
-  List<Map<String, dynamic>> discounts;
+  List<Discount> discounts;
 
   @override
   List<Object?> get props => [

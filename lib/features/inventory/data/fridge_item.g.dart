@@ -21,18 +21,19 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       rawText: fields[1] as String,
       entryDate: fields[2] as DateTime,
       isConsumed: fields[3] as bool,
-      storeName: fields[5] as String,
-      quantity: fields[6] as int,
+      storeName: fields[5] == null ? 'Unbekannt' : fields[5] as String,
+      quantity: fields[6] == null ? 1 : fields[6] as int,
       unitPrice: fields[7] as double?,
       weight: fields[8] as String?,
       consumptionDate: fields[4] as DateTime?,
+      discounts: (fields[9] as List).cast<Discount>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, FridgeItem obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       ..writeByte(7)
       ..write(obj.unitPrice)
       ..writeByte(8)
-      ..write(obj.weight);
+      ..write(obj.weight)
+      ..writeByte(9)
+      ..write(obj.discounts);
   }
 
   @override
