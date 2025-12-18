@@ -39,8 +39,8 @@ void main() {
       () async {
         final mockFile = XFile('test_image.jpg');
         final expectedItems = [
-          const ScannedItem(name: 'Apple', totalPrice: 1.50, quantity: 1),
-          const ScannedItem(name: 'Banana', totalPrice: 0.80, quantity: 2),
+          ScannedItem(name: 'Apple', totalPrice: 1.50, quantity: 1),
+          ScannedItem(name: 'Banana', totalPrice: 0.80, quantity: 2),
         ];
 
         mockParserResult = expectedItems;

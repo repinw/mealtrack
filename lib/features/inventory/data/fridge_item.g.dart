@@ -26,7 +26,8 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       unitPrice: fields[7] as double?,
       weight: fields[8] as String?,
       consumptionDate: fields[4] as DateTime?,
-      discounts: fields[9] == null ? [] : (fields[9] as List).cast<Discount>(),
+      discounts:
+          fields[9] == null ? [] : (fields[9] as List?)?.cast<Discount>(),
     );
   }
 

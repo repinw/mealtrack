@@ -21,6 +21,8 @@ class FirebaseAiService {
       "unitPrice: Einzelpreis, falls vorhanden (Float)."
       " weight: Extrahiere Gewichte/Volumen (z.B. '500g', '1L', 'ST') aus dem Text und speichere sie hier, nicht im Namen."
       "discounts: Eine Liste von Objekten. Jedes Objekt hat name (Beschreibung des Rabatts) und amount (der absolute Betrag als positive Zahl, z.B. 1.20)."
+      "storeName: Name des Ladens (z.B. Netto). Wiederhole für jedes Item.,"
+      "isLowConfidence: Boolean. Setze auf true, wenn du dir bei der Erkennung unsicher bist (z.B. unleserlich), sonst false."
       "Beispiel-Logik: Wenn Zeile A 'Hackfleisch 7,99' ist und Zeile B 'Rabatt -1,20' ist: Erstelle EIN Item für Hackfleisch. Füge den Rabatt von 1.20 in dessen discounts-Liste ein. Erstelle KEIN Item für Zeile B.";
 
   /// Analyzes the given image [imageData] with the Gemini model.

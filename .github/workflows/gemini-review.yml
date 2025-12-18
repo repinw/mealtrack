@@ -1,4 +1,4 @@
-name: Gemini Code Review (2.5 Pro + Tests)
+name: Gemini Code Review (3 Pro + Tests)
 
 on:
   pull_request:
@@ -70,6 +70,8 @@ jobs:
           1. Reviewe den Code auf Bugs, Sicherheit und Clean Code.
           2. PRÜFE AUF TESTS: Wurden für neue Logik oder Funktionen Tests geschrieben?
              (Hinweis: Im aktuellen PR sind Test-Dateien enthalten: {has_test_files})
+          3. Prüfe: Kommentare und Namen der Methoden/Funktionen/Klassen müssen auf Englisch sein
+          4. Prüfe: Sind Kommentare an den Stellen notwendig? Entferne sie falls nicht
           
           Struktur deiner Antwort (in Markdown):
           
