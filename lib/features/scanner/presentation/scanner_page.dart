@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/service/text_recognition_service.dart';
 
 class ScannerPage extends StatefulWidget {
   final ImagePicker _picker;
-  final TextRecognitionService? _textRecognitionService;
+  final TextRecognitionService _textRecognitionService;
 
   ScannerPage({
     super.key,
     ImagePicker? picker,
     TextRecognitionService? textRecognitionService,
   }) : _picker = picker ?? ImagePicker(),
-       _textRecognitionService = textRecognitionService;
+       _textRecognitionService =
+           textRecognitionService ?? TextRecognitionService();
 
   @override
   State<ScannerPage> createState() => _ScannerPageState();
 }
 
 class _ScannerPageState extends State<ScannerPage> {
-  late final TextRecognitionService _textRecognitionService;
   bool _isBusy = false;
-  List<ScannedItem> _scannedItems = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _textRecognitionService =
-        widget._textRecognitionService ?? TextRecognitionService();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +34,7 @@ class _ScannerPageState extends State<ScannerPage> {
             Expanded(child: _buildBody()),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: _isBusy ? null : _processImageFromGallary,
+              onPressed: _isBusy ? null : _processImageFromGallery,
               icon: const Icon(Icons.image_search),
               label: const Text('Galerie öffnen'),
             ),
@@ -57,25 +49,6 @@ class _ScannerPageState extends State<ScannerPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_scannedItems.isNotEmpty) {
-      return ListView.builder(
-        itemCount: _scannedItems.length,
-        itemBuilder: (context, index) {
-          final item = _scannedItems[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: ListTile(
-              title: Text(item.name),
-              subtitle: Text(
-                'Menge: ${item.quantity} / Gewicht: ${item.weight ?? '-'}',
-              ),
-              trailing: Text('${item.totalPrice.toStringAsFixed(2)} €'),
-            ),
-          );
-        },
-      );
-    }
-
     return const Center(
       child: Text(
         'Klicke auf den Button, um einen Beispielbeleg zu scannen.',
@@ -84,21 +57,26 @@ class _ScannerPageState extends State<ScannerPage> {
     );
   }
 
-  Future<void> _processImageFromGallary() async {
+  Future<void> _processImageFromGallery() async {
     setState(() {
       _isBusy = true;
-      _scannedItems = [];
     });
 
     try {
       final XFile? image = await widget._picker.pickImage(
         source: ImageSource.gallery,
       );
-      final result = await _textRecognitionService.processImage(image);
+      if (image == null) return;
 
-      setState(() {
-        _scannedItems = result;
-      });
+      final result = await widget._textRecognitionService.processImage(image);
+
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ReceiptEditPage(scannedItems: result),
+          ),
+        );
+      }
     } catch (e, stackTrace) {
       debugPrint('Fehler bei der Texterkennung: $e');
       debugPrintStack(stackTrace: stackTrace);

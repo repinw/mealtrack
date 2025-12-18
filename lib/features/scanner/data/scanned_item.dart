@@ -1,50 +1,39 @@
-import 'package:equatable/equatable.dart';
 import 'package:mealtrack/features/scanner/data/discount.dart';
 
-/// Repräsentiert einen einzelnen Posten, der von einem Kassenbon gescannt wurde.
-class ScannedItem extends Equatable {
-  const ScannedItem({
+/// Represents one Item scanned from a receipt.
+class ScannedItem {
+  ScannedItem({
     required this.name,
     this.quantity = 1,
     required this.totalPrice,
     this.unitPrice,
     this.weight,
-    this.discounts = const [],
-  });
+    List<Discount>? discounts,
+    this.isLowConfidence = false,
+    this.storeName,
+  }) : discounts = discounts ?? [];
 
-  /// Der Name des Produkts.
-  final String name;
+  String name;
 
-  /// Die Menge (z.B. 2x). Standard ist 1.
-  final int quantity;
+  int quantity;
 
-  /// Der Gesamtpreis für diesen Posten (Menge * Einzelpreis).
-  final double totalPrice;
+  double totalPrice;
 
-  /// Der Einzelpreis, falls explizit angegeben.
-  final double? unitPrice;
+  double? unitPrice;
 
-  /// Das extrahierte Gewicht oder Volumen (z.B. "500g").
-  final String? weight;
+  String? weight;
 
-  /// Eine Liste von Rabatten, die auf diesen Posten angewendet werden.
-  final List<Discount> discounts;
+  List<Discount> discounts;
 
-  @override
-  List<Object?> get props => [
-    name,
-    quantity,
-    totalPrice,
-    unitPrice,
-    weight,
-    discounts,
-  ];
+  bool isLowConfidence;
+
+  String? storeName;
 
   @override
   String toString() {
     return 'ScannedItem(name: $name, quantity: $quantity, '
         'totalPrice: $totalPrice, unitPrice: $unitPrice, weight: $weight, '
-        'discounts: $discounts)';
+        'discounts: $discounts, isLowConfidence: $isLowConfidence, storeName: $storeName)';
   }
 
   factory ScannedItem.fromJson(Map<String, dynamic> json) {
@@ -55,11 +44,11 @@ class ScannedItem extends Equatable {
       totalPrice: (json['totalPrice'] as num).toDouble(),
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
       weight: json['weight'] as String?,
-      discounts:
-          discountsList
-              ?.map((d) => Discount.fromJson(d as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      discounts: discountsList
+          ?.map((d) => Discount.fromJson(d as Map<String, dynamic>))
+          .toList(),
+      isLowConfidence: json['isLowConfidence'] as bool? ?? false,
+      storeName: json['storeName'] as String?,
     );
   }
 }
