@@ -56,45 +56,22 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final newQty = int.tryParse(value);
     if (newQty == null) return;
 
-    double unitPrice = widget.item.unitPrice ?? 0.0;
-    // Fallback: Calculate unit price if missing or 0
-    if (unitPrice == 0.0 && widget.item.quantity > 0) {
-      unitPrice = widget.item.totalPrice / widget.item.quantity;
-    }
-
-    final newGrossTotal = unitPrice * newQty;
-    final newDisplayedPrice = newGrossTotal - widget.item.totalDiscount;
+    final newDisplayedPrice = widget.item.calculateEffectivePriceForQuantity(
+      newQty,
+    );
 
     _priceController.text = newDisplayedPrice.toStringAsFixed(2);
     _updateItem();
   }
 
   void _updateItem() {
-    // Write values from controllers back to item
-    final name = _nameController.text;
-    final qty = int.tryParse(_qtyController.text);
-    final weight = _weightController.text;
-
-    // Logic: Allow input of total price
-    final displayedPrice =
-        double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
-
-    // Save gross price (displayed price + discount)
-    final grossTotalPrice = displayedPrice + widget.item.totalDiscount;
-
-    // Update item
-    widget.item.name = name;
-    widget.item.weight = weight.isEmpty ? null : weight;
-    widget.item.isLowConfidence = false; // Mark as verified upon edit
-
-    if (qty != null) {
-      // Optional: Recalculate unit price
-      final unitPrice = qty > 0 ? grossTotalPrice / qty : grossTotalPrice;
-
-      widget.item.quantity = qty;
-      widget.item.totalPrice = grossTotalPrice;
-      widget.item.unitPrice = unitPrice;
-    }
+    widget.item.updateFromUser(
+      name: _nameController.text,
+      weight: _weightController.text.isEmpty ? null : _weightController.text,
+      displayedPrice:
+          double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
+      quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
+    );
 
     // Notify parent to recalculate total
     widget.onChanged();

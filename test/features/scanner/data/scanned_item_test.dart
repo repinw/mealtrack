@@ -81,5 +81,77 @@ void main() {
       expect(str, contains('TestStore'));
       expect(str, contains('isLowConfidence: true'));
     });
+
+    group('Business Logic', () {
+      test('calculateEffectivePriceForQuantity uses existing unitPrice', () {
+        final item = ScannedItem(
+          name: 'Test',
+          totalPrice: 10.0,
+          quantity: 2,
+          unitPrice: 5.0,
+          discounts: [const Discount(name: 'D', amount: 1.0)],
+        );
+
+        // Unit price 5.0 * 3 = 15.0. Minus discount 1.0 = 14.0
+        expect(item.calculateEffectivePriceForQuantity(3), 14.0);
+      });
+
+      test('calculateEffectivePriceForQuantity derives unitPrice if missing', () {
+        final item = ScannedItem(
+          name: 'Test',
+          totalPrice: 10.0, // Implies unit price 5.0
+          quantity: 2,
+          discounts: [const Discount(name: 'D', amount: 1.0)],
+        );
+
+        // Derived unit price 5.0 * 4 = 20.0. Minus discount 1.0 = 19.0
+        expect(item.calculateEffectivePriceForQuantity(4), 19.0);
+      });
+
+      test('updateFromUser updates fields and recalculates prices correctly', () {
+        final item = ScannedItem(
+          name: 'Old Name',
+          totalPrice: 10.0,
+          quantity: 2,
+          isLowConfidence: true,
+          discounts: [const Discount(name: 'D', amount: 2.0)],
+        );
+
+        // User inputs:
+        // Quantity: 5
+        // Displayed Price (Effective): 48.0
+        // (Implies Gross Total = 48.0 + 2.0 = 50.0)
+        // (Implies Unit Price = 50.0 / 5 = 10.0)
+
+        item.updateFromUser(
+          name: 'New Name',
+          weight: '1kg',
+          displayedPrice: 48.0,
+          quantity: 5,
+        );
+
+        expect(item.name, 'New Name');
+        expect(item.weight, '1kg');
+        expect(item.quantity, 5);
+        expect(item.isLowConfidence, false);
+        expect(item.totalPrice, 50.0); // 48 + 2
+        expect(item.unitPrice, 10.0); // 50 / 5
+      });
+
+      test('updateFromUser handles zero quantity gracefully', () {
+        final item = ScannedItem(name: 'A', totalPrice: 10.0, quantity: 1);
+
+        item.updateFromUser(
+          name: 'A',
+          weight: null,
+          displayedPrice: 5.0,
+          quantity: 0,
+        );
+
+        expect(item.quantity, 0);
+        expect(item.totalPrice, 5.0); // No discount
+        expect(item.unitPrice, 5.0); // Fallback to total if qty is 0
+      });
+    });
   });
 }

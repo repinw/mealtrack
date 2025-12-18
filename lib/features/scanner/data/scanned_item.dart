@@ -33,6 +33,40 @@ class ScannedItem {
 
   double get effectivePrice => totalPrice - totalDiscount;
 
+  /// Calculates the effective price (total - discount) for a specific quantity,
+  /// using the current unit price logic.
+  double calculateEffectivePriceForQuantity(int quantity) {
+    double uPrice = unitPrice ?? 0.0;
+    if (uPrice == 0.0 && this.quantity > 0) {
+      uPrice = totalPrice / this.quantity;
+    }
+    final grossTotal = uPrice * quantity;
+    return grossTotal - totalDiscount;
+  }
+
+  /// Updates the item with values provided by the user.
+  /// Automatically handles gross/net price calculations and confidence flags.
+  void updateFromUser({
+    required String name,
+    required String? weight,
+    required double displayedPrice,
+    required int quantity,
+  }) {
+    this.name = name;
+    this.weight = weight;
+    isLowConfidence = false;
+
+    // The user sees and edits the effective price (price - discount).
+    // We need to store the gross total price.
+    final grossTotalPrice = displayedPrice + totalDiscount;
+
+    this.quantity = quantity;
+    totalPrice = grossTotalPrice;
+
+    // Recalculate unit price based on the new total and quantity
+    unitPrice = quantity > 0 ? grossTotalPrice / quantity : grossTotalPrice;
+  }
+
   @override
   String toString() {
     return 'ScannedItem(name: $name, quantity: $quantity, '
