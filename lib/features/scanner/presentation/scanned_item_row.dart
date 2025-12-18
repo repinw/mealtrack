@@ -28,10 +28,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   late TextEditingController _qtyController;
   late TextEditingController _weightController;
 
-  double get _discountAmount {
-    return widget.item.discounts?.fold(0.0, (sum, d) => sum! + d.amount) ?? 0.0;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -39,7 +35,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     _nameController = TextEditingController(text: widget.item.name);
     // Display price minus discount
     _priceController = TextEditingController(
-      text: (widget.item.totalPrice - _discountAmount).toStringAsFixed(2),
+      text: widget.item.effectivePrice.toStringAsFixed(2),
     );
     _qtyController = TextEditingController(
       text: widget.item.quantity.toString(),
@@ -67,7 +63,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     }
 
     final newGrossTotal = unitPrice * newQty;
-    final newDisplayedPrice = newGrossTotal - _discountAmount;
+    final newDisplayedPrice = newGrossTotal - widget.item.totalDiscount;
 
     _priceController.text = newDisplayedPrice.toStringAsFixed(2);
     _updateItem();
@@ -84,7 +80,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
 
     // Save gross price (displayed price + discount)
-    final grossTotalPrice = displayedPrice + _discountAmount;
+    final grossTotalPrice = displayedPrice + widget.item.totalDiscount;
 
     // Update item
     widget.item.name = name;
@@ -139,7 +135,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6.0),
       child: GestureDetector(
-        onTap: _discountAmount > 0 ? _showDiscounts : null,
+        onTap: widget.item.totalDiscount > 0 ? _showDiscounts : null,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
@@ -228,7 +224,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    if (_discountAmount > 0)
+                    if (widget.item.totalDiscount > 0)
                       Padding(
                         padding: const EdgeInsets.only(right: 4.0),
                         child: GestureDetector(

@@ -22,12 +22,12 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   void initState() {
     super.initState();
     _merchantController = TextEditingController();
+    final now = DateTime.now();
+    _dateController = TextEditingController(
+      text: '${now.day}.${now.month}.${now.year}',
+    );
 
     if (widget.scannedItems != null) {
-      final now = DateTime.now();
-      _dateController = TextEditingController(
-        text: '${now.day}.${now.month}.${now.year}',
-      );
       _items.addAll(widget.scannedItems!);
 
       // Try to extract the store name from the items
@@ -42,27 +42,6 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
           _merchantController.text = foundStoreName;
         }
       }
-    } else {
-      _merchantController.text = "Ladenname";
-      _dateController = TextEditingController(text: "24.10.2024");
-
-      // Load example data directly
-      _items.addAll([
-        ScannedItem(name: 'Cappuccino Grande', totalPrice: 4.50, quantity: 1),
-        ScannedItem(
-          name: 'Croissant Butter',
-          totalPrice: 5.60,
-          quantity: 2,
-          unitPrice: 2.80,
-        ),
-        ScannedItem(
-          name: 'Frisch O-Saft 0.3l',
-          totalPrice: 5.20,
-          quantity: 1,
-          isLowConfidence: true,
-        ),
-        ScannedItem(name: 'Tagesuppe Tomate', totalPrice: 6.90, quantity: 1),
-      ]);
     }
 
     // Update all items when the user changes the merchant name

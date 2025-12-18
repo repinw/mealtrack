@@ -29,6 +29,10 @@ class ScannedItem {
 
   String? storeName;
 
+  double get totalDiscount => discounts.fold(0.0, (sum, d) => sum + d.amount);
+
+  double get effectivePrice => totalPrice - totalDiscount;
+
   @override
   String toString() {
     return 'ScannedItem(name: $name, quantity: $quantity, '
