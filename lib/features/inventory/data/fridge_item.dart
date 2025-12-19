@@ -9,8 +9,8 @@ part 'fridge_item.g.dart';
 @HiveType(typeId: 1)
 // ignore: must_be_immutable
 class FridgeItem extends HiveObject with EquatableMixin {
-  /// Dieser Konstruktor ist nur für die interne Verwendung und für die Hive-Serialisierung gedacht.
-  /// Um eine neue Instanz zu erstellen, verwende die [FridgeItem.create] Factory.
+  /// This constructor is intended for internal use and Hive serialization only.
+  /// To create a new instance, use the [FridgeItem.create] factory.
   @internal
   FridgeItem({
     required this.id,
@@ -27,9 +27,9 @@ class FridgeItem extends HiveObject with EquatableMixin {
     List<Discount>? discounts,
   }) : discounts = discounts ?? [];
 
-  /// Erstellt eine neue Instanz von [FridgeItem] mit einer generierten UUID und dem aktuellen Datum.
+  /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
   ///
-  /// Akzeptiert optional eine [Uuid]-Instanz und eine [now] Funktion für Testzwecke.
+  /// Optionally accepts a [Uuid] instance and a [now] function for testing purposes.
   factory FridgeItem.create({
     required String rawText,
     Uuid? uuid,
@@ -43,20 +43,16 @@ class FridgeItem extends HiveObject with EquatableMixin {
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
-      throw ArgumentError.value(rawText, 'rawText', 'darf nicht leer sein');
+      throw ArgumentError.value(rawText, 'rawText', 'must not be empty');
     }
     if (storeName.trim().isEmpty) {
-      throw ArgumentError.value(storeName, 'storeName', 'darf nicht leer sein');
+      throw ArgumentError.value(storeName, 'storeName', 'must not be empty');
     }
     if (quantity <= 0) {
-      throw ArgumentError.value(quantity, 'quantity', 'muss größer als 0 sein');
+      throw ArgumentError.value(quantity, 'quantity', 'must be greater than 0');
     }
     if (unitPrice != null && unitPrice < 0) {
-      throw ArgumentError.value(
-        unitPrice,
-        'unitPrice',
-        'darf nicht negativ sein',
-      );
+      throw ArgumentError.value(unitPrice, 'unitPrice', 'must not be negative');
     }
 
     return FridgeItem(
@@ -89,7 +85,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(4)
   DateTime? consumptionDate;
 
-  @HiveField(5, defaultValue: 'Unbekannt')
+  @HiveField(5, defaultValue: 'Unknown')
   String storeName;
 
   @HiveField(6, defaultValue: 1)

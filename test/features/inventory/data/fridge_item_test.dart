@@ -169,6 +169,16 @@ void main() {
           throwsA(isA<ArgumentError>()),
         );
       });
+
+      test('initializes with receiptId if provided', () {
+        const receiptId = 'receipt-123';
+        final item = FridgeItem.create(
+          rawText: 'Milch',
+          storeName: 'Lidl',
+          receiptId: receiptId,
+        );
+        expect(item.receiptId, receiptId);
+      });
     });
 
     // Testet die Gleichheit basierend auf Equatable
@@ -491,6 +501,21 @@ void main() {
       // Assert: Überprüfe, ob das Item nicht mehr in der Box ist.
       final deletedItem = box.get(item.id);
       expect(deletedItem, isNull);
+    });
+
+    test('persists receiptId correctly', () async {
+      const receiptId = 'receipt-uuid-123';
+      final item = FridgeItem.create(
+        rawText: 'Item from Receipt',
+        storeName: 'Test Store',
+        receiptId: receiptId,
+      );
+
+      await box.put(item.id, item);
+      final retrievedItem = box.get(item.id);
+
+      expect(retrievedItem, isNotNull);
+      expect(retrievedItem!.receiptId, receiptId);
     });
   });
 }

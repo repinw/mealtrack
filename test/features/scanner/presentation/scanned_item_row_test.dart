@@ -232,5 +232,26 @@ void main() {
       expect(item.totalPrice, 17.0);
       expect(item.unitPrice, 17.0); // since quantity is 1
     });
+
+    testWidgets('Happy Path: Changing brand updates item', (tester) async {
+      // Arrange
+      final item = ScannedItem(name: 'Test Item', totalPrice: 10.0);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+          ),
+        ),
+      );
+
+      // Act
+      final brandFinder = find.widgetWithText(TextField, 'Marke');
+      await tester.enterText(brandFinder, 'Nestle');
+      await tester.pump();
+
+      // Assert
+      expect(item.brand, 'Nestle');
+    });
   });
 }
