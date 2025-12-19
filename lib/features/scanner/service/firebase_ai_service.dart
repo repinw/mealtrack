@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 /// A service that uses Firebase Vertex AI with Gemini to analyze receipt images.
 class FirebaseAiService {
   // Using a fast and cost-efficient model suitable for this task.
-  static const _modelName = 'gemini-3-pro-preview';
+  static const _modelName = 'gemini-3-flash-preview';
 
   static const _prompt =
       "Analysiere den Kassenbon und extrahiere strukturierte Daten."
