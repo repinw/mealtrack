@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 /// A service that uses Firebase Vertex AI with Gemini to analyze receipt images.
 class FirebaseAiService {
   // Using a fast and cost-efficient model suitable for this task.
-  static const _modelName = 'gemini-2.5-flash-lite';
+  static const _modelName = 'gemini-3-pro-preview';
 
   static const _prompt =
       "Analysiere den Kassenbon und extrahiere strukturierte Daten."
@@ -15,7 +15,8 @@ class FirebaseAiService {
       "   Zeilen mit negativen Preisen (z.B. -1,20) oder Zeilen, die Worte wie 'Rabatt' oder 'Gutschein' im Namen enthalten, sind KEINE Artikel. Erstelle dafür kein eigenes Item-Objekt!"
       "   Stattdessen müssen diese Zeilen als Rabatt-Objekt in das Feld discounts des unmittelbar vorangegangenen Artikels eingefügt werden."
       "Struktur eines Artikel-Objekts:"
-      "   name: Name des Artikels (String). Entferne Gewichtsangaben aus dem Namen."
+      "   name: Vollständiger Name des Artikels (String). Rate den vollen Namen. Entferne Gewichtsangaben und Hersteller aus dem Namen."
+      "   brand: Marke oder Hersteller (String). Rate, falls nicht explizit genannt."
       "  quantity: Menge (Integer). Standard: 1. Wenn '2 x' davor steht, ist es 2."
       " totalPrice: Der Preis auf der rechten Seite (Float). Muss positiv sein."
       "unitPrice: Einzelpreis, falls vorhanden (Float)."
@@ -25,12 +26,20 @@ class FirebaseAiService {
       "isLowConfidence: Boolean. Setze auf true, wenn du dir bei der Erkennung unsicher bist (z.B. unleserlich), sonst false."
       "Beispiel-Logik: Wenn Zeile A 'Hackfleisch 7,99' ist und Zeile B 'Rabatt -1,20' ist: Erstelle EIN Item für Hackfleisch. Füge den Rabatt von 1.20 in dessen discounts-Liste ein. Erstelle KEIN Item für Zeile B.";
 
+  final GenerativeModel? _model;
+
+  FirebaseAiService({GenerativeModel? model}) : _model = model;
+
   /// Analyzes the given image [imageData] with the Gemini model.
   ///
   /// Throws an exception if the analysis fails or returns no text.
   Future<String> analyzeImageWithGemini(XFile imageData) async {
     try {
-      final model = FirebaseAI.vertexAI().generativeModel(model: _modelName);
+      final model =
+          _model ??
+          FirebaseAI.vertexAI(
+            location: 'global',
+          ).generativeModel(model: _modelName);
 
       debugPrint("Bild wird hochgeladen und analysiert...");
 

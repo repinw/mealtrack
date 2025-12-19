@@ -220,6 +220,32 @@ void main() {
         expect(item1.hashCode, isNot(equals(item2.hashCode)));
       });
 
+      test(
+          'two instances with different mutable properties should not be equal after fix',
+          () {
+        // ignore: invalid_use_of_internal_member
+        FridgeItem createItem({
+          String storeName = 'S',
+          int quantity = 1,
+          double? unitPrice,
+          String? weight,
+        }) =>
+            FridgeItem(
+              id: '1',
+              rawText: 'a',
+              entryDate: entryDate,
+              storeName: storeName,
+              quantity: quantity,
+              unitPrice: unitPrice,
+              weight: weight,
+            );
+
+        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
+        expect(createItem(), isNot(equals(createItem(quantity: 2))));
+        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
+        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
+      });
+
       test('two instances with all properties set should be equal', () {
         final date = DateTime.now();
         // ignore: invalid_use_of_internal_member

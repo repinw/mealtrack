@@ -22,6 +22,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
     this.unitPrice,
     this.weight,
     this.consumptionDate,
+    this.receiptId,
+    this.brand,
     List<Discount>? discounts,
   }) : discounts = discounts ?? [];
 
@@ -35,6 +37,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
     int quantity = 1,
     double? unitPrice,
     String? weight,
+    String? receiptId,
+    String? brand,
     List<Discount>? discounts,
     DateTime Function()? now,
   }) {
@@ -48,7 +52,11 @@ class FridgeItem extends HiveObject with EquatableMixin {
       throw ArgumentError.value(quantity, 'quantity', 'muss größer als 0 sein');
     }
     if (unitPrice != null && unitPrice < 0) {
-      throw ArgumentError.value(unitPrice, 'unitPrice', 'darf nicht negativ sein');
+      throw ArgumentError.value(
+        unitPrice,
+        'unitPrice',
+        'darf nicht negativ sein',
+      );
     }
 
     return FridgeItem(
@@ -60,6 +68,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
       weight: weight,
       entryDate: (now ?? DateTime.now)(),
       isConsumed: false,
+      receiptId: receiptId,
+      brand: brand,
       discounts: discounts ?? [],
     );
   }
@@ -94,6 +104,12 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(9, defaultValue: <Discount>[])
   List<Discount> discounts;
 
+  @HiveField(10)
+  final String? receiptId;
+
+  @HiveField(11)
+  final String? brand;
+
   @override
   List<Object?> get props => [
     id,
@@ -101,7 +117,13 @@ class FridgeItem extends HiveObject with EquatableMixin {
     entryDate,
     isConsumed,
     consumptionDate,
+    storeName,
+    quantity,
+    unitPrice,
+    weight,
     discounts,
+    receiptId,
+    brand,
   ];
 
   @override

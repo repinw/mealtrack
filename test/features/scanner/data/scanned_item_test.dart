@@ -69,6 +69,16 @@ void main() {
       expect(item.discounts, isNotEmpty);
     });
 
+    test('fromJson throws when required fields are missing', () {
+      // Missing 'name'
+      final json1 = {'totalPrice': 2.0};
+      // Missing 'totalPrice'
+      final json2 = {'name': 'Bread'};
+
+      expect(() => ScannedItem.fromJson(json1), throwsA(isA<TypeError>()));
+      expect(() => ScannedItem.fromJson(json2), throwsA(isA<TypeError>()));
+    });
+
     test('toString contains all fields', () {
       final item = ScannedItem(
         name: 'Test',
@@ -151,6 +161,20 @@ void main() {
         expect(item.quantity, 0);
         expect(item.totalPrice, 5.0); // No discount
         expect(item.unitPrice, 5.0); // Fallback to total if qty is 0
+      });
+
+      test(
+          'calculateEffectivePriceForQuantity returns non-negative price when base quantity is 0',
+          () {
+        final item = ScannedItem(
+          name: 'Test',
+          totalPrice: 0.0, // For qty 0, price should be 0
+          quantity: 0,
+          discounts: [const Discount(name: 'D', amount: 1.0)],
+        );
+
+        // Should not return a negative price.
+        expect(item.calculateEffectivePriceForQuantity(3), isNonNegative);
       });
     });
   });
