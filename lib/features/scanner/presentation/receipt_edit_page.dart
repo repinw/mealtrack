@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:mealtrack/features/inventory/data/fridge_item_repository.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
+import 'package:mealtrack/features/scanner/domain/scanned_item_converter.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
@@ -17,6 +20,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   late TextEditingController _dateController;
 
   final List<ScannedItem> _items = [];
+  final FridgeItemRepository _repository = GetIt.I<FridgeItemRepository>();
 
   @override
   void initState() {
@@ -212,10 +216,24 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
             padding: const EdgeInsets.all(16.0),
             child: ReceiptFooter(
               total: total,
-              onSave: () {
-                // Save logic: _items contains the modified data
-                // db.save(_items);
-                debugPrint("Speichere ${_items.length} Items");
+              onSave: () async {
+                final fridgeItems = ScannedItemConverter.toFridgeItems(
+                  _items,
+                  _merchantController.text,
+                );
+
+                await _repository.saveItems(fridgeItems);
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${fridgeItems.length} Artikel gespeichert',
+                      ),
+                    ),
+                  );
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }
               },
             ),
           ),
