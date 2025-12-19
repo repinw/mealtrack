@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 
-class InventoryItemRow extends StatelessWidget {
+class InventoryItemRow extends StatefulWidget {
   final FridgeItem item;
 
   const InventoryItemRow({super.key, required this.item});
 
   @override
+  State<InventoryItemRow> createState() => _InventoryItemRowState();
+}
+
+class _InventoryItemRowState extends State<InventoryItemRow> {
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final isOutOfStock = item.quantity == 0;
 
     return Padding(
@@ -67,34 +73,41 @@ class InventoryItemRow extends StatelessWidget {
     );
   }
 
+  Future<void> _updateItemQuantity(int delta) async {
+    final previousQuantity = widget.item.quantity;
+    final previousConsumed = widget.item.isConsumed;
+    final previousDate = widget.item.consumptionDate;
+
+    setState(() {
+      widget.item.quantity += delta;
+      if (widget.item.quantity <= 0) {
+        widget.item.quantity = 0;
+        widget.item.markAsConsumed();
+      } else if (widget.item.isConsumed) {
+        widget.item.isConsumed = false;
+        widget.item.consumptionDate = null;
+      }
+    });
+
+    try {
+      await widget.item.save();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        widget.item.quantity = previousQuantity;
+        widget.item.isConsumed = previousConsumed;
+        widget.item.consumptionDate = previousDate;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to update item. Please try again.'),
+        ),
+      );
+    }
+  }
+
   Widget _buildCategoryIcon(String text) {
     IconData iconData = Icons.kitchen;
-    final lowerText = text.toLowerCase();
-
-    if (lowerText.contains('milch') ||
-        lowerText.contains('joghurt') ||
-        lowerText.contains('käse') ||
-        lowerText.contains('sahne')) {
-      iconData = Icons.local_drink;
-    } else if (lowerText.contains('fleisch') ||
-        lowerText.contains('wurst') ||
-        lowerText.contains('hähnchen') ||
-        lowerText.contains('fisch')) {
-      iconData = Icons.restaurant;
-    } else if (lowerText.contains('apfel') ||
-        lowerText.contains('banane') ||
-        lowerText.contains('gemüse') ||
-        lowerText.contains('salat') ||
-        lowerText.contains('obst')) {
-      iconData = Icons.eco;
-    } else if (lowerText.contains('brot') ||
-        lowerText.contains('brötchen') ||
-        lowerText.contains('toast')) {
-      iconData = Icons.breakfast_dining;
-    } else if (lowerText.contains('ei') || lowerText.contains('eier')) {
-      iconData = Icons.egg;
-    }
-
     return CircleAvatar(
       radius: 24,
       backgroundColor: Colors.grey.shade100,
@@ -114,22 +127,12 @@ class InventoryItemRow extends StatelessWidget {
         children: [
           _buildActionButton(
             icon: Icons.remove,
-            onTap: isOutOfStock
-                ? null
-                : () async {
-                    if (item.quantity > 0) {
-                      item.quantity--;
-                      if (item.quantity == 0) {
-                        item.markAsConsumed();
-                      }
-                      await item.save();
-                    }
-                  },
+            onTap: isOutOfStock ? null : () => _updateItemQuantity(-1),
           ),
           SizedBox(
             width: 32,
             child: Text(
-              '${item.quantity}',
+              '${widget.item.quantity}',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -140,14 +143,7 @@ class InventoryItemRow extends StatelessWidget {
           ),
           _buildActionButton(
             icon: Icons.add,
-            onTap: () async {
-              item.quantity++;
-              if (item.isConsumed) {
-                item.isConsumed = false;
-                item.consumptionDate = null;
-              }
-              await item.save();
-            },
+            onTap: () => _updateItemQuantity(1),
           ),
         ],
       ),

@@ -10,7 +10,9 @@ class ScannedItemConverter {
   ) {
     final receiptId = const Uuid().v4();
     return items.where((item) => item.quantity > 0).map((item) {
-      final unitPrice = item.totalPrice / item.quantity;
+      final unitPrice = item.quantity > 0
+          ? item.totalPrice / item.quantity
+          : 0.0;
       final discounts = item.discounts
           .map((d) => inventory.Discount(name: d.name, amount: d.amount))
           .toList();

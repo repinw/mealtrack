@@ -6,33 +6,39 @@ import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 class FridgeItemRepository {
   static const String _boxName = 'fridge_items';
 
+  /// Initializes the repository.
+  /// Should be called at the start of the app (e.g. in main.dart).
+  Future<void> init() async {
+    if (!Hive.isAdapterRegistered(DiscountAdapter().typeId)) {
+      Hive.registerAdapter(DiscountAdapter());
+    }
+    await Hive.openBox<FridgeItem>(_boxName);
+  }
+
   Future<void> saveItems(List<FridgeItem> items) async {
-    _registerAdapters();
-    final box = await Hive.openBox<FridgeItem>(_boxName);
+    final box = await _getBox();
     await box.addAll(items);
   }
 
   Future<List<FridgeItem>> getAllItems() async {
-    _registerAdapters();
-    final box = await Hive.openBox<FridgeItem>(_boxName);
+    final box = await _getBox();
     return box.values.toList();
   }
 
   Future<void> deleteAllItems() async {
-    _registerAdapters();
-    final box = await Hive.openBox<FridgeItem>(_boxName);
+    final box = await _getBox();
     await box.clear();
   }
 
   Future<ValueListenable<Box<FridgeItem>>> getBoxListenable() async {
-    _registerAdapters();
-    final box = await Hive.openBox<FridgeItem>(_boxName);
+    final box = await _getBox();
     return box.listenable();
   }
 
-  void _registerAdapters() {
-    if (!Hive.isAdapterRegistered(DiscountAdapter().typeId)) {
-      Hive.registerAdapter(DiscountAdapter());
+  Future<Box<FridgeItem>> _getBox() async {
+    if (Hive.isBoxOpen(_boxName)) {
+      return Hive.box<FridgeItem>(_boxName);
     }
+    return await Hive.openBox<FridgeItem>(_boxName);
   }
 }
