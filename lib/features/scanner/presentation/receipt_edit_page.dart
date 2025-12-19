@@ -148,7 +148,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                         ),
                         Expanded(
                           child: const Text(
-                            "BESCHREIBUNG",
+                            "MARKE / BESCHREIBUNG",
                             style: TextStyle(
                               fontSize: 9,
                               color: Colors.grey,

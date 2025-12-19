@@ -169,6 +169,16 @@ void main() {
           throwsA(isA<ArgumentError>()),
         );
       });
+
+      test('initializes with receiptId if provided', () {
+        const receiptId = 'receipt-123';
+        final item = FridgeItem.create(
+          rawText: 'Milch',
+          storeName: 'Lidl',
+          receiptId: receiptId,
+        );
+        expect(item.receiptId, receiptId);
+      });
     });
 
     // Testet die Gleichheit basierend auf Equatable
@@ -218,6 +228,32 @@ void main() {
 
         expect(item1, isNot(equals(item2)));
         expect(item1.hashCode, isNot(equals(item2.hashCode)));
+      });
+
+      test(
+          'two instances with different mutable properties should not be equal after fix',
+          () {
+        // ignore: invalid_use_of_internal_member
+        FridgeItem createItem({
+          String storeName = 'S',
+          int quantity = 1,
+          double? unitPrice,
+          String? weight,
+        }) =>
+            FridgeItem(
+              id: '1',
+              rawText: 'a',
+              entryDate: entryDate,
+              storeName: storeName,
+              quantity: quantity,
+              unitPrice: unitPrice,
+              weight: weight,
+            );
+
+        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
+        expect(createItem(), isNot(equals(createItem(quantity: 2))));
+        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
+        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
       });
 
       test('two instances with all properties set should be equal', () {
@@ -465,6 +501,21 @@ void main() {
       // Assert: Überprüfe, ob das Item nicht mehr in der Box ist.
       final deletedItem = box.get(item.id);
       expect(deletedItem, isNull);
+    });
+
+    test('persists receiptId correctly', () async {
+      const receiptId = 'receipt-uuid-123';
+      final item = FridgeItem.create(
+        rawText: 'Item from Receipt',
+        storeName: 'Test Store',
+        receiptId: receiptId,
+      );
+
+      await box.put(item.id, item);
+      final retrievedItem = box.get(item.id);
+
+      expect(retrievedItem, isNotNull);
+      expect(retrievedItem!.receiptId, receiptId);
     });
   });
 }

@@ -24,6 +24,7 @@ class ScannedItemRow extends StatefulWidget {
 
 class _ScannedItemRowState extends State<ScannedItemRow> {
   late TextEditingController _nameController;
+  late TextEditingController _brandController;
   late TextEditingController _priceController;
   late TextEditingController _qtyController;
   late TextEditingController _weightController;
@@ -33,6 +34,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     super.initState();
     // Initialize controllers with item values
     _nameController = TextEditingController(text: widget.item.name);
+    _brandController = TextEditingController(text: widget.item.brand ?? '');
     // Display price minus discount
     _priceController = TextEditingController(
       text: widget.item.effectivePrice.toStringAsFixed(2),
@@ -46,6 +48,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   @override
   void dispose() {
     _nameController.dispose();
+    _brandController.dispose();
     _priceController.dispose();
     _qtyController.dispose();
     _weightController.dispose();
@@ -68,6 +71,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     widget.item.updateFromUser(
       name: _nameController.text,
       weight: _weightController.text.isEmpty ? null : _weightController.text,
+      brand: _brandController.text,
       displayedPrice:
           double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
       quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
@@ -84,7 +88,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         title: const Text("Enthaltene Rabatte"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: widget.item.discounts!.map((d) {
+          children: widget.item.discounts.map((d) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -154,21 +158,41 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
               ),
               // Name
               Expanded(
-                child: TextField(
-                  controller: _nameController,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                    border: InputBorder.none,
-                    hintText: "Artikelname",
-                  ),
-                  onChanged: (_) =>
-                      _updateItem(), // Important: onChanged update
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _brandController,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        hintText: "Marke",
+                      ),
+                      onChanged: (_) => _updateItem(),
+                    ),
+                    TextField(
+                      controller: _nameController,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.only(bottom: 2),
+                        border: InputBorder.none,
+                        hintText: "Artikelname",
+                      ),
+                      onChanged: (_) => _updateItem(),
+                    ),
+                  ],
                 ),
               ),
 

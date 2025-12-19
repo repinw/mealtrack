@@ -4,6 +4,7 @@ import 'package:mealtrack/features/scanner/data/discount.dart';
 class ScannedItem {
   ScannedItem({
     required this.name,
+    this.brand,
     this.quantity = 1,
     required this.totalPrice,
     this.unitPrice,
@@ -14,6 +15,8 @@ class ScannedItem {
   }) : discounts = discounts ?? [];
 
   String name;
+
+  String? brand;
 
   int quantity;
 
@@ -41,7 +44,8 @@ class ScannedItem {
       uPrice = totalPrice / this.quantity;
     }
     final grossTotal = uPrice * quantity;
-    return grossTotal - totalDiscount;
+    final effectiveTotal = grossTotal - totalDiscount;
+    return effectiveTotal > 0 ? effectiveTotal : 0.0;
   }
 
   /// Updates the item with values provided by the user.
@@ -51,9 +55,11 @@ class ScannedItem {
     required String? weight,
     required double displayedPrice,
     required int quantity,
+    String? brand,
   }) {
     this.name = name;
     this.weight = weight;
+    this.brand = brand ?? this.brand;
     isLowConfidence = false;
 
     // The user sees and edits the effective price (price - discount).
@@ -69,7 +75,7 @@ class ScannedItem {
 
   @override
   String toString() {
-    return 'ScannedItem(name: $name, quantity: $quantity, '
+    return 'ScannedItem(name: $name, brand: $brand, quantity: $quantity, '
         'totalPrice: $totalPrice, unitPrice: $unitPrice, weight: $weight, '
         'discounts: $discounts, isLowConfidence: $isLowConfidence, storeName: $storeName)';
   }
@@ -78,6 +84,7 @@ class ScannedItem {
     final discountsList = json['discounts'] as List<dynamic>?;
     return ScannedItem(
       name: json['name'] as String,
+      brand: json['brand'] as String?,
       quantity: (json['quantity'] as num? ?? 1).toInt(),
       totalPrice: (json['totalPrice'] as num).toDouble(),
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
