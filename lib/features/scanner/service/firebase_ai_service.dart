@@ -1,6 +1,7 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 
 /// A service that uses Firebase Vertex AI with Gemini to analyze receipt images.
 class FirebaseAiService {
@@ -41,7 +42,7 @@ class FirebaseAiService {
             location: 'global',
           ).generativeModel(model: _modelName);
 
-      debugPrint("Bild wird hochgeladen und analysiert...");
+      debugPrint(AppLocalizations.imageUploading);
 
       final prompt = Content.multi([
         const TextPart(_prompt),
@@ -52,13 +53,13 @@ class FirebaseAiService {
       final extractedText = response.text;
 
       if (extractedText == null || extractedText.isEmpty) {
-        throw Exception("Kein Text von der KI erhalten.");
+        throw Exception(AppLocalizations.noTextFromAi);
       }
 
-      debugPrint("KI Ergebnis: $extractedText", wrapWidth: 1024);
+      debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
       return extractedText;
     } catch (e) {
-      debugPrint("Fehler bei der KI-Anfrage: $e");
+      debugPrint("${AppLocalizations.aiRequestError}$e");
       // Rethrow the exception to be handled by the caller.
       rethrow;
     }

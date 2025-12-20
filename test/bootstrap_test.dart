@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/config/bootstrap.dart';
 import 'package:mealtrack/core/data/hive_initializer.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item.dart';
+import 'package:mealtrack/features/hive/hive_adapters.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Eine Test-Implementierung des [HiveInitializer], die ein temporäres

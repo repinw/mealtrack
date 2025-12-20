@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 
 List<ScannedItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
-    throw const FormatException('Leerer JSON-String empfangen.');
+    throw const FormatException(AppLocalizations.emptyJsonString);
   }
 
   // Delete Gemini Json packaging if present
@@ -15,7 +16,7 @@ List<ScannedItem> parseScannedItemsFromJson(String jsonString) {
       .trim();
 
   if (sanitizedJson.isEmpty) {
-    throw const FormatException('Bereinigter JSON-String ist leer.');
+    throw const FormatException(AppLocalizations.sanitizedJsonEmpty);
   }
 
   try {
@@ -29,7 +30,7 @@ List<ScannedItem> parseScannedItemsFromJson(String jsonString) {
     } else if (decodedJson is List) {
       itemsList = decodedJson;
     } else {
-      debugPrint('Unerwartetes JSON-Format empfangen: $decodedJson');
+      debugPrint('${AppLocalizations.unexpectedJsonFormat}$decodedJson');
       return [];
     }
 
@@ -40,8 +41,8 @@ List<ScannedItem> parseScannedItemsFromJson(String jsonString) {
         .toList();
   } catch (e, stackTrace) {
     // Fangt Parsing-Fehler ab, loggt sie und gebt eine leere Liste zurück.
-    debugPrint('Fehler beim Parsen des JSON: $e');
+    debugPrint('${AppLocalizations.jsonParsingError}$e');
     debugPrintStack(stackTrace: stackTrace);
-    throw FormatException('Fehler beim Parsen des JSON: $e');
+    throw FormatException('${AppLocalizations.jsonParsingError}$e');
   }
 }

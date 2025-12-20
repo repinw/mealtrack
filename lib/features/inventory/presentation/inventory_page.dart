@@ -1,65 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item_repository.dart';
+import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
 
-class InventoryPage extends StatefulWidget {
+class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<InventoryPage> createState() => _InventoryPageState();
+  ConsumerState<InventoryPage> createState() => _InventoryPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage> {
-  late Future<ValueListenable<Box<FridgeItem>>> _boxListenableFuture;
+class _InventoryPageState extends ConsumerState<InventoryPage> {
   bool _showOnlyAvailable = false;
-  final FridgeItemRepository _repository = GetIt.I<FridgeItemRepository>();
-
-  @override
-  void initState() {
-    super.initState();
-    _boxListenableFuture = _repository.getBoxListenable();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: _buildAppBar(),
-      body: FutureBuilder<ValueListenable<Box<FridgeItem>>>(
-        future: _boxListenableFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('Keine Daten'));
-          }
-
-          return ValueListenableBuilder<Box<FridgeItem>>(
-            valueListenable: snapshot.data!,
-            builder: (context, box, _) {
-              final allItems = box.values.toList();
-
-              if (allItems.isEmpty) {
-                return const Center(child: Text('Keine Artikel gefunden'));
-              }
-
-              if (_showOnlyAvailable) {
-                return _buildAvailableItemsList(allItems);
-              } else {
-                return _buildGroupedItemsList(allItems);
-              }
-            },
-          );
-        },
-      ),
+      body: _showOnlyAvailable ? _buildAvailableList() : _buildGroupedList(),
     );
   }
 
@@ -88,12 +52,14 @@ class _InventoryPageState extends State<InventoryPage> {
         if (kDebugMode)
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            tooltip: 'Debug: Hive Reset',
+            tooltip: AppLocalizations.debugHiveReset,
             onPressed: () async {
-              await _repository.deleteAllItems();
+              await ref.read(fridgeItemRepositoryProvider).deleteAllItems();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Debug: Alle Daten gelöscht')),
+                  const SnackBar(
+                    content: Text(AppLocalizations.debugDataDeleted),
+                  ),
                 );
               }
             },
@@ -102,20 +68,45 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
-  Widget _buildAvailableItemsList(List<FridgeItem> allItems) {
-    final availableItems = allItems.where((item) => item.quantity > 0).toList();
+  Widget _buildAvailableList() {
+    final itemsAsync = ref.watch(availableFridgeItemsProvider);
+    return itemsAsync.when(
+      skipLoadingOnReload: true,
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+      data: (items) {
+        if (items.isEmpty) {
+          return const Center(child: Text(AppLocalizations.noAvailableItems));
+        }
+        return _buildAvailableItemsList(items);
+      },
+    );
+  }
 
-    if (availableItems.isEmpty) {
-      return const Center(child: Text('Keine verfügbaren Artikel'));
-    }
+  Widget _buildGroupedList() {
+    final groupedAsync = ref.watch(groupedFridgeItemsProvider);
+    return groupedAsync.when(
+      skipLoadingOnReload: true,
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+      data: (groupedItems) {
+        if (groupedItems.isEmpty) {
+          return const Center(child: Text(AppLocalizations.noItemsFound));
+        }
+        return _buildGroupedItemsList(groupedItems);
+      },
+    );
+  }
 
+  Widget _buildAvailableItemsList(List<FridgeItem> availableItems) {
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
             itemCount: availableItems.length,
             itemBuilder: (context, index) {
-              return InventoryItemRow(item: availableItems[index]);
+              final item = availableItems[index];
+              return InventoryItemRow(key: ValueKey(item.id), item: item);
             },
           ),
         ),
@@ -123,37 +114,44 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
-  Widget _buildGroupedItemsList(List<FridgeItem> allItems) {
-    final grouped = _groupItems(allItems);
-    final sortedKeys = _sortKeysByDate(grouped);
+  Widget _buildGroupedItemsList(
+    List<MapEntry<String, List<FridgeItem>>> groupedItems,
+  ) {
+    final flattenedItems = <dynamic>[];
+    for (final group in groupedItems) {
+      final groupItems = group.value;
+      if (groupItems.isEmpty) continue;
+
+      flattenedItems.add(_GroupHeader(groupItems.first));
+      flattenedItems.addAll(groupItems);
+      flattenedItems.add(const _GroupSpacer());
+    }
 
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
-            itemCount: sortedKeys.length,
+            itemCount: flattenedItems.length,
             itemBuilder: (context, index) {
-              final key = sortedKeys[index];
-              final groupItems = grouped[key]!;
-              final firstItem = groupItems.first;
+              final item = flattenedItems[index];
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      '${firstItem.storeName} - ${firstItem.entryDate.day}.${firstItem.entryDate.month}.${firstItem.entryDate.year}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
+              if (item is _GroupHeader) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    '${item.item.storeName} - ${_formatDate(item.item.entryDate)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
                     ),
                   ),
-                  ...groupItems.map((item) => InventoryItemRow(item: item)),
-                  const SizedBox(height: 16),
-                ],
-              );
+                );
+              } else if (item is FridgeItem) {
+                return InventoryItemRow(key: ValueKey(item.id), item: item);
+              } else if (item is _GroupSpacer) {
+                return const SizedBox(height: 16);
+              }
+              return const SizedBox.shrink();
             },
           ),
         ),
@@ -161,22 +159,16 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
-  Map<String, List<FridgeItem>> _groupItems(List<FridgeItem> items) {
-    final Map<String, List<FridgeItem>> grouped = {};
-    for (var item in items) {
-      final key =
-          item.receiptId ??
-          '${item.storeName}_${item.entryDate.year}${item.entryDate.month}${item.entryDate.day}';
-      grouped.putIfAbsent(key, () => []).add(item);
-    }
-    return grouped;
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
+}
 
-  List<String> _sortKeysByDate(Map<String, List<FridgeItem>> grouped) {
-    return grouped.keys.toList()..sort((a, b) {
-      final dateA = grouped[a]!.first.entryDate;
-      final dateB = grouped[b]!.first.entryDate;
-      return dateB.compareTo(dateA);
-    });
-  }
+class _GroupHeader {
+  final FridgeItem item;
+  const _GroupHeader(this.item);
+}
+
+class _GroupSpacer {
+  const _GroupSpacer();
 }
