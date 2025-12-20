@@ -45,7 +45,6 @@ dependencies:
   cloud_firestore: ^6.1.0
   image_picker: ^1.2.1
   path: ^1.9.1
-  get_it: ^9.2.0
 
 dev_dependencies:
   flutter_test:

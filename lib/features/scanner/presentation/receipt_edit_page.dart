@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item_repository.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 import 'package:mealtrack/features/scanner/domain/scanned_item_converter.dart';
@@ -20,7 +19,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   late TextEditingController _dateController;
 
   final List<ScannedItem> _items = [];
-  final FridgeItemRepository _repository = GetIt.I<FridgeItemRepository>();
+  final FridgeItemRepository _repository = FridgeItemRepository();
 
   @override
   void initState() {

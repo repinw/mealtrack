@@ -27,7 +27,7 @@ class FirebaseAiService {
       "Beispiel-Logik: Wenn Zeile A 'Hackfleisch 7,99' ist und Zeile B 'Rabatt -1,20' ist: Erstelle EIN Item für Hackfleisch. Füge den Rabatt von 1.20 in dessen discounts-Liste ein. Erstelle KEIN Item für Zeile B.";
 
   final GenerativeModel? _model;
-
+  
   FirebaseAiService({GenerativeModel? model}) : _model = model;
 
   /// Analyzes the given image [imageData] with the Gemini model.

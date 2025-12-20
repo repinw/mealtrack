@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item_repository.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
@@ -18,7 +17,7 @@ class InventoryPage extends StatefulWidget {
 class _InventoryPageState extends State<InventoryPage> {
   late Future<ValueListenable<Box<FridgeItem>>> _boxListenableFuture;
   bool _showOnlyAvailable = false;
-  final FridgeItemRepository _repository = GetIt.I<FridgeItemRepository>();
+  final FridgeItemRepository _repository = FridgeItemRepository();
 
   @override
   void initState() {
