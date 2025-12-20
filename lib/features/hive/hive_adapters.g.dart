@@ -1,14 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fridge_item.dart';
+part of 'hive_adapters.dart';
 
 // **************************************************************************
-// TypeAdapterGenerator
+// AdaptersGenerator
 // **************************************************************************
 
 class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
   @override
-  final int typeId = 1;
+  final typeId = 0;
 
   @override
   FridgeItem read(BinaryReader reader) {
@@ -20,16 +20,15 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       id: fields[0] as String,
       rawText: fields[1] as String,
       entryDate: fields[2] as DateTime,
-      isConsumed: fields[3] as bool,
-      storeName: fields[5] == null ? 'Unbekannt' : fields[5] as String,
-      quantity: fields[6] == null ? 1 : fields[6] as int,
-      unitPrice: fields[7] as double?,
+      isConsumed: fields[3] == null ? false : fields[3] as bool,
+      storeName: fields[5] as String,
+      quantity: (fields[6] as num).toInt(),
+      unitPrice: (fields[7] as num?)?.toDouble(),
       weight: fields[8] as String?,
       consumptionDate: fields[4] as DateTime?,
       receiptId: fields[10] as String?,
       brand: fields[11] as String?,
-      discounts:
-          fields[9] == null ? [] : (fields[9] as List?)?.cast<Discount>(),
+      discounts: (fields[9] as List?)?.cast<Discount>(),
     );
   }
 
@@ -70,6 +69,43 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is FridgeItemAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class DiscountAdapter extends TypeAdapter<Discount> {
+  @override
+  final typeId = 1;
+
+  @override
+  Discount read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Discount(
+      name: fields[0] as String,
+      amount: (fields[1] as num).toDouble(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Discount obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.name)
+      ..writeByte(1)
+      ..write(obj.amount);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DiscountAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
