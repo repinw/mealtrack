@@ -5,8 +5,6 @@ import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/discount.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
 
-// Ein verbesserter Fake für FridgeItem, der sich wie das echte Hive-Objekt verhält,
-// aber keine Datenbank benötigt.
 class FakeFridgeItem extends Fake implements FridgeItem {
   @override
   final String id;
@@ -31,7 +29,6 @@ class FakeFridgeItem extends Fake implements FridgeItem {
   @override
   String? receiptId;
 
-  // Hilfsvariable für Tests, um zu prüfen, ob gespeichert wurde
   int saveCallCount = 0;
 
   FakeFridgeItem({
@@ -52,7 +49,6 @@ class FakeFridgeItem extends Fake implements FridgeItem {
   @override
   Future<void> save() async {
     saveCallCount++;
-    // Simuliert asynchrones Speichern ohne Verzögerung im Test
     await Future.delayed(Duration.zero);
   }
 
@@ -60,14 +56,12 @@ class FakeFridgeItem extends Fake implements FridgeItem {
   void markAsConsumed({DateTime? consumptionTime}) {
     isConsumed = true;
     consumptionDate = consumptionTime ?? DateTime.now();
-    // Hinweis: Im echten Code ruft das Widget oft save() manuell auf,
-    // nachdem es markAsConsumed() aufgerufen hat.
   }
 }
 
 void main() {
   group('InventoryItemRow', () {
-    testWidgets('zeigt Artikeldetails korrekt an', (WidgetTester tester) async {
+    testWidgets('displays item details correctly', (WidgetTester tester) async {
       final item = FakeFridgeItem(rawText: 'Leckere Milch', quantity: 5);
 
       await tester.pumpWidget(
@@ -82,7 +76,7 @@ void main() {
       expect(find.text('5'), findsOneWidget);
     });
 
-    testWidgets('erhöht die Menge und speichert beim Tippen auf +', (
+    testWidgets('increases quantity and saves on tapping +', (
       WidgetTester tester,
     ) async {
       final item = FakeFridgeItem(quantity: 1);
@@ -108,7 +102,7 @@ void main() {
       );
     });
 
-    testWidgets('verringert die Menge und speichert beim Tippen auf -', (
+    testWidgets('decreases quantity and saves on tapping -', (
       WidgetTester tester,
     ) async {
       final item = FakeFridgeItem(quantity: 2);
@@ -121,7 +115,6 @@ void main() {
         ),
       );
 
-      // Klick auf -
       await tester.tap(find.byIcon(Icons.remove));
       await tester.pump();
 
@@ -130,7 +123,7 @@ void main() {
       expect(item.saveCallCount, greaterThan(0));
     });
 
-    testWidgets('markiert Artikel als verbraucht, wenn Menge auf 0 fällt', (
+    testWidgets('marks item as consumed when quantity drops to 0', (
       WidgetTester tester,
     ) async {
       final item = FakeFridgeItem(quantity: 1, isConsumed: false);
@@ -143,7 +136,6 @@ void main() {
         ),
       );
 
-      // Klick auf - (von 1 auf 0)
       await tester.tap(find.byIcon(Icons.remove));
       await tester.pump();
 

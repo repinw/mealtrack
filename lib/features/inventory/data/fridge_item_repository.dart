@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:hive_ce/hive.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
@@ -28,11 +29,31 @@ class FridgeItemRepository {
     await _box.clear();
   }
 
-  Stream<List<FridgeItem>> watchItems() async* {
-    yield getAllItems();
-    await for (final _ in _box.watch()) {
-      yield getAllItems();
-    }
+  Stream<List<FridgeItem>> watchItems() {
+    late StreamController<List<FridgeItem>> controller;
+    StreamSubscription? subscription;
+    Timer? debounceTimer;
+
+    controller = StreamController<List<FridgeItem>>(
+      onListen: () {
+        controller.add(getAllItems());
+
+        subscription = _box.watch().listen((_) {
+          debounceTimer?.cancel();
+          debounceTimer = Timer(const Duration(milliseconds: 50), () {
+            if (!controller.isClosed) {
+              controller.add(getAllItems());
+            }
+          });
+        });
+      },
+      onCancel: () {
+        debounceTimer?.cancel();
+        subscription?.cancel();
+      },
+    );
+
+    return controller.stream;
   }
 
   Box<FridgeItem> get _box => Hive.box<FridgeItem>(inventoryBoxName);

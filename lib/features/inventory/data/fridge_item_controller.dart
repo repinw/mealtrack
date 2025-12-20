@@ -18,7 +18,6 @@ class FridgeItemController {
     try {
       await item.save();
     } catch (e) {
-      // Rollback bei Fehler
       item.quantity = previousQuantity;
       item.isConsumed = previousConsumed;
       item.consumptionDate = previousDate;
