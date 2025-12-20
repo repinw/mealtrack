@@ -80,6 +80,10 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       await ref
           .read(fridgeItemControllerProvider)
           .updateQuantity(widget.item, delta);
+      // Force a rebuild to reflect the changes immediately.
+      // Since FridgeItem is mutable and modified in place, we need to tell the framework
+      // to redraw this widget even if the parent provider hasn't emitted the new list yet.
+      if (mounted) setState(() {});
     } catch (e) {
       if (!mounted) return;
       // Fehlerbehandlung: UI zeigt Snackbar, State wird durch Provider/Hive korrigiert
