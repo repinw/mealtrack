@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
-import 'package:mealtrack/features/scanner/domain/scanned_item_converter.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 
-class ReceiptEditPage extends StatefulWidget {
+class ReceiptEditPage extends ConsumerStatefulWidget {
   final List<ScannedItem>? scannedItems;
   const ReceiptEditPage({super.key, this.scannedItems});
 
   @override
-  State<ReceiptEditPage> createState() => _ReceiptEditPageState();
+  ConsumerState<ReceiptEditPage> createState() => _ReceiptEditPageState();
 }
 
-class _ReceiptEditPageState extends State<ReceiptEditPage> {
+class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
-
-  final List<ScannedItem> _items = [];
-  final FridgeItemRepository _repository = FridgeItemRepository();
 
   @override
   void initState() {
@@ -30,29 +27,29 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
       text: '${now.day}.${now.month}.${now.year}',
     );
 
-    if (widget.scannedItems != null) {
-      _items.addAll(widget.scannedItems!);
+    final initialItems = widget.scannedItems ?? [];
 
-      // Try to extract the store name from the items
-      if (_items.isNotEmpty) {
-        final foundStoreName = _items
-            .firstWhere(
-              (i) => i.storeName != null && i.storeName!.isNotEmpty,
-              orElse: () => ScannedItem(name: '', totalPrice: 0),
-            )
-            .storeName;
-        if (foundStoreName != null) {
-          _merchantController.text = foundStoreName;
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(receiptEditControllerProvider.notifier).setItems(initialItems);
+    });
+
+    if (initialItems.isNotEmpty) {
+      final foundStoreName = initialItems
+          .firstWhere(
+            (i) => i.storeName != null && i.storeName!.isNotEmpty,
+            orElse: () => ScannedItem(name: '', totalPrice: 0),
+          )
+          .storeName;
+      if (foundStoreName != null) {
+        _merchantController.text = foundStoreName;
       }
     }
 
     // Update all items when the user changes the merchant name
     _merchantController.addListener(() {
-      final newName = _merchantController.text;
-      for (var item in _items) {
-        item.storeName = newName;
-      }
+      ref
+          .read(receiptEditControllerProvider.notifier)
+          .updateMerchantName(_merchantController.text);
     });
   }
 
@@ -63,24 +60,11 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
     super.dispose();
   }
 
-  void _deleteItem(int index) {
-    setState(() {
-      _items.removeAt(index);
-    });
-  }
-
-  // Called when any item changes to recalculate the total
-  void _onItemChanged() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Calculate total sum
-    double total = _items.fold(0, (sum, item) {
-      final discount = item.discounts.fold(0.0, (s, d) => s + d.amount);
-      return sum + (item.totalPrice - discount);
-    });
+    final state = ref.watch(receiptEditControllerProvider);
+    final items = state.items;
+    final total = state.total;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -122,7 +106,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                       ),
                       Text(
                         // Total item count based on quantity
-                        "${_items.fold(0, (sum, item) => sum + item.quantity)} Artikel",
+                        "${items.fold(0, (sum, item) => sum + item.quantity)} Artikel",
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -194,15 +178,19 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                   const SizedBox(height: 4),
 
                   // --- List ---
-                  ..._items.asMap().entries.map((entry) {
+                  ...items.asMap().entries.map((entry) {
                     int index = entry.key;
                     ScannedItem item = entry.value;
 
                     return ScannedItemRow(
                       key: ValueKey(item),
                       item: item,
-                      onDelete: () => _deleteItem(index),
-                      onChanged: _onItemChanged,
+                      onDelete: () => ref
+                          .read(receiptEditControllerProvider.notifier)
+                          .deleteItem(index),
+                      onChanged: () => ref
+                          .read(receiptEditControllerProvider.notifier)
+                          .notifyItemChanged(),
                     );
                   }),
                   const SizedBox(height: 24),
@@ -216,19 +204,14 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
             child: ReceiptFooter(
               total: total,
               onSave: () async {
-                final fridgeItems = ScannedItemConverter.toFridgeItems(
-                  _items,
-                  _merchantController.text,
-                );
+                final success = await ref
+                    .read(receiptEditControllerProvider.notifier)
+                    .saveItems(_merchantController.text);
 
-                await _repository.saveItems(fridgeItems);
-
-                if (mounted) {
+                if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        '${fridgeItems.length} Artikel gespeichert',
-                      ),
+                      content: Text('${items.length} Artikel gespeichert'),
                     ),
                   );
                   Navigator.of(context).popUntil((route) => route.isFirst);

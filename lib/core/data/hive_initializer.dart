@@ -1,4 +1,4 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Eine abstrakte Klasse, die die Schnittstelle für die Hive-Initialisierung definiert.
@@ -12,6 +12,6 @@ class AppHiveInitializer implements HiveInitializer {
   @override
   Future<void> init() async {
     final appDocumentDir = await getApplicationDocumentsDirectory();
-    await Hive.initFlutter(appDocumentDir.path);
+    Hive.init(appDocumentDir.path);
   }
 }

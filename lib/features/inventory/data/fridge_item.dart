@@ -1,12 +1,9 @@
-import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mealtrack/features/inventory/data/discount.dart';
 
-part 'fridge_item.g.dart';
-
-@HiveType(typeId: 1)
 // ignore: must_be_immutable
 class FridgeItem extends HiveObject with EquatableMixin {
   /// This constructor is intended for internal use and Hive serialization only.
@@ -70,40 +67,28 @@ class FridgeItem extends HiveObject with EquatableMixin {
     );
   }
 
-  @HiveField(0)
   final String id;
 
-  @HiveField(1)
   String rawText;
 
-  @HiveField(2)
   final DateTime entryDate;
 
-  @HiveField(3)
   bool isConsumed;
 
-  @HiveField(4)
   DateTime? consumptionDate;
 
-  @HiveField(5, defaultValue: 'Unknown')
   String storeName;
 
-  @HiveField(6, defaultValue: 1)
   int quantity;
 
-  @HiveField(7)
   double? unitPrice;
 
-  @HiveField(8)
   String? weight;
 
-  @HiveField(9, defaultValue: <Discount>[])
   List<Discount> discounts;
 
-  @HiveField(10)
   final String? receiptId;
 
-  @HiveField(11)
   final String? brand;
 
   @override
