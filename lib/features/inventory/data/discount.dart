@@ -1,9 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:hive/hive.dart';
 
-part 'discount.g.dart';
-
-@HiveType(typeId: 2)
 class Discount extends Equatable {
   Discount({required this.name, required this.amount}) {
     if (name.trim().isEmpty) {
@@ -21,10 +17,8 @@ class Discount extends Equatable {
     );
   }
 
-  @HiveField(0)
   final String name;
 
-  @HiveField(1)
   final double amount;
 
   @override

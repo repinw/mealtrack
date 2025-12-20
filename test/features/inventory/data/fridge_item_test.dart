@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:mealtrack/features/hive/hive_adapters.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/discount.dart';
@@ -231,30 +232,30 @@ void main() {
       });
 
       test(
-          'two instances with different mutable properties should not be equal after fix',
-          () {
-        // ignore: invalid_use_of_internal_member
-        FridgeItem createItem({
-          String storeName = 'S',
-          int quantity = 1,
-          double? unitPrice,
-          String? weight,
-        }) =>
-            FridgeItem(
-              id: '1',
-              rawText: 'a',
-              entryDate: entryDate,
-              storeName: storeName,
-              quantity: quantity,
-              unitPrice: unitPrice,
-              weight: weight,
-            );
+        'two instances with different mutable properties should not be equal after fix',
+        () {
+          // ignore: invalid_use_of_internal_member
+          FridgeItem createItem({
+            String storeName = 'S',
+            int quantity = 1,
+            double? unitPrice,
+            String? weight,
+          }) => FridgeItem(
+            id: '1',
+            rawText: 'a',
+            entryDate: entryDate,
+            storeName: storeName,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            weight: weight,
+          );
 
-        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
-        expect(createItem(), isNot(equals(createItem(quantity: 2))));
-        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
-        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
-      });
+          expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
+          expect(createItem(), isNot(equals(createItem(quantity: 2))));
+          expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
+          expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
+        },
+      );
 
       test('two instances with all properties set should be equal', () {
         final date = DateTime.now();

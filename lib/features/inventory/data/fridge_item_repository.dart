@@ -1,44 +1,39 @@
-import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
+import 'package:mealtrack/features/hive/hive_adapters.dart';
 
 class FridgeItemRepository {
-  static const String _boxName = 'fridge_items';
-
   /// Initializes the repository.
   /// Should be called at the start of the app (e.g. in main.dart).
   Future<void> init() async {
+    if (!Hive.isAdapterRegistered(FridgeItemAdapter().typeId)) {
+      Hive.registerAdapter(FridgeItemAdapter());
+    }
     if (!Hive.isAdapterRegistered(DiscountAdapter().typeId)) {
       Hive.registerAdapter(DiscountAdapter());
     }
-    await Hive.openBox<FridgeItem>(_boxName);
+    await Hive.openBox<FridgeItem>(inventoryBoxName);
   }
 
   Future<void> saveItems(List<FridgeItem> items) async {
-    final box = await _getBox();
-    await box.addAll(items);
+    await _box.addAll(items);
   }
 
-  Future<List<FridgeItem>> getAllItems() async {
-    final box = await _getBox();
-    return box.values.toList();
+  List<FridgeItem> getAllItems() {
+    return _box.values.toList();
   }
 
   Future<void> deleteAllItems() async {
-    final box = await _getBox();
-    await box.clear();
+    await _box.clear();
   }
 
-  Future<ValueListenable<Box<FridgeItem>>> getBoxListenable() async {
-    final box = await _getBox();
-    return box.listenable();
-  }
-
-  Future<Box<FridgeItem>> _getBox() async {
-    if (Hive.isBoxOpen(_boxName)) {
-      return Hive.box<FridgeItem>(_boxName);
+  Stream<List<FridgeItem>> watchItems() async* {
+    yield getAllItems();
+    await for (final _ in _box.watch()) {
+      yield getAllItems();
     }
-    return await Hive.openBox<FridgeItem>(_boxName);
   }
+
+  Box<FridgeItem> get _box => Hive.box<FridgeItem>(inventoryBoxName);
 }

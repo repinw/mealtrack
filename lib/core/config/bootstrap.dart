@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/data/hive_initializer.dart';
+import 'package:mealtrack/features/hive/hive_adapters.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 
 Future<bool> bootstrap(HiveInitializer hiveInitializer) async {
@@ -12,6 +13,9 @@ Future<bool> bootstrap(HiveInitializer hiveInitializer) async {
     // 2. Führe die App-spezifische Konfiguration aus.
     if (!Hive.isAdapterRegistered(FridgeItemAdapter().typeId)) {
       Hive.registerAdapter(FridgeItemAdapter());
+    }
+    if (!Hive.isAdapterRegistered(DiscountAdapter().typeId)) {
+      Hive.registerAdapter(DiscountAdapter());
     }
     await Hive.openBox<FridgeItem>(inventoryBoxName);
     return true;

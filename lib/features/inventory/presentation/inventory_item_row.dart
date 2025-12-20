@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
+import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
 
-class InventoryItemRow extends StatefulWidget {
+class InventoryItemRow extends ConsumerStatefulWidget {
   final FridgeItem item;
 
   const InventoryItemRow({super.key, required this.item});
 
   @override
-  State<InventoryItemRow> createState() => _InventoryItemRowState();
+  ConsumerState<InventoryItemRow> createState() => _InventoryItemRowState();
 }
 
-class _InventoryItemRowState extends State<InventoryItemRow> {
+class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
@@ -74,30 +76,13 @@ class _InventoryItemRowState extends State<InventoryItemRow> {
   }
 
   Future<void> _updateItemQuantity(int delta) async {
-    final previousQuantity = widget.item.quantity;
-    final previousConsumed = widget.item.isConsumed;
-    final previousDate = widget.item.consumptionDate;
-
-    setState(() {
-      widget.item.quantity += delta;
-      if (widget.item.quantity <= 0) {
-        widget.item.quantity = 0;
-        widget.item.markAsConsumed();
-      } else if (widget.item.isConsumed) {
-        widget.item.isConsumed = false;
-        widget.item.consumptionDate = null;
-      }
-    });
-
     try {
-      await widget.item.save();
+      await ref
+          .read(fridgeItemControllerProvider)
+          .updateQuantity(widget.item, delta);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        widget.item.quantity = previousQuantity;
-        widget.item.isConsumed = previousConsumed;
-        widget.item.consumptionDate = previousDate;
-      });
+      // Fehlerbehandlung: UI zeigt Snackbar, State wird durch Provider/Hive korrigiert
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to update item. Please try again.'),
