@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
@@ -51,12 +52,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         if (kDebugMode)
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            tooltip: 'Debug: Hive Reset',
+            tooltip: AppLocalizations.debugHiveReset,
             onPressed: () async {
               await ref.read(fridgeItemRepositoryProvider).deleteAllItems();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Debug: Alle Daten gelöscht')),
+                  const SnackBar(
+                    content: Text(AppLocalizations.debugDataDeleted),
+                  ),
                 );
               }
             },
@@ -73,7 +76,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (items) {
         if (items.isEmpty) {
-          return const Center(child: Text('Keine verfügbaren Artikel'));
+          return const Center(child: Text(AppLocalizations.noAvailableItems));
         }
         return _buildAvailableItemsList(items);
       },
@@ -88,7 +91,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (groupedItems) {
         if (groupedItems.isEmpty) {
-          return const Center(child: Text('Keine Artikel gefunden'));
+          return const Center(child: Text(AppLocalizations.noItemsFound));
         }
         return _buildGroupedItemsList(groupedItems);
       },
