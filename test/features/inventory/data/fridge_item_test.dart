@@ -229,7 +229,7 @@ void main() {
       });
 
       test(
-          'two instances with different mutable properties should be equal (identity)',
+          'two instances with different mutable properties should not be equal',
           () {
         // ignore: invalid_use_of_internal_member
         FridgeItem createItem({
@@ -248,10 +248,10 @@ void main() {
               weight: weight,
             );
 
-        expect(createItem(), equals(createItem(storeName: 'Other')));
-        expect(createItem(), equals(createItem(quantity: 2)));
-        expect(createItem(), equals(createItem(unitPrice: 1.0)));
-        expect(createItem(), equals(createItem(weight: '1kg')));
+        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
+        expect(createItem(), isNot(equals(createItem(quantity: 2))));
+        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
+        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
       });
 
       test('two instances with all properties set should be equal', () {

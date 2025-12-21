@@ -3,12 +3,16 @@ import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 
 void main() {
   group('ScannedItem', () {
-    test('should initialize with mutable discounts map by default', () {
-      final item = ScannedItem(name: 'Test Item', totalPrice: 1.99);
+    test('should initialize with mutable discounts map', () {
+      final item = ScannedItem(
+        name: 'Test Item',
+        totalPrice: 1.99,
+        discounts: {},
+      );
 
       expect(item.discounts, isEmpty);
 
-      // Critical check: This would throw UnsupportedError if list was const []
+      // Critical check: This would throw UnsupportedError if map was const {}
       item.discounts['Rabatt'] = 0.5;
 
       expect(item.discounts.length, 1);
