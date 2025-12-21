@@ -88,13 +88,13 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         title: const Text("Enthaltene Rabatte"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: widget.item.discounts.map((d) {
+          children: widget.item.discounts.entries.map((entry) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(d.name),
+                Text(entry.key),
                 Text(
-                  "-${d.amount.toStringAsFixed(2)} €",
+                  "-${entry.value.toStringAsFixed(2)} €",
                   style: const TextStyle(color: Colors.red),
                 ),
               ],

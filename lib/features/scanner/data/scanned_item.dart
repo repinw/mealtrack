@@ -1,5 +1,3 @@
-import 'package:mealtrack/features/scanner/data/discount.dart';
-
 /// Represents one Item scanned from a receipt.
 class ScannedItem {
   ScannedItem({
@@ -9,10 +7,10 @@ class ScannedItem {
     required this.totalPrice,
     this.unitPrice,
     this.weight,
-    List<Discount>? discounts,
+    Map<String, double>? discounts,
     this.isLowConfidence = false,
     this.storeName,
-  }) : discounts = discounts ?? [];
+  }) : discounts = discounts ?? const {};
 
   String name;
 
@@ -26,13 +24,14 @@ class ScannedItem {
 
   String? weight;
 
-  List<Discount> discounts;
+  final Map<String, double> discounts;
 
   bool isLowConfidence;
 
   String? storeName;
 
-  double get totalDiscount => discounts.fold(0.0, (sum, d) => sum + d.amount);
+  double get totalDiscount =>
+      discounts.values.fold(0.0, (sum, amount) => sum + amount);
 
   double get effectivePrice => totalPrice - totalDiscount;
 
@@ -81,7 +80,23 @@ class ScannedItem {
   }
 
   factory ScannedItem.fromJson(Map<String, dynamic> json) {
-    final discountsList = json['discounts'] as List<dynamic>?;
+    final Map<String, double> parsedDiscounts = {};
+    final rawDiscounts = json['discounts'];
+
+    if (rawDiscounts is List) {
+      for (var item in rawDiscounts) {
+        if (item is Map) {
+          final name = item['name']?.toString() ?? 'Rabatt';
+          final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
+          if (amount > 0) parsedDiscounts[name] = amount;
+        }
+      }
+    } else if (rawDiscounts is Map) {
+      rawDiscounts.forEach((k, v) {
+        parsedDiscounts[k.toString()] = (v as num).toDouble();
+      });
+    }
+
     return ScannedItem(
       name: json['name'] as String,
       brand: json['brand'] as String?,
@@ -89,9 +104,7 @@ class ScannedItem {
       totalPrice: (json['totalPrice'] as num).toDouble(),
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
       weight: json['weight'] as String?,
-      discounts: discountsList
-          ?.map((d) => Discount.fromJson(d as Map<String, dynamic>))
-          .toList(),
+      discounts: parsedDiscounts,
       isLowConfidence: json['isLowConfidence'] as bool? ?? false,
       storeName: json['storeName'] as String?,
     );

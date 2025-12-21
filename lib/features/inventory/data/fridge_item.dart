@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
 
 part 'fridge_item.g.dart';
 
@@ -24,8 +23,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
     this.consumptionDate,
     this.receiptId,
     this.brand,
-    List<Discount>? discounts,
-  }) : discounts = discounts ?? [];
+    this.discounts = const {},
+  });
 
   /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
   ///
@@ -39,7 +38,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     String? weight,
     String? receiptId,
     String? brand,
-    List<Discount>? discounts,
+    Map<String, double>? discounts,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
@@ -66,7 +65,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
       isConsumed: false,
       receiptId: receiptId,
       brand: brand,
-      discounts: discounts ?? [],
+      discounts: discounts ?? {},
     );
   }
 
@@ -97,8 +96,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @HiveField(8)
   String? weight;
 
-  @HiveField(9, defaultValue: <Discount>[])
-  List<Discount> discounts;
+  @HiveField(9, defaultValue: const <String, double>{})
+  final Map<String, double> discounts;
 
   @HiveField(10)
   final String? receiptId;

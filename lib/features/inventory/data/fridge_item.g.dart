@@ -21,7 +21,7 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       rawText: fields[1] as String,
       entryDate: fields[2] as DateTime,
       isConsumed: fields[3] as bool,
-      storeName: fields[5] == null ? 'Unbekannt' : fields[5] as String,
+      storeName: fields[5] == null ? 'Unknown' : fields[5] as String,
       quantity: fields[6] == null ? 1 : fields[6] as int,
       unitPrice: fields[7] as double?,
       weight: fields[8] as String?,
@@ -29,7 +29,7 @@ class FridgeItemAdapter extends TypeAdapter<FridgeItem> {
       receiptId: fields[10] as String?,
       brand: fields[11] as String?,
       discounts:
-          fields[9] == null ? [] : (fields[9] as List?)?.cast<Discount>(),
+          fields[9] == null ? {} : (fields[9] as Map).cast<String, double>(),
     );
   }
 

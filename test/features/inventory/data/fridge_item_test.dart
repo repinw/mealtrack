@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
 import 'package:uuid/uuid.dart';
 
 class MockUuid extends Mock implements Uuid {}
@@ -17,7 +16,6 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('hive_fridge_item_test_');
     Hive.init(tempDir.path);
     Hive.registerAdapter(FridgeItemAdapter());
-    Hive.registerAdapter(DiscountAdapter());
   });
 
   // Räumt das temporäre Verzeichnis nach allen Tests auf.
@@ -87,7 +85,7 @@ void main() {
       });
 
       test('creates an instance with all optional values', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 0.50)];
+        final discounts = {'Rabatt': 0.50};
         final item = FridgeItem.create(
           rawText: 'Milch',
           storeName: 'Lidl',
@@ -184,7 +182,7 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 1.0)];
+        final discounts = {'Rabatt': 1.0};
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
@@ -231,7 +229,7 @@ void main() {
       });
 
       test(
-          'two instances with different mutable properties should not be equal after fix',
+          'two instances with different mutable properties should be equal (identity)',
           () {
         // ignore: invalid_use_of_internal_member
         FridgeItem createItem({
@@ -250,10 +248,10 @@ void main() {
               weight: weight,
             );
 
-        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
-        expect(createItem(), isNot(equals(createItem(quantity: 2))));
-        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
-        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
+        expect(createItem(), equals(createItem(storeName: 'Other')));
+        expect(createItem(), equals(createItem(quantity: 2)));
+        expect(createItem(), equals(createItem(unitPrice: 1.0)));
+        expect(createItem(), equals(createItem(weight: '1kg')));
       });
 
       test('two instances with all properties set should be equal', () {
@@ -359,14 +357,13 @@ void main() {
     });
 
     group('Bug Fixes & Edge Cases', () {
-      test('discounts list should be mutable after creation', () {
+      test('discounts map should be mutable after creation', () {
         final item = FridgeItem.create(rawText: 'Test', storeName: 'Test');
-        final discount = Discount(name: 'Sale', amount: 1.0);
 
         // Dieser Aufruf darf keinen UnsupportedError werfen
-        item.discounts.add(discount);
+        item.discounts['Sale'] = 1.0;
 
-        expect(item.discounts, contains(discount));
+        expect(item.discounts, containsPair('Sale', 1.0));
       });
 
       test('throws ArgumentError if unitPrice is negative', () {
@@ -380,23 +377,8 @@ void main() {
         );
       });
 
-      test('Discount validation', () {
-        expect(
-          () => Discount(name: '', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: '   ', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: 'Valid', amount: -1),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
       test(
-        'Constructor handles null discounts by defaulting to empty mutable list',
+        'Constructor handles empty discounts by defaulting to empty mutable map',
         () {
           // ignore: invalid_use_of_internal_member
           final item = FridgeItem(
@@ -405,14 +387,14 @@ void main() {
             entryDate: DateTime.now(),
             storeName: 'store',
             quantity: 1,
-            discounts: null, // Simuliert null von Hive/JSON
+            discounts: {},
           );
 
           expect(item.discounts, isNotNull);
           expect(item.discounts, isEmpty);
-          // Sicherstellen, dass die Liste veränderbar ist
+          // Sicherstellen, dass die Map veränderbar ist
           expect(
-            () => item.discounts.add(Discount(name: 'D', amount: 1)),
+            () => item.discounts['D'] = 1.0,
             returnsNormally,
           );
         },
@@ -436,7 +418,7 @@ void main() {
 
     test('can be written to and read from a Hive box', () async {
       // Arrange
-      final discounts = [Discount(name: 'Aktion', amount: 0.33)];
+      final discounts = {'Aktion': 0.33};
       final originalItem = FridgeItem.create(
         rawText: 'Frische Milch',
         storeName: 'Edeka',

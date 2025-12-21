@@ -81,9 +81,16 @@ class _ScannerPageState extends State<ScannerPage> {
       debugPrint('Fehler bei der Texterkennung: $e');
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
+        String message = e.toString();
+        // Clean up common error prefixes for the user
+        if (message.contains('FormatException')) {
+          message =
+              'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+        }
+
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Fehler: ${e.toString()}')));
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
       setState(() {

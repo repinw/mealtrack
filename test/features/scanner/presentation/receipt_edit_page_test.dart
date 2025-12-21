@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 
@@ -15,7 +14,7 @@ void main() {
           name: 'Item 1',
           totalPrice: 10.0,
           quantity: 1,
-          discounts: [const Discount(name: 'D1', amount: 1.0)],
+          discounts: {'D1': 1.0},
         );
 
         // Item 2: 5.00 - 0.00 Discount = 5.00 Effective
