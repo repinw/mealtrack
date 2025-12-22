@@ -71,17 +71,12 @@ void main() {
       },
     );
 
-    test(
-      'loadItems returns empty list and handles error on invalid JSON',
-      () async {
-        final prefs = await SharedPreferences.getInstance();
-        // Save invalid JSON
-        await prefs.setString('inventory_data', '{ invalid_json }');
+    test('loadItems throws FormatException on invalid JSON', () async {
+      final prefs = await SharedPreferences.getInstance();
+      // Save invalid JSON
+      await prefs.setString('inventory_data', '{ invalid_json }');
 
-        final items = await service.loadItems();
-
-        expect(items, isEmpty);
-      },
-    );
+      expect(() => service.loadItems(), throwsA(isA<FormatException>()));
+    });
   });
 }

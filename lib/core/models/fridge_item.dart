@@ -112,11 +112,13 @@ class FridgeItem extends Equatable {
     return FridgeItem(
       id: json['id'] as String,
       rawText: json['rawText'] as String,
-      entryDate: DateTime.parse(json['entryDate'] as String),
+      entryDate:
+          DateTime.tryParse(json['entryDate'] as String? ?? '') ??
+          DateTime.now(),
       isConsumed: json['isConsumed'] as bool? ?? false,
-      consumptionDate: json['consumptionDate'] != null
-          ? DateTime.parse(json['consumptionDate'] as String)
-          : null,
+      consumptionDate: DateTime.tryParse(
+        json['consumptionDate'] as String? ?? '',
+      ),
       storeName: json['storeName'] as String,
       quantity: json['quantity'] as int,
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
