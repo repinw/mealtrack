@@ -217,7 +217,7 @@ void main() {
           FridgeItem createItem({
             String storeName = 'S',
             int quantity = 1,
-            double? unitPrice,
+            double unitPrice = 0.0,
             String? weight,
           }) => FridgeItem(
             id: '1',
@@ -420,7 +420,7 @@ void main() {
           'consumptionDate': null,
           'storeName': 'Supermarkt',
           'quantity': 6,
-          'unitPrice': null,
+          'unitPrice': 0.0,
           'weight': null,
           'discounts': const {},
           'receiptId': null,

@@ -3,6 +3,7 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
 
 class ReceiptEditPage extends StatefulWidget {
   final List<FridgeItem>? scannedItems;
@@ -15,8 +16,7 @@ class ReceiptEditPage extends StatefulWidget {
 class _ReceiptEditPageState extends State<ReceiptEditPage> {
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
-
-  final List<FridgeItem> _items = [];
+  late ReceiptEditController _controller;
 
   @override
   void initState() {
@@ -26,30 +26,16 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
     _dateController = TextEditingController(
       text: '${now.day}.${now.month}.${now.year}',
     );
-
-    if (widget.scannedItems != null) {
-      _items.addAll(widget.scannedItems!);
-
-      // Try to extract the store name from the items
-      if (_items.isNotEmpty) {
-        final foundStoreName = _items
-            .firstWhere(
-              (i) => i.storeName.isNotEmpty,
-              orElse: () => FridgeItem.create(rawText: '', storeName: ''),
-            )
-            .storeName;
-        _merchantController.text = foundStoreName;
-      }
-    }
+    _controller = ReceiptEditController(widget.scannedItems);
+    _merchantController.text = _controller.initialStoreName;
 
     // Update all items when the user changes the merchant name
     _merchantController.addListener(() {
-      final newName = _merchantController.text;
-      setState(() {
-        for (var i = 0; i < _items.length; i++) {
-          _items[i] = _items[i].copyWith(storeName: newName);
-        }
-      });
+      _controller.updateMerchantName(_merchantController.text);
+    });
+
+    _controller.addListener(() {
+      setState(() {});
     });
   }
 
@@ -57,28 +43,15 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   void dispose() {
     _merchantController.dispose();
     _dateController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _deleteItem(int index) {
-    setState(() {
-      _items.removeAt(index);
-    });
-  }
-
-  // Called when any item changes to recalculate the total
-  void _onItemChanged(int index, FridgeItem newItem) {
-    setState(() {
-      _items[index] = newItem;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     // Calculate total sum
-    double total = _items.fold(0, (sum, item) {
-      return sum + (item.unitPrice ?? 0.0);
-    });
+    final items = _controller.items;
+    final total = _controller.total;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -120,7 +93,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                       ),
                       Text(
                         // Total item count based on quantity
-                        "${_items.fold(0, (sum, item) => sum + item.quantity)} Artikel",
+                        "${_controller.totalQuantity} Artikel",
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -192,15 +165,16 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                   const SizedBox(height: 4),
 
                   // --- List ---
-                  ..._items.asMap().entries.map((entry) {
+                  ...items.asMap().entries.map((entry) {
                     int index = entry.key;
                     FridgeItem item = entry.value;
 
                     return ScannedItemRow(
                       key: ValueKey(item),
                       item: item,
-                      onDelete: () => _deleteItem(index),
-                      onChanged: (newItem) => _onItemChanged(index, newItem),
+                      onDelete: () => _controller.deleteItem(index),
+                      onChanged: (newItem) =>
+                          _controller.updateItem(index, newItem),
                     );
                   }),
                   const SizedBox(height: 24),
@@ -216,7 +190,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
               onSave: () {
                 // Save logic: _items contains the modified data
                 // db.save(_items);
-                debugPrint("Speichere ${_items.length} Items");
+                debugPrint("Speichere ${items.length} Items");
               },
             ),
           ),

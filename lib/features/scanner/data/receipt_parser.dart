@@ -51,14 +51,14 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final name = map['name'] as String? ?? '';
       final store = map['storeName'] as String? ?? '';
       final qty = (map['quantity'] as num?)?.toInt() ?? 1;
+      final quantity = qty > 0 ? qty : 1;
+      final totalPrice = (map['totalPrice'] as num).toDouble();
 
       return FridgeItem.create(
         rawText: name.isEmpty ? 'Unbekannter Artikel' : name,
         storeName: store.isEmpty ? 'Unbekannter Laden' : store,
-        quantity: qty > 0 ? qty : 1,
-        unitPrice:
-            (map['totalPrice'] as num?)?.toDouble() ??
-            (map['unitPrice'] as num?)?.toDouble(),
+        quantity: quantity,
+        unitPrice: totalPrice / quantity,
         weight: map['weight'] as String?,
         brand: map['brand'] as String?,
         discounts: discounts,
