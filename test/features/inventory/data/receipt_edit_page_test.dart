@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 
@@ -119,14 +118,15 @@ void main() {
       expect(tester.widget<ReceiptFooter>(footerFinder).total, 20.0);
     });
 
-    testWidgets('updates total correctly when item with discount changes',
-        (tester) async {
+    testWidgets('updates total correctly when item with discount changes', (
+      tester,
+    ) async {
       final items = [
         ScannedItem(
           name: 'Item A',
           totalPrice: 20.0,
           quantity: 1,
-          discounts: [Discount(name: 'Sale', amount: 5.0)], // effective price 15.0
+          discounts: {'Sale': 5.0}, // effective price 15.0
         ),
       ];
 
@@ -148,8 +148,9 @@ void main() {
       expect(tester.widget<ReceiptFooter>(footerFinder).total, 35.0);
     });
 
-    testWidgets('updates article count when item quantity changes',
-        (tester) async {
+    testWidgets('updates article count when item quantity changes', (
+      tester,
+    ) async {
       final items = [
         ScannedItem(name: 'Item A', totalPrice: 10.0, quantity: 1),
       ];

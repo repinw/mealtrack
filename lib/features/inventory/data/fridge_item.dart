@@ -2,12 +2,10 @@ import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
 
 part 'fridge_item.g.dart';
 
 @HiveType(typeId: 1)
-// ignore: must_be_immutable
 class FridgeItem extends HiveObject with EquatableMixin {
   /// This constructor is intended for internal use and Hive serialization only.
   /// To create a new instance, use the [FridgeItem.create] factory.
@@ -24,8 +22,8 @@ class FridgeItem extends HiveObject with EquatableMixin {
     this.consumptionDate,
     this.receiptId,
     this.brand,
-    List<Discount>? discounts,
-  }) : discounts = discounts ?? [];
+    this.discounts = const {},
+  });
 
   /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
   ///
@@ -39,7 +37,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
     String? weight,
     String? receiptId,
     String? brand,
-    List<Discount>? discounts,
+    Map<String, double>? discounts,
     DateTime Function()? now,
   }) {
     if (rawText.trim().isEmpty) {
@@ -66,7 +64,7 @@ class FridgeItem extends HiveObject with EquatableMixin {
       isConsumed: false,
       receiptId: receiptId,
       brand: brand,
-      discounts: discounts ?? [],
+      discounts: discounts ?? {},
     );
   }
 
@@ -74,31 +72,31 @@ class FridgeItem extends HiveObject with EquatableMixin {
   final String id;
 
   @HiveField(1)
-  String rawText;
+  final String rawText;
 
   @HiveField(2)
   final DateTime entryDate;
 
   @HiveField(3)
-  bool isConsumed;
+  final bool isConsumed;
 
   @HiveField(4)
-  DateTime? consumptionDate;
+  final DateTime? consumptionDate;
 
   @HiveField(5, defaultValue: 'Unknown')
-  String storeName;
+  final String storeName;
 
   @HiveField(6, defaultValue: 1)
-  int quantity;
+  final int quantity;
 
   @HiveField(7)
-  double? unitPrice;
+  final double? unitPrice;
 
   @HiveField(8)
-  String? weight;
+  final String? weight;
 
-  @HiveField(9, defaultValue: <Discount>[])
-  List<Discount> discounts;
+  @HiveField(9, defaultValue: const <String, double>{})
+  final Map<String, double> discounts;
 
   @HiveField(10)
   final String? receiptId;
@@ -125,9 +123,33 @@ class FridgeItem extends HiveObject with EquatableMixin {
   @override
   bool? get stringify => true;
 
-  void markAsConsumed({DateTime? consumptionTime}) {
-    if (isConsumed) return;
-    isConsumed = true;
-    consumptionDate = consumptionTime ?? DateTime.now();
+  FridgeItem copyWith({
+    String? id,
+    String? rawText,
+    DateTime? entryDate,
+    bool? isConsumed,
+    DateTime? consumptionDate,
+    String? storeName,
+    int? quantity,
+    double? unitPrice,
+    String? weight,
+    Map<String, double>? discounts,
+    String? receiptId,
+    String? brand,
+  }) {
+    return FridgeItem(
+      id: id ?? this.id,
+      rawText: rawText ?? this.rawText,
+      entryDate: entryDate ?? this.entryDate,
+      isConsumed: isConsumed ?? this.isConsumed,
+      consumptionDate: consumptionDate ?? this.consumptionDate,
+      storeName: storeName ?? this.storeName,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+      weight: weight ?? this.weight,
+      discounts: discounts ?? this.discounts,
+      receiptId: receiptId ?? this.receiptId,
+      brand: brand ?? this.brand,
+    );
   }
 }

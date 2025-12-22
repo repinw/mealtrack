@@ -75,8 +75,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   Widget build(BuildContext context) {
     // Calculate total sum
     double total = _items.fold(0, (sum, item) {
-      final discount = item.discounts.fold(0.0, (s, d) => s + d.amount);
-      return sum + (item.totalPrice - discount);
+      return sum + item.effectivePrice;
     });
 
     return Scaffold(

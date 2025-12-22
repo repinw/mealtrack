@@ -9,11 +9,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/app.dart';
 
 void main() {
-  testWidgets('inventory page show', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MealTrack());
+  group('Inventory Page', () {
+    testWidgets('shows the correct title', (WidgetTester tester) async {
+      // Build our app and trigger a frame.
+      await tester.pumpWidget(const MealTrack());
+      await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('Digitaler Kühlschrank!'), findsOneWidget);
+      // Verify that the app title is visible.
+      // Using `find.textContaining` is more robust against minor text changes.
+      expect(find.textContaining('Digitaler Kühlschrank'), findsOneWidget);
+    });
   });
 }

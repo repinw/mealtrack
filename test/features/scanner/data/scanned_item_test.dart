@@ -1,16 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 
 void main() {
   group('ScannedItem', () {
-    test('should initialize with mutable discounts list by default', () {
-      final item = ScannedItem(name: 'Test Item', totalPrice: 1.99);
+    test('should initialize with mutable discounts map', () {
+      final item = ScannedItem(
+        name: 'Test Item',
+        totalPrice: 1.99,
+        discounts: {},
+      );
 
       expect(item.discounts, isEmpty);
 
-      // Critical check: This would throw UnsupportedError if list was const []
-      item.discounts.add(Discount(name: 'Rabatt', amount: 0.5));
+      // Critical check: This would throw UnsupportedError if map was const {}
+      item.discounts['Rabatt'] = 0.5;
 
       expect(item.discounts.length, 1);
     });
@@ -23,7 +26,7 @@ void main() {
       expect(item1, isNot(equals(item2)));
     });
 
-    test('fromJson should parse correctly and return mutable list', () {
+    test('fromJson should parse correctly and return mutable map', () {
       final json = {
         'name': 'Butter',
         'quantity': 2,
@@ -32,9 +35,7 @@ void main() {
         'weight': '250g',
         'isLowConfidence': true,
         'storeName': 'Aldi',
-        'discounts': [
-          {'name': 'Sale', 'amount': 0.50},
-        ],
+        'discounts': {'Sale': 0.50},
       };
 
       final item = ScannedItem.fromJson(json);
@@ -47,10 +48,10 @@ void main() {
       expect(item.isLowConfidence, isTrue);
       expect(item.storeName, 'Aldi');
       expect(item.discounts.length, 1);
-      expect(item.discounts.first.name, 'Sale');
+      expect(item.discounts['Sale'], 0.50);
 
       // Check mutability after JSON parsing
-      item.discounts.add(Discount(name: 'Coupon', amount: 0.20));
+      item.discounts['Coupon'] = 0.20;
       expect(item.discounts.length, 2);
     });
 
@@ -65,7 +66,7 @@ void main() {
       expect(item.discounts, isEmpty);
 
       // Ensure list is mutable even if missing in JSON
-      item.discounts.add(Discount(name: 'D', amount: 0.1));
+      item.discounts['D'] = 0.1;
       expect(item.discounts, isNotEmpty);
     });
 
@@ -99,54 +100,60 @@ void main() {
           totalPrice: 10.0,
           quantity: 2,
           unitPrice: 5.0,
-          discounts: [const Discount(name: 'D', amount: 1.0)],
+          discounts: {'D': 1.0},
         );
 
         // Unit price 5.0 * 3 = 15.0. Minus discount 1.0 = 14.0
         expect(item.calculateEffectivePriceForQuantity(3), 14.0);
       });
 
-      test('calculateEffectivePriceForQuantity derives unitPrice if missing', () {
-        final item = ScannedItem(
-          name: 'Test',
-          totalPrice: 10.0, // Implies unit price 5.0
-          quantity: 2,
-          discounts: [const Discount(name: 'D', amount: 1.0)],
-        );
+      test(
+        'calculateEffectivePriceForQuantity derives unitPrice if missing',
+        () {
+          final item = ScannedItem(
+            name: 'Test',
+            totalPrice: 10.0, // Implies unit price 5.0
+            quantity: 2,
+            discounts: {'D': 1.0},
+          );
 
-        // Derived unit price 5.0 * 4 = 20.0. Minus discount 1.0 = 19.0
-        expect(item.calculateEffectivePriceForQuantity(4), 19.0);
-      });
+          // Derived unit price 5.0 * 4 = 20.0. Minus discount 1.0 = 19.0
+          expect(item.calculateEffectivePriceForQuantity(4), 19.0);
+        },
+      );
 
-      test('updateFromUser updates fields and recalculates prices correctly', () {
-        final item = ScannedItem(
-          name: 'Old Name',
-          totalPrice: 10.0,
-          quantity: 2,
-          isLowConfidence: true,
-          discounts: [const Discount(name: 'D', amount: 2.0)],
-        );
+      test(
+        'updateFromUser updates fields and recalculates prices correctly',
+        () {
+          final item = ScannedItem(
+            name: 'Old Name',
+            totalPrice: 10.0,
+            quantity: 2,
+            isLowConfidence: true,
+            discounts: {'D': 2.0},
+          );
 
-        // User inputs:
-        // Quantity: 5
-        // Displayed Price (Effective): 48.0
-        // (Implies Gross Total = 48.0 + 2.0 = 50.0)
-        // (Implies Unit Price = 50.0 / 5 = 10.0)
+          // User inputs:
+          // Quantity: 5
+          // Displayed Price (Effective): 48.0
+          // (Implies Gross Total = 48.0 + 2.0 = 50.0)
+          // (Implies Unit Price = 50.0 / 5 = 10.0)
 
-        item.updateFromUser(
-          name: 'New Name',
-          weight: '1kg',
-          displayedPrice: 48.0,
-          quantity: 5,
-        );
+          item.updateFromUser(
+            name: 'New Name',
+            weight: '1kg',
+            displayedPrice: 48.0,
+            quantity: 5,
+          );
 
-        expect(item.name, 'New Name');
-        expect(item.weight, '1kg');
-        expect(item.quantity, 5);
-        expect(item.isLowConfidence, false);
-        expect(item.totalPrice, 50.0); // 48 + 2
-        expect(item.unitPrice, 10.0); // 50 / 5
-      });
+          expect(item.name, 'New Name');
+          expect(item.weight, '1kg');
+          expect(item.quantity, 5);
+          expect(item.isLowConfidence, false);
+          expect(item.totalPrice, 50.0); // 48 + 2
+          expect(item.unitPrice, 10.0); // 50 / 5
+        },
+      );
 
       test('updateFromUser handles zero quantity gracefully', () {
         final item = ScannedItem(name: 'A', totalPrice: 10.0, quantity: 1);
@@ -164,18 +171,19 @@ void main() {
       });
 
       test(
-          'calculateEffectivePriceForQuantity returns non-negative price when base quantity is 0',
-          () {
-        final item = ScannedItem(
-          name: 'Test',
-          totalPrice: 0.0, // For qty 0, price should be 0
-          quantity: 0,
-          discounts: [const Discount(name: 'D', amount: 1.0)],
-        );
+        'calculateEffectivePriceForQuantity returns non-negative price when base quantity is 0',
+        () {
+          final item = ScannedItem(
+            name: 'Test',
+            totalPrice: 0.0, // For qty 0, price should be 0
+            quantity: 0,
+            discounts: {'D': 1.0},
+          );
 
-        // Should not return a negative price.
-        expect(item.calculateEffectivePriceForQuantity(3), isNonNegative);
-      });
+          // Should not return a negative price.
+          expect(item.calculateEffectivePriceForQuantity(3), isNonNegative);
+        },
+      );
     });
   });
 }

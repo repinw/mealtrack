@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
 import 'package:uuid/uuid.dart';
 
 class MockUuid extends Mock implements Uuid {}
@@ -17,7 +16,6 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('hive_fridge_item_test_');
     Hive.init(tempDir.path);
     Hive.registerAdapter(FridgeItemAdapter());
-    Hive.registerAdapter(DiscountAdapter());
   });
 
   // Räumt das temporäre Verzeichnis nach allen Tests auf.
@@ -87,7 +85,7 @@ void main() {
       });
 
       test('creates an instance with all optional values', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 0.50)];
+        final discounts = {'Rabatt': 0.50};
         final item = FridgeItem.create(
           rawText: 'Milch',
           storeName: 'Lidl',
@@ -184,7 +182,7 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 1.0)];
+        final discounts = {'Rabatt': 1.0};
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
@@ -231,30 +229,30 @@ void main() {
       });
 
       test(
-          'two instances with different mutable properties should not be equal after fix',
-          () {
-        // ignore: invalid_use_of_internal_member
-        FridgeItem createItem({
-          String storeName = 'S',
-          int quantity = 1,
-          double? unitPrice,
-          String? weight,
-        }) =>
-            FridgeItem(
-              id: '1',
-              rawText: 'a',
-              entryDate: entryDate,
-              storeName: storeName,
-              quantity: quantity,
-              unitPrice: unitPrice,
-              weight: weight,
-            );
+        'two instances with different properties via helper should not be equal',
+        () {
+          // ignore: invalid_use_of_internal_member
+          FridgeItem createItem({
+            String storeName = 'S',
+            int quantity = 1,
+            double? unitPrice,
+            String? weight,
+          }) => FridgeItem(
+            id: '1',
+            rawText: 'a',
+            entryDate: entryDate,
+            storeName: storeName,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            weight: weight,
+          );
 
-        expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
-        expect(createItem(), isNot(equals(createItem(quantity: 2))));
-        expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
-        expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
-      });
+          expect(createItem(), isNot(equals(createItem(storeName: 'Other'))));
+          expect(createItem(), isNot(equals(createItem(quantity: 2))));
+          expect(createItem(), isNot(equals(createItem(unitPrice: 1.0))));
+          expect(createItem(), isNot(equals(createItem(weight: '1kg'))));
+        },
+      );
 
       test('two instances with all properties set should be equal', () {
         final date = DateTime.now();
@@ -304,71 +302,31 @@ void main() {
       });
     });
 
-    group('Methods', () {
-      test('markAsConsumed sets consumption status and date', () {
+    group('copyWith', () {
+      test('creates a copy with updated values', () {
         // Arrange
         final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
-        expect(item.isConsumed, isFalse);
-        expect(item.consumptionDate, isNull);
+        final newDate = DateTime(2025, 12, 24);
 
         // Act
-        item.markAsConsumed();
-
-        // Assert
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, isA<DateTime>());
-        // Check if the date is very recent
-        expect(
-          item.consumptionDate!.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
+        final updatedItem = item.copyWith(
+          rawText: 'Käse (alt)',
+          isConsumed: true,
+          consumptionDate: newDate,
         );
-      });
-
-      test('markAsConsumed uses provided consumption time', () {
-        // Arrange
-        final item = FridgeItem.create(rawText: 'Wurst', storeName: 'Aldi');
-        final specificConsumptionTime = DateTime(2025, 12, 24, 18, 0, 0);
-
-        // Act
-        item.markAsConsumed(consumptionTime: specificConsumptionTime);
 
         // Assert
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, equals(specificConsumptionTime));
-      });
-
-      test('does not change consumptionDate if already consumed', () {
-        // Arrange
-        final item = FridgeItem.create(rawText: 'Milch', storeName: 'Aldi');
-        final firstConsumptionTime = DateTime(2025, 1, 1);
-
-        // Act: Markiere das Item zum ersten Mal als verbraucht.
-        item.markAsConsumed(consumptionTime: firstConsumptionTime);
-
-        // Assert: Überprüfe den initialen Zustand.
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, firstConsumptionTime);
-
-        // Act again: Versuche, es erneut mit einer anderen Zeit zu markieren.
-        item.markAsConsumed(consumptionTime: DateTime(2025, 2, 2));
-
-        // Assert again: Das Datum darf sich nicht geändert haben.
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, firstConsumptionTime);
+        expect(updatedItem.id, item.id);
+        expect(updatedItem.rawText, 'Käse (alt)');
+        expect(updatedItem.isConsumed, isTrue);
+        expect(updatedItem.consumptionDate, newDate);
+        // Unchanged properties
+        expect(updatedItem.storeName, item.storeName);
+        expect(updatedItem.quantity, item.quantity);
       });
     });
 
     group('Bug Fixes & Edge Cases', () {
-      test('discounts list should be mutable after creation', () {
-        final item = FridgeItem.create(rawText: 'Test', storeName: 'Test');
-        final discount = Discount(name: 'Sale', amount: 1.0);
-
-        // Dieser Aufruf darf keinen UnsupportedError werfen
-        item.discounts.add(discount);
-
-        expect(item.discounts, contains(discount));
-      });
-
       test('throws ArgumentError if unitPrice is negative', () {
         expect(
           () => FridgeItem.create(
@@ -379,44 +337,6 @@ void main() {
           throwsA(isA<ArgumentError>()),
         );
       });
-
-      test('Discount validation', () {
-        expect(
-          () => Discount(name: '', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: '   ', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: 'Valid', amount: -1),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
-      test(
-        'Constructor handles null discounts by defaulting to empty mutable list',
-        () {
-          // ignore: invalid_use_of_internal_member
-          final item = FridgeItem(
-            id: 'id',
-            rawText: 'text',
-            entryDate: DateTime.now(),
-            storeName: 'store',
-            quantity: 1,
-            discounts: null, // Simuliert null von Hive/JSON
-          );
-
-          expect(item.discounts, isNotNull);
-          expect(item.discounts, isEmpty);
-          // Sicherstellen, dass die Liste veränderbar ist
-          expect(
-            () => item.discounts.add(Discount(name: 'D', amount: 1)),
-            returnsNormally,
-          );
-        },
-      );
     });
   });
 
@@ -436,7 +356,7 @@ void main() {
 
     test('can be written to and read from a Hive box', () async {
       // Arrange
-      final discounts = [Discount(name: 'Aktion', amount: 0.33)];
+      final discounts = {'Aktion': 0.33};
       final originalItem = FridgeItem.create(
         rawText: 'Frische Milch',
         storeName: 'Edeka',
@@ -467,11 +387,13 @@ void main() {
       final itemToUpdate = box.get(item.id)!;
       final consumptionTime = DateTime.now();
 
-      itemToUpdate.rawText = 'Joghurt (fast leer)';
-      itemToUpdate.isConsumed = true;
-      itemToUpdate.consumptionDate = consumptionTime;
-      itemToUpdate.storeName = 'Netto (Updated)';
-      await itemToUpdate.save(); // Wichtig: .save() aufrufen für HiveObject
+      final updatedItemToSave = itemToUpdate.copyWith(
+        rawText: 'Joghurt (fast leer)',
+        isConsumed: true,
+        consumptionDate: consumptionTime,
+        storeName: 'Netto (Updated)',
+      );
+      await box.put(item.id, updatedItemToSave);
 
       // Assert: Hole das Item erneut und überprüfe die Änderungen.
       final updatedItem = box.get(item.id)!;

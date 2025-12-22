@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
 import 'package:mealtrack/features/scanner/data/scanned_item.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 
@@ -126,12 +125,11 @@ void main() {
     testWidgets('shows discount dialog when discount icon is tapped', (
       tester,
     ) async {
-      final discount = Discount(name: 'Promo', amount: 1.0);
       final item = ScannedItem(
         name: 'Item with Discount',
         totalPrice: 10.0,
         quantity: 1,
-        discounts: [discount],
+        discounts: {'Promo': 1.0},
       );
 
       await tester.pumpWidget(
@@ -153,8 +151,9 @@ void main() {
       expect(find.text('-1.00 €'), findsOneWidget);
     });
 
-    testWidgets('UI: Shows amber border for low confidence items',
-        (tester) async {
+    testWidgets('UI: Shows amber border for low confidence items', (
+      tester,
+    ) async {
       // Arrange
       final item = ScannedItem(
         name: 'Unsure Item',
@@ -196,21 +195,24 @@ void main() {
 
       // Act
       await tester.enterText(
-          find.widgetWithText(TextField, 'Old Name'), 'New Name');
+        find.widgetWithText(TextField, 'Old Name'),
+        'New Name',
+      );
       await tester.pump();
 
       // Assert
       expect(item.name, 'New Name');
     });
 
-    testWidgets('Happy Path: Changing price updates item correctly',
-        (tester) async {
+    testWidgets('Happy Path: Changing price updates item correctly', (
+      tester,
+    ) async {
       // Arrange: Item with discount
       final item = ScannedItem(
         name: 'Test Item',
         totalPrice: 12.0,
         quantity: 1,
-        discounts: [Discount(name: 'Sale', amount: 2.0)], // effective price is 10.00
+        discounts: {'Sale': 2.0}, // effective price is 10.00
       );
 
       await tester.pumpWidget(
