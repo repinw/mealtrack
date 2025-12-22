@@ -4,9 +4,9 @@ import 'package:mealtrack/app.dart';
 import 'package:mealtrack/firebase_options.dart';
 
 Future<void> main() async {
-  // Stellt sicher, dass die Flutter-Engine initialisiert ist, bevor
-  // plattformspezifischer Code (z.B. für den Dateisystemzugriff via path_provider) ausgeführt wird.
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MealTrack());
+
+  runApp(const MealTrackApp());
 }
