@@ -39,7 +39,6 @@ List<ScannedItem> parseScannedItemsFromJson(String jsonString) {
         )
         .toList();
   } catch (e, stackTrace) {
-    // Fangt Parsing-Fehler ab, loggt sie und gebt eine leere Liste zurück.
     debugPrint('Fehler beim Parsen des JSON: $e');
     debugPrintStack(stackTrace: stackTrace);
     throw FormatException('Fehler beim Parsen des JSON: $e');
