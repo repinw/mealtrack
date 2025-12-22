@@ -170,7 +170,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                     FridgeItem item = entry.value;
 
                     return ScannedItemRow(
-                      key: ValueKey(item),
+                      key: ValueKey(index),
                       item: item,
                       onDelete: () => _controller.deleteItem(index),
                       onChanged: (newItem) =>
