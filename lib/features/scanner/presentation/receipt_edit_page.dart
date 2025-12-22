@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 
 class ReceiptEditPage extends StatefulWidget {
-  final List<ScannedItem>? scannedItems;
+  final List<FridgeItem>? scannedItems;
   const ReceiptEditPage({super.key, this.scannedItems});
 
   @override
@@ -16,7 +16,7 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
 
-  final List<ScannedItem> _items = [];
+  final List<FridgeItem> _items = [];
 
   @override
   void initState() {
@@ -34,22 +34,22 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
       if (_items.isNotEmpty) {
         final foundStoreName = _items
             .firstWhere(
-              (i) => i.storeName != null && i.storeName!.isNotEmpty,
-              orElse: () => ScannedItem(name: '', totalPrice: 0),
+              (i) => i.storeName.isNotEmpty,
+              orElse: () => FridgeItem.create(rawText: '', storeName: ''),
             )
             .storeName;
-        if (foundStoreName != null) {
-          _merchantController.text = foundStoreName;
-        }
+        _merchantController.text = foundStoreName;
       }
     }
 
     // Update all items when the user changes the merchant name
     _merchantController.addListener(() {
       final newName = _merchantController.text;
-      for (var item in _items) {
-        item.storeName = newName;
-      }
+      setState(() {
+        for (var i = 0; i < _items.length; i++) {
+          _items[i] = _items[i].copyWith(storeName: newName);
+        }
+      });
     });
   }
 
@@ -67,15 +67,17 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
   }
 
   // Called when any item changes to recalculate the total
-  void _onItemChanged() {
-    setState(() {});
+  void _onItemChanged(int index, FridgeItem newItem) {
+    setState(() {
+      _items[index] = newItem;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     // Calculate total sum
     double total = _items.fold(0, (sum, item) {
-      return sum + item.effectivePrice;
+      return sum + (item.unitPrice ?? 0.0);
     });
 
     return Scaffold(
@@ -192,13 +194,13 @@ class _ReceiptEditPageState extends State<ReceiptEditPage> {
                   // --- List ---
                   ..._items.asMap().entries.map((entry) {
                     int index = entry.key;
-                    ScannedItem item = entry.value;
+                    FridgeItem item = entry.value;
 
                     return ScannedItemRow(
                       key: ValueKey(item),
                       item: item,
                       onDelete: () => _deleteItem(index),
-                      onChanged: _onItemChanged,
+                      onChanged: (newItem) => _onItemChanged(index, newItem),
                     );
                   }),
                   const SizedBox(height: 24),
