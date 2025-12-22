@@ -62,6 +62,36 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     _updateItem();
   }
 
+  void _showDiscounts() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Enthaltene Rabatte"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.item.discounts.entries.map((entry) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(entry.key),
+                Text(
+                  "-${entry.value.toStringAsFixed(2)} €",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _updateItem() {
     final newItem = widget.item.copyWith(
       rawText: _nameController.text,
@@ -186,6 +216,18 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (widget.item.discounts.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: GestureDetector(
+                        onTap: _showDiscounts,
+                        child: const Icon(
+                          Icons.local_offer,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
                   SizedBox(
                     width: 45,
                     child: TextField(
