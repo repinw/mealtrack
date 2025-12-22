@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -59,13 +60,14 @@ void main() {
       ];
 
       final pickImageCompleter = Completer<XFile?>();
+      final processImageCompleter = Completer<List<FridgeItem>>();
 
       when(
         () => mockImagePicker.pickImage(source: ImageSource.gallery),
       ).thenAnswer((_) => pickImageCompleter.future);
       when(
         () => mockTextRecognitionService.processImage(xFile),
-      ).thenAnswer((_) async => scannedItems);
+      ).thenAnswer((_) => processImageCompleter.future);
 
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -77,11 +79,14 @@ void main() {
       await tester.tap(galleryButton);
 
       await tester.pump();
+
+      pickImageCompleter.complete(xFile);
+      await tester.pump();
+
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byType(SpeedDial), findsNothing);
 
-      pickImageCompleter.complete(xFile);
-
+      processImageCompleter.complete(scannedItems);
       await tester.pumpAndSettle();
 
       verify(
@@ -131,5 +136,46 @@ void main() {
 
     expect(find.byType(SnackBar), findsOneWidget);
     expect(find.text('Ein Fehler ist aufgetreten.'), findsOneWidget);
+  });
+
+  testWidgets('Shows error SnackBar when image picker throws PlatformException',
+      (tester) async {
+    when(
+      () => mockImagePicker.pickImage(source: ImageSource.gallery),
+    ).thenThrow(PlatformException(
+        code: 'photo_access_denied', message: 'Permission denied'));
+
+    await tester.pumpWidget(createWidgetUnderTest());
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bild aus Galerie'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Ein Fehler ist aufgetreten.'), findsOneWidget);
+  });
+
+  testWidgets(
+      'Shows SnackBar and does not navigate when scanner returns empty list',
+      (WidgetTester tester) async {
+    final xFile = XFile('dummy_path/image.jpg');
+
+    when(() => mockImagePicker.pickImage(source: ImageSource.gallery))
+        .thenAnswer((_) async => xFile);
+    when(() => mockTextRecognitionService.processImage(xFile))
+        .thenAnswer((_) async => []);
+
+    await tester.pumpWidget(createWidgetUnderTest());
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bild aus Galerie'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Keine Produkte erkannt'), findsOneWidget);
+    expect(find.byType(ReceiptEditPage), findsNothing);
   });
 }

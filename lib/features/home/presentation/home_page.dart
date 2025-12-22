@@ -55,8 +55,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _processImageFromGallery() async {
-    setState(() => _isBusy = true);
-
     try {
       final XFile? image = await widget.imagePicker.pickImage(
         source: ImageSource.gallery,
@@ -66,9 +64,18 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
+      setState(() => _isBusy = true);
+
       final result = await widget.textRecognitionService.processImage(image);
 
       if (!mounted) return;
+
+      if (result.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Keine Produkte erkannt')));
+        return;
+      }
 
       Navigator.of(context).push(
         MaterialPageRoute(
