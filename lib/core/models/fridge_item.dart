@@ -13,7 +13,7 @@ class FridgeItem extends Equatable {
     this.isConsumed = false,
     required this.storeName,
     required this.quantity,
-    this.unitPrice,
+    this.unitPrice = 0.0,
     this.weight,
     this.consumptionDate,
     this.receiptId,
@@ -29,7 +29,7 @@ class FridgeItem extends Equatable {
     Uuid? uuid,
     required String storeName,
     int quantity = 1,
-    double? unitPrice,
+    double unitPrice = 0,
     String? weight,
     String? receiptId,
     String? brand,
@@ -45,7 +45,7 @@ class FridgeItem extends Equatable {
     if (quantity <= 0) {
       throw ArgumentError.value(quantity, 'quantity', 'must be greater than 0');
     }
-    if (unitPrice != null && unitPrice < 0) {
+    if (unitPrice < 0) {
       throw ArgumentError.value(unitPrice, 'unitPrice', 'must not be negative');
     }
 
@@ -78,7 +78,7 @@ class FridgeItem extends Equatable {
 
   final int quantity;
 
-  final double? unitPrice;
+  final double unitPrice;
 
   final String? weight;
 
@@ -121,7 +121,7 @@ class FridgeItem extends Equatable {
       ),
       storeName: json['storeName'] as String,
       quantity: json['quantity'] as int,
-      unitPrice: (json['unitPrice'] as num?)?.toDouble(),
+      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
       weight: json['weight'] as String?,
       discounts:
           (json['discounts'] as Map<String, dynamic>?)?.map(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 
 void main() {
@@ -10,15 +10,20 @@ void main() {
       (tester) async {
         // Arrange
         // Item 1: 10.00 - 1.00 Discount = 9.00 Effective
-        final item1 = ScannedItem(
-          name: 'Item 1',
-          totalPrice: 10.0,
+        final item1 = FridgeItem.create(
+          rawText: 'Item 1',
+          storeName: 'Test Store',
+          unitPrice: 9.0,
           quantity: 1,
           discounts: {'D1': 1.0},
         );
 
         // Item 2: 5.00 - 0.00 Discount = 5.00 Effective
-        final item2 = ScannedItem(name: 'Item 2', totalPrice: 5.0, quantity: 1);
+        final item2 = FridgeItem.create(
+          rawText: 'Item 2',
+          storeName: 'Test Store',
+          unitPrice: 5.0,
+        );
 
         await tester.pumpWidget(
           MaterialApp(home: ReceiptEditPage(scannedItems: [item1, item2])),
@@ -57,6 +62,52 @@ void main() {
       expect(find.text('0.00 €'), findsOneWidget);
       expect(find.text('0 Artikel'), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsNothing);
+    });
+
+    testWidgets('Extracts store name from items and populates header', (
+      tester,
+    ) async {
+      final item = FridgeItem.create(
+        rawText: 'Item',
+        storeName: 'SuperMarket X',
+        unitPrice: 10.0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+      );
+
+      expect(find.widgetWithText(TextField, 'SuperMarket X'), findsOneWidget);
+    });
+
+    testWidgets('Updates total when item price changes', (tester) async {
+      final item = FridgeItem.create(
+        rawText: 'Item',
+        storeName: 'Store',
+        unitPrice: 10.0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+      );
+
+      // Initial total
+      expect(find.text('10.00 €'), findsOneWidget);
+
+      // Change price to 20.00
+      final priceFinder = find.widgetWithText(TextField, '10.00');
+      await tester.enterText(priceFinder, '20.00');
+      await tester.pump();
+
+      // New total should be 20.00
+      expect(find.text('20.00 €'), findsOneWidget);
+    });
+
+    testWidgets('Shows save button', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: ReceiptEditPage(scannedItems: [])),
+      );
+      expect(find.text('Speichern'), findsOneWidget);
     });
   });
 }

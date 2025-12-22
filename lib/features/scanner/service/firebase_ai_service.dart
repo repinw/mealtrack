@@ -19,7 +19,6 @@ class FirebaseAiService {
       "   brand: Marke oder Hersteller (String). Rate, falls nicht explizit genannt."
       "  quantity: Menge (Integer). Standard: 1. Wenn '2 x' davor steht, ist es 2."
       " totalPrice: Der Preis auf der rechten Seite (Float). Muss positiv sein."
-      "unitPrice: Einzelpreis, falls vorhanden (Float)."
       " weight: Extrahiere Gewichte/Volumen (z.B. '500g', '1L', 'ST') aus dem Text und speichere sie hier, nicht im Namen."
       "discounts: Eine Liste von Objekten. Jedes Objekt hat name (Beschreibung des Rabatts) und amount (der absolute Betrag als positive Zahl, z.B. 1.20)."
       "storeName: Name des Ladens (z.B. Netto). Wiederhole für jedes Item.,"
