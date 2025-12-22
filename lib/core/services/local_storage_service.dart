@@ -8,13 +8,10 @@ class LocalStorageService {
 
   Future<void> saveItems(List<FridgeItem> items) async {
     final prefs = await SharedPreferences.getInstance();
-    // 1. Convert List<Object> to List<Map>
     final List<Map<String, dynamic>> jsonList = items
         .map((item) => item.toJson())
         .toList();
-    // 2. Convert List<Map> to JSON String
     final String jsonString = jsonEncode(jsonList);
-    // 3. Save String
     await prefs.setString(_keyInventory, jsonString);
   }
 
@@ -25,9 +22,7 @@ class LocalStorageService {
     if (jsonString == null) return [];
 
     try {
-      // 1. Decode String to List<dynamic>
       final List<dynamic> decodedList = jsonDecode(jsonString);
-      // 2. Convert List<dynamic> to List<FridgeItem>
       return decodedList.map((e) => FridgeItem.fromJson(e)).toList();
     } catch (e) {
       debugPrint('Error loading inventory: $e');
