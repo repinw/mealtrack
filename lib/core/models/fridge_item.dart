@@ -1,16 +1,12 @@
-import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
-part 'fridge_item.g.dart';
-
-@HiveType(typeId: 1)
-class FridgeItem extends HiveObject with EquatableMixin {
-  /// This constructor is intended for internal use and Hive serialization only.
+class FridgeItem extends Equatable {
+  /// This constructor is intended for internal use only.
   /// To create a new instance, use the [FridgeItem.create] factory.
   @internal
-  FridgeItem({
+  const FridgeItem({
     required this.id,
     required this.rawText,
     required this.entryDate,
@@ -68,40 +64,28 @@ class FridgeItem extends HiveObject with EquatableMixin {
     );
   }
 
-  @HiveField(0)
   final String id;
 
-  @HiveField(1)
   final String rawText;
 
-  @HiveField(2)
   final DateTime entryDate;
 
-  @HiveField(3)
   final bool isConsumed;
 
-  @HiveField(4)
   final DateTime? consumptionDate;
 
-  @HiveField(5, defaultValue: 'Unknown')
   final String storeName;
 
-  @HiveField(6, defaultValue: 1)
   final int quantity;
 
-  @HiveField(7)
   final double? unitPrice;
 
-  @HiveField(8)
   final String? weight;
 
-  @HiveField(9, defaultValue: const <String, double>{})
   final Map<String, double> discounts;
 
-  @HiveField(10)
   final String? receiptId;
 
-  @HiveField(11)
   final String? brand;
 
   @override
@@ -122,6 +106,48 @@ class FridgeItem extends HiveObject with EquatableMixin {
 
   @override
   bool? get stringify => true;
+
+  /// Creates a [FridgeItem] from a JSON map.
+  factory FridgeItem.fromJson(Map<String, dynamic> json) {
+    return FridgeItem(
+      id: json['id'] as String,
+      rawText: json['rawText'] as String,
+      entryDate: DateTime.parse(json['entryDate'] as String),
+      isConsumed: json['isConsumed'] as bool? ?? false,
+      consumptionDate: json['consumptionDate'] != null
+          ? DateTime.parse(json['consumptionDate'] as String)
+          : null,
+      storeName: json['storeName'] as String,
+      quantity: json['quantity'] as int,
+      unitPrice: (json['unitPrice'] as num?)?.toDouble(),
+      weight: json['weight'] as String?,
+      discounts:
+          (json['discounts'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, (v as num).toDouble()),
+          ) ??
+          const {},
+      receiptId: json['receiptId'] as String?,
+      brand: json['brand'] as String?,
+    );
+  }
+
+  /// Converts the [FridgeItem] to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'rawText': rawText,
+      'entryDate': entryDate.toIso8601String(),
+      'isConsumed': isConsumed,
+      'consumptionDate': consumptionDate?.toIso8601String(),
+      'storeName': storeName,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'weight': weight,
+      'discounts': discounts,
+      'receiptId': receiptId,
+      'brand': brand,
+    };
+  }
 
   FridgeItem copyWith({
     String? id,
