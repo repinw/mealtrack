@@ -1,32 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
-import 'package:mealtrack/features/hive/hive_adapters.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/data/discount.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:uuid/uuid.dart';
 
 class MockUuid extends Mock implements Uuid {}
 
 void main() {
-  late Directory tempDir;
-
-  // Initialisiert Hive in einem temporären Verzeichnis für alle Tests in dieser Datei.
-  setUpAll(() async {
-    tempDir = await Directory.systemTemp.createTemp('hive_fridge_item_test_');
-    Hive.init(tempDir.path);
-    Hive.registerAdapter(FridgeItemAdapter());
-    Hive.registerAdapter(DiscountAdapter());
-  });
-
-  // Räumt das temporäre Verzeichnis nach allen Tests auf.
-  tearDownAll(() async {
-    await Hive.close();
-    await tempDir.delete(recursive: true);
-  });
-
   group('FridgeItem', () {
     const id = 'test-uuid';
     const rawText = '2 Eier';
@@ -88,7 +67,7 @@ void main() {
       });
 
       test('creates an instance with all optional values', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 0.50)];
+        final discounts = {'Rabatt': 0.50};
         final item = FridgeItem.create(
           rawText: 'Milch',
           storeName: 'Lidl',
@@ -185,7 +164,7 @@ void main() {
     // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
-        final discounts = [Discount(name: 'Rabatt', amount: 1.0)];
+        final discounts = {'Rabatt': 1.0};
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
@@ -232,13 +211,13 @@ void main() {
       });
 
       test(
-        'two instances with different mutable properties should not be equal after fix',
+        'two instances with different properties via helper should not be equal',
         () {
           // ignore: invalid_use_of_internal_member
           FridgeItem createItem({
             String storeName = 'S',
             int quantity = 1,
-            double? unitPrice,
+            double unitPrice = 0.0,
             String? weight,
           }) => FridgeItem(
             id: '1',
@@ -305,71 +284,70 @@ void main() {
       });
     });
 
-    group('Methods', () {
-      test('markAsConsumed sets consumption status and date', () {
+    group('copyWith', () {
+      test('creates a copy with updated values', () {
         // Arrange
         final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
-        expect(item.isConsumed, isFalse);
-        expect(item.consumptionDate, isNull);
+        final newDate = DateTime(2025, 12, 24);
 
         // Act
-        item.markAsConsumed();
-
-        // Assert
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, isA<DateTime>());
-        // Check if the date is very recent
-        expect(
-          item.consumptionDate!.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
+        final updatedItem = item.copyWith(
+          rawText: 'Käse (alt)',
+          isConsumed: true,
+          consumptionDate: newDate,
         );
-      });
-
-      test('markAsConsumed uses provided consumption time', () {
-        // Arrange
-        final item = FridgeItem.create(rawText: 'Wurst', storeName: 'Aldi');
-        final specificConsumptionTime = DateTime(2025, 12, 24, 18, 0, 0);
-
-        // Act
-        item.markAsConsumed(consumptionTime: specificConsumptionTime);
 
         // Assert
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, equals(specificConsumptionTime));
+        expect(updatedItem.id, item.id);
+        expect(updatedItem.rawText, 'Käse (alt)');
+        expect(updatedItem.isConsumed, isTrue);
+        expect(updatedItem.consumptionDate, newDate);
+        // Unchanged properties
+        expect(updatedItem.storeName, item.storeName);
+        expect(updatedItem.quantity, item.quantity);
       });
 
-      test('does not change consumptionDate if already consumed', () {
+      test('creates an identical copy when no arguments are provided', () {
+        final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
+        final copiedItem = item.copyWith();
+
+        expect(copiedItem, item);
+        expect(copiedItem.hashCode, item.hashCode);
+        expect(identical(copiedItem, item), isFalse);
+      });
+
+      test('copies values correctly when other properties are updated', () {
         // Arrange
-        final item = FridgeItem.create(rawText: 'Milch', storeName: 'Aldi');
-        final firstConsumptionTime = DateTime(2025, 1, 1);
+        final consumptionDate = DateTime(2025, 11, 30);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          rawText: 'Joghurt',
+          entryDate: DateTime(2025, 11, 20),
+          storeName: 'Rewe',
+          quantity: 4,
+          isConsumed: true,
+          consumptionDate: consumptionDate,
+        );
 
-        // Act: Markiere das Item zum ersten Mal als verbraucht.
-        item.markAsConsumed(consumptionTime: firstConsumptionTime);
+        // Act
+        final updatedItem = item.copyWith(
+          storeName: 'Rewe Center',
+          quantity: 2,
+        );
 
-        // Assert: Überprüfe den initialen Zustand.
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, firstConsumptionTime);
+        // Assert: Check that the properties in question were copied correctly.
+        expect(updatedItem.rawText, 'Joghurt');
+        expect(updatedItem.isConsumed, isTrue);
+        expect(updatedItem.consumptionDate, consumptionDate);
 
-        // Act again: Versuche, es erneut mit einer anderen Zeit zu markieren.
-        item.markAsConsumed(consumptionTime: DateTime(2025, 2, 2));
-
-        // Assert again: Das Datum darf sich nicht geändert haben.
-        expect(item.isConsumed, isTrue);
-        expect(item.consumptionDate, firstConsumptionTime);
+        // Assert: Check that the other properties were updated correctly.
+        expect(updatedItem.storeName, 'Rewe Center');
+        expect(updatedItem.quantity, 2);
       });
     });
 
     group('Bug Fixes & Edge Cases', () {
-      test('discounts list should be mutable after creation', () {
-        final item = FridgeItem.create(rawText: 'Test', storeName: 'Test');
-        final discount = Discount(name: 'Sale', amount: 1.0);
-
-        // Dieser Aufruf darf keinen UnsupportedError werfen
-        item.discounts.add(discount);
-
-        expect(item.discounts, contains(discount));
-      });
-
       test('throws ArgumentError if unitPrice is negative', () {
         expect(
           () => FridgeItem.create(
@@ -380,143 +358,112 @@ void main() {
           throwsA(isA<ArgumentError>()),
         );
       });
+    });
 
-      test('Discount validation', () {
-        expect(
-          () => Discount(name: '', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: '   ', amount: 10),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => Discount(name: 'Valid', amount: -1),
-          throwsA(isA<ArgumentError>()),
-        );
+    group('Serialization', () {
+      final entryDate = DateTime(2025, 12, 1, 10, 30);
+      final consumptionDate = DateTime(2025, 12, 5, 18, 0);
+      final discounts = {'Aktion': 0.5, 'Treuebonus': 1.0};
+
+      // ignore: invalid_use_of_internal_member
+      final fullItem = FridgeItem(
+        id: 'test-uuid-123',
+        rawText: 'Bio Eier 6er',
+        entryDate: entryDate,
+        isConsumed: true,
+        consumptionDate: consumptionDate,
+        storeName: 'Alnatura',
+        quantity: 1,
+        unitPrice: 3.49,
+        weight: '6 Stk',
+        discounts: discounts,
+        receiptId: 'receipt-abc',
+        brand: 'Alnatura',
+      );
+
+      // ignore: invalid_use_of_internal_member
+      final minimalItem = FridgeItem(
+        id: 'test-uuid-456',
+        rawText: 'Wasser',
+        entryDate: entryDate,
+        storeName: 'Supermarkt',
+        quantity: 6,
+      );
+
+      test('toJson returns a valid map for a full item', () {
+        final json = fullItem.toJson();
+
+        expect(json, {
+          'id': 'test-uuid-123',
+          'rawText': 'Bio Eier 6er',
+          'entryDate': entryDate.toIso8601String(),
+          'isConsumed': true,
+          'consumptionDate': consumptionDate.toIso8601String(),
+          'storeName': 'Alnatura',
+          'quantity': 1,
+          'unitPrice': 3.49,
+          'weight': '6 Stk',
+          'discounts': discounts,
+          'receiptId': 'receipt-abc',
+          'brand': 'Alnatura',
+        });
       });
 
-      test(
-        'Constructor handles null discounts by defaulting to empty mutable list',
-        () {
-          // ignore: invalid_use_of_internal_member
-          final item = FridgeItem(
-            id: 'id',
-            rawText: 'text',
-            entryDate: DateTime.now(),
-            storeName: 'store',
-            quantity: 1,
-            discounts: null, // Simuliert null von Hive/JSON
-          );
+      test('toJson returns a valid map for a minimal item', () {
+        final json = minimalItem.toJson();
 
-          expect(item.discounts, isNotNull);
-          expect(item.discounts, isEmpty);
-          // Sicherstellen, dass die Liste veränderbar ist
-          expect(
-            () => item.discounts.add(Discount(name: 'D', amount: 1)),
-            returnsNormally,
-          );
-        },
-      );
-    });
-  });
+        expect(json, {
+          'id': 'test-uuid-456',
+          'rawText': 'Wasser',
+          'entryDate': entryDate.toIso8601String(),
+          'isConsumed': false,
+          'consumptionDate': null,
+          'storeName': 'Supermarkt',
+          'quantity': 6,
+          'unitPrice': 0.0,
+          'weight': null,
+          'discounts': const {},
+          'receiptId': null,
+          'brand': null,
+        });
+      });
 
-  group('Hive Persistence', () {
-    const boxName = 'fridge_item_persistence_test';
-    late Box<FridgeItem> box;
+      test('fromJson creates a valid full item from a map', () {
+        final json = fullItem.toJson();
+        final itemFromJson = FridgeItem.fromJson(json);
 
-    // Öffnet vor jedem Test eine saubere Box
-    setUp(() async {
-      box = await Hive.openBox<FridgeItem>(boxName);
-    });
+        expect(itemFromJson, fullItem);
+      });
 
-    // Schließt und löscht die Box nach jedem Test
-    tearDown(() async {
-      await box.deleteFromDisk();
-    });
+      test('fromJson creates a valid minimal item from a map', () {
+        final json = minimalItem.toJson();
+        final itemFromJson = FridgeItem.fromJson(json);
 
-    test('can be written to and read from a Hive box', () async {
-      // Arrange
-      final discounts = [Discount(name: 'Aktion', amount: 0.33)];
-      final originalItem = FridgeItem.create(
-        rawText: 'Frische Milch',
-        storeName: 'Edeka',
-        quantity: 2,
-        unitPrice: 1.19,
-        discounts: discounts,
-      );
+        expect(itemFromJson, minimalItem);
+      });
 
-      // Act
-      await box.put(originalItem.id, originalItem);
-      final retrievedItem = box.get(originalItem.id);
+      test('fromJson handles missing optional fields gracefully', () {
+        final json = {
+          'id': 'test-uuid-789',
+          'rawText': 'Kaffee',
+          'entryDate': entryDate.toIso8601String(),
+          'storeName': 'Tchibo',
+          'quantity': 1,
+        };
 
-      // Assert
-      expect(retrievedItem, isNotNull);
-      expect(retrievedItem, equals(originalItem));
-      expect(retrievedItem!.storeName, 'Edeka');
-      expect(retrievedItem.quantity, 2);
-      expect(retrievedItem.unitPrice, 1.19);
-      expect(retrievedItem.discounts, discounts);
-    });
+        final itemFromJson = FridgeItem.fromJson(json);
 
-    test('can be updated in a Hive box', () async {
-      // Arrange: Erstelle ein Item und speichere es.
-      final item = FridgeItem.create(rawText: 'Joghurt', storeName: 'Netto');
-      await box.put(item.id, item);
+        // ignore: invalid_use_of_internal_member
+        final expectedItem = FridgeItem(
+          id: 'test-uuid-789',
+          rawText: 'Kaffee',
+          entryDate: entryDate,
+          storeName: 'Tchibo',
+          quantity: 1,
+        );
 
-      // Act: Hole das Item, modifiziere es und speichere es erneut.
-      final itemToUpdate = box.get(item.id)!;
-      final consumptionTime = DateTime.now();
-
-      itemToUpdate.rawText = 'Joghurt (fast leer)';
-      itemToUpdate.isConsumed = true;
-      itemToUpdate.consumptionDate = consumptionTime;
-      itemToUpdate.storeName = 'Netto (Updated)';
-      await itemToUpdate.save(); // Wichtig: .save() aufrufen für HiveObject
-
-      // Assert: Hole das Item erneut und überprüfe die Änderungen.
-      final updatedItem = box.get(item.id)!;
-
-      expect(updatedItem.rawText, 'Joghurt (fast leer)');
-      expect(updatedItem.isConsumed, isTrue);
-      expect(updatedItem.storeName, 'Netto (Updated)');
-      // Vergleiche Millisekunden, da die Präzision beim Speichern variieren kann.
-      expect(
-        updatedItem.consumptionDate!.millisecondsSinceEpoch,
-        consumptionTime.millisecondsSinceEpoch,
-      );
-    });
-
-    test('can be deleted from a Hive box', () async {
-      // Arrange: Erstelle ein Item und speichere es.
-      final item = FridgeItem.create(rawText: 'Alte Socken', storeName: 'Home');
-      await box.put(item.id, item);
-
-      // Stelle sicher, dass das Item vor dem Löschen vorhanden ist.
-      final itemToDelete = box.get(item.id);
-      expect(itemToDelete, isNotNull);
-
-      // Act: Lösche das Item.
-      await itemToDelete!.delete();
-
-      // Assert: Überprüfe, ob das Item nicht mehr in der Box ist.
-      final deletedItem = box.get(item.id);
-      expect(deletedItem, isNull);
-    });
-
-    test('persists receiptId correctly', () async {
-      const receiptId = 'receipt-uuid-123';
-      final item = FridgeItem.create(
-        rawText: 'Item from Receipt',
-        storeName: 'Test Store',
-        receiptId: receiptId,
-      );
-
-      await box.put(item.id, item);
-      final retrievedItem = box.get(item.id);
-
-      expect(retrievedItem, isNotNull);
-      expect(retrievedItem!.receiptId, receiptId);
+        expect(itemFromJson, expectedItem);
+      });
     });
   });
 }

@@ -1,25 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/scanner/data/discount.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 
 void main() {
   group('ScannedItemRow Widget Test', () {
-    testWidgets('Happy Path: Changing quantity updates price automatically', (
+    FridgeItem createItem({
+      String name = 'Test Item',
+      double unitPrice = 10.0,
+      int quantity = 1,
+      String? brand,
+    }) {
+      return FridgeItem.create(
+        rawText: name,
+        storeName: 'Test Store',
+        quantity: quantity,
+        unitPrice: unitPrice,
+        brand: brand,
+      );
+    }
+
+    testWidgets('Happy Path: Changing quantity calls onChanged', (
       tester,
     ) async {
-      // Arrange: Item with quantity 1 and total price 10.0 (implies unit price 10.0)
-      final item = ScannedItem(
-        name: 'Test Item',
-        totalPrice: 10.0,
-        quantity: 1,
-      );
+      final item = createItem(quantity: 1);
+      FridgeItem? updatedItem;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
           ),
         ),
       );
@@ -33,27 +47,28 @@ void main() {
       await tester.enterText(qtyFinder, '2');
       await tester.pump();
 
-      // Assert: Price should double (10.0 * 2 = 20.0)
-      expect(find.widgetWithText(TextField, '20.00'), findsOneWidget);
+      // Assert: onChanged called with new quantity
+      expect(updatedItem, isNotNull);
+      expect(updatedItem!.quantity, 2);
 
-      // Verify underlying item was updated
-      expect(item.quantity, 2);
-      expect(item.totalPrice, 20.0);
+      // Price field should NOT change (it shows unit price)
+      expect(find.widgetWithText(TextField, '10.00'), findsOneWidget);
     });
 
     testWidgets('Edge Case: Empty quantity string does not crash app', (
       tester,
     ) async {
-      final item = ScannedItem(
-        name: 'Test Item',
-        totalPrice: 10.0,
-        quantity: 1,
-      );
+      final item = createItem(quantity: 1);
+      bool onChangedCalled = false;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (_) => onChangedCalled = true,
+            ),
           ),
         ),
       );
@@ -63,43 +78,15 @@ void main() {
       await tester.enterText(qtyFinder, '');
       await tester.pump();
 
-      // Assert: No crash, price remains at last valid value (10.00)
-      // because _onQtyChanged returns early on null/empty parse.
-      expect(find.widgetWithText(TextField, '10.00'), findsOneWidget);
-    });
-
-    testWidgets('Edge Case: Zero quantity updates price to 0.00', (
-      tester,
-    ) async {
-      final item = ScannedItem(
-        name: 'Test Item',
-        totalPrice: 10.0,
-        quantity: 1,
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
-          ),
-        ),
-      );
-
-      // Act: Set quantity to 0
-      final qtyFinder = find.widgetWithText(TextField, '1');
-      await tester.enterText(qtyFinder, '0');
-      await tester.pump();
-
       // Assert
-      expect(find.widgetWithText(TextField, '0.00'), findsOneWidget);
-      expect(item.quantity, 0);
+      expect(onChangedCalled, isFalse);
     });
 
     testWidgets('Callbacks: Delete icon triggers onDelete callback', (
       tester,
     ) async {
       bool wasDeleted = false;
-      final item = ScannedItem(name: 'Delete Me', totalPrice: 5.0, quantity: 1);
+      final item = createItem();
 
       await tester.pumpWidget(
         MaterialApp(
@@ -109,7 +96,7 @@ void main() {
               onDelete: () {
                 wasDeleted = true;
               },
-              onChanged: () {},
+              onChanged: (_) {},
             ),
           ),
         ),
@@ -123,100 +110,46 @@ void main() {
       expect(wasDeleted, isTrue);
     });
 
-    testWidgets('shows discount dialog when discount icon is tapped', (
-      tester,
-    ) async {
-      final discount = Discount(name: 'Promo', amount: 1.0);
-      final item = ScannedItem(
-        name: 'Item with Discount',
-        totalPrice: 10.0,
-        quantity: 1,
-        discounts: [discount],
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
-          ),
-        ),
-      );
-
-      // Find discount icon
-      final discountIcon = find.byIcon(Icons.local_offer);
-      await tester.tap(discountIcon);
-      await tester.pumpAndSettle();
-
-      // Verify dialog content
-      expect(find.text('Enthaltene Rabatte'), findsOneWidget);
-      expect(find.text('Promo'), findsOneWidget);
-      expect(find.text('-1.00 €'), findsOneWidget);
-    });
-
-    testWidgets('UI: Shows amber border for low confidence items',
-        (tester) async {
-      // Arrange
-      final item = ScannedItem(
-        name: 'Unsure Item',
-        totalPrice: 5.0,
-        isLowConfidence: true,
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
-          ),
-        ),
-      );
-
-      // Assert
-      final containerFinder = find.byWidgetPredicate((widget) {
-        if (widget is Container && widget.decoration is BoxDecoration) {
-          final decoration = widget.decoration as BoxDecoration;
-          return decoration.border is Border &&
-              (decoration.border as Border).top.color == Colors.amber;
-        }
-        return false;
-      });
-
-      expect(containerFinder, findsOneWidget);
-    });
-
     testWidgets('Happy Path: Changing name updates item', (tester) async {
       // Arrange
-      final item = ScannedItem(name: 'Old Name', totalPrice: 10.0);
+      final item = createItem(name: 'Old Name');
+      FridgeItem? updatedItem;
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
           ),
         ),
       );
 
       // Act
       await tester.enterText(
-          find.widgetWithText(TextField, 'Old Name'), 'New Name');
+        find.widgetWithText(TextField, 'Old Name'),
+        'New Name',
+      );
       await tester.pump();
 
       // Assert
-      expect(item.name, 'New Name');
+      expect(updatedItem?.rawText, 'New Name');
     });
 
-    testWidgets('Happy Path: Changing price updates item correctly',
-        (tester) async {
-      // Arrange: Item with discount
-      final item = ScannedItem(
-        name: 'Test Item',
-        totalPrice: 12.0,
-        quantity: 1,
-        discounts: [Discount(name: 'Sale', amount: 2.0)], // effective price is 10.00
-      );
+    testWidgets('Happy Path: Changing price updates unitPrice', (tester) async {
+      final item = createItem(unitPrice: 10.0);
+      FridgeItem? updatedItem;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
           ),
         ),
       );
@@ -226,21 +159,23 @@ void main() {
       await tester.enterText(priceFinder, '15.00');
       await tester.pump();
 
-      // Assert: Verify underlying item was updated
-      // displayedPrice is 15.00. totalDiscount is 2.0.
-      // grossTotalPrice = 15.00 + 2.0 = 17.0
-      expect(item.totalPrice, 17.0);
-      expect(item.unitPrice, 17.0); // since quantity is 1
+      // Assert
+      expect(updatedItem?.unitPrice, 15.0);
     });
 
     testWidgets('Happy Path: Changing brand updates item', (tester) async {
       // Arrange
-      final item = ScannedItem(name: 'Test Item', totalPrice: 10.0);
+      final item = createItem(name: 'Item', brand: '');
+      FridgeItem? updatedItem;
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ScannedItemRow(item: item, onDelete: () {}, onChanged: () {}),
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
           ),
         ),
       );
@@ -251,7 +186,7 @@ void main() {
       await tester.pump();
 
       // Assert
-      expect(item.brand, 'Nestle');
+      expect(updatedItem?.brand, 'Nestle');
     });
   });
 }

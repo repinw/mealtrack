@@ -46,10 +46,11 @@ void main() {
       },
     );
 
-    test('returns empty list on invalid JSON format', () {
-      // Der Parser fängt jsonDecode Fehler ab und gibt [] zurück (laut Implementierung)
-      final result = parseScannedItemsFromJson('{ kein valides json }');
-      expect(result, isEmpty);
+    test('throws FormatException on invalid JSON format', () {
+      expect(
+        () => parseScannedItemsFromJson('{ kein valides json }'),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('returns empty list on unexpected JSON structure', () {
@@ -58,14 +59,14 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('parses valid JSON and verifies totalPrice is >= 0', () {
+    test('parses valid JSON and verifies unitPrice is >= 0', () {
       const jsonString = '''
       {
         "items": [
           {
             "name": "Test Item",
             "quantity": 1,
-            "totalPrice": 10.50
+            "unitPrice": 10.50
           }
         ]
       }
@@ -74,7 +75,34 @@ void main() {
       final result = parseScannedItemsFromJson(jsonString);
 
       expect(result, isNotEmpty);
-      expect(result.first.totalPrice, greaterThanOrEqualTo(0));
+      expect(result.first.unitPrice ?? 0, greaterThanOrEqualTo(0));
+    });
+
+    test('parses discounts correctly', () {
+      const jsonString = '''
+      {
+        "items": [
+          {
+            "name": "Item with Discounts",
+            "discounts": [
+              { "name": "Summer Sale", "amount": 2.5 },
+              { "amount": 1.0 },
+              { "name": "Invalid Amount", "amount": 0 },
+              { "name": "Negative Amount", "amount": -5.0 },
+              "invalid_entry"
+            ]
+          }
+        ]
+      }
+      ''';
+
+      final result = parseScannedItemsFromJson(jsonString);
+
+      expect(result, isNotEmpty);
+      final item = result.first;
+      expect(item.discounts, containsPair('Summer Sale', 2.5));
+      expect(item.discounts, containsPair('Rabatt', 1.0));
+      expect(item.discounts.length, 2);
     });
   });
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
-import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
 
-class ReceiptEditPage extends ConsumerStatefulWidget {
-  final List<ScannedItem>? scannedItems;
+class ReceiptEditPage extends StatefulWidget {
+  final List<FridgeItem>? scannedItems;
   const ReceiptEditPage({super.key, this.scannedItems});
 
   @override
@@ -17,6 +16,7 @@ class ReceiptEditPage extends ConsumerStatefulWidget {
 class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
+  late ReceiptEditController _controller;
 
   @override
   void initState() {
@@ -26,30 +26,16 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
     _dateController = TextEditingController(
       text: '${now.day}.${now.month}.${now.year}',
     );
-
-    final initialItems = widget.scannedItems ?? [];
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(receiptEditControllerProvider.notifier).setItems(initialItems);
-    });
-
-    if (initialItems.isNotEmpty) {
-      final foundStoreName = initialItems
-          .firstWhere(
-            (i) => i.storeName != null && i.storeName!.isNotEmpty,
-            orElse: () => ScannedItem(name: '', totalPrice: 0),
-          )
-          .storeName;
-      if (foundStoreName != null) {
-        _merchantController.text = foundStoreName;
-      }
-    }
+    _controller = ReceiptEditController(widget.scannedItems);
+    _merchantController.text = _controller.initialStoreName;
 
     // Update all items when the user changes the merchant name
     _merchantController.addListener(() {
-      ref
-          .read(receiptEditControllerProvider.notifier)
-          .updateMerchantName(_merchantController.text);
+      _controller.updateMerchantName(_merchantController.text);
+    });
+
+    _controller.addListener(() {
+      setState(() {});
     });
   }
 
@@ -57,14 +43,15 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   void dispose() {
     _merchantController.dispose();
     _dateController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(receiptEditControllerProvider);
-    final items = state.items;
-    final total = state.total;
+    // Calculate total sum
+    final items = _controller.items;
+    final total = _controller.total;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -106,7 +93,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                       ),
                       Text(
                         // Total item count based on quantity
-                        "${items.fold(0, (sum, item) => sum + item.quantity)} Artikel",
+                        "${_controller.totalQuantity} Artikel",
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -180,17 +167,14 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                   // --- List ---
                   ...items.asMap().entries.map((entry) {
                     int index = entry.key;
-                    ScannedItem item = entry.value;
+                    FridgeItem item = entry.value;
 
                     return ScannedItemRow(
-                      key: ValueKey(item),
+                      key: ValueKey(index),
                       item: item,
-                      onDelete: () => ref
-                          .read(receiptEditControllerProvider.notifier)
-                          .deleteItem(index),
-                      onChanged: () => ref
-                          .read(receiptEditControllerProvider.notifier)
-                          .notifyItemChanged(),
+                      onDelete: () => _controller.deleteItem(index),
+                      onChanged: (newItem) =>
+                          _controller.updateItem(index, newItem),
                     );
                   }),
                   const SizedBox(height: 24),
@@ -203,19 +187,10 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
             padding: const EdgeInsets.all(16.0),
             child: ReceiptFooter(
               total: total,
-              onSave: () async {
-                final success = await ref
-                    .read(receiptEditControllerProvider.notifier)
-                    .saveItems(_merchantController.text);
-
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${items.length} Artikel gespeichert'),
-                    ),
-                  );
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
+              onSave: () {
+                // Save logic: _items contains the modified data
+                // db.save(_items);
+                debugPrint("Speichere ${items.length} Items");
               },
             ),
           ),

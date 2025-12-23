@@ -1,78 +1,58 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
-import 'package:mealtrack/features/scanner/data/scanned_item.dart';
-import 'package:mealtrack/features/scanner/domain/scanned_item_converter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 
-class ReceiptEditState {
-  final List<ScannedItem> items;
-  final bool isSaving;
+class ReceiptEditController extends ChangeNotifier {
+  final List<FridgeItem> _items = [];
 
-  ReceiptEditState({required this.items, this.isSaving = false});
+  List<FridgeItem> get items => List.unmodifiable(_items);
 
-  ReceiptEditState copyWith({List<ScannedItem>? items, bool? isSaving}) {
-    return ReceiptEditState(
-      items: items ?? this.items,
-      isSaving: isSaving ?? this.isSaving,
-    );
+  ReceiptEditController(List<FridgeItem>? scannedItems) {
+    if (scannedItems != null) {
+      _items.addAll(scannedItems);
+    }
+  }
+
+  String get initialStoreName {
+    try {
+      // Find the first item with a non-empty store name.
+      return _items.firstWhere((item) => item.storeName.isNotEmpty).storeName;
+    } catch (e) {
+      // If no item has a store name or the list is empty, return an empty string.
+      return '';
+    }
   }
 
   double get total {
-    return items.fold(0, (sum, item) {
-      final discount = item.discounts.fold(0.0, (s, d) => s + d.amount);
-      return sum + (item.totalPrice - discount);
-    });
-  }
-}
-
-class ReceiptEditController extends Notifier<ReceiptEditState> {
-  @override
-  ReceiptEditState build() {
-    return ReceiptEditState(items: []);
+    return _items.fold(
+      0.0,
+      (sum, item) => sum + item.unitPrice * item.quantity,
+    );
   }
 
-  void setItems(List<ScannedItem> items) {
-    state = state.copyWith(items: items);
+  int get totalQuantity {
+    return _items.fold(0, (sum, item) => sum + item.quantity);
   }
 
-  void updateMerchantName(String name) {
-    for (var item in state.items) {
-      item.storeName = name;
+  void updateMerchantName(String newName) {
+    bool changed = false;
+    for (var i = 0; i < _items.length; i++) {
+      if (_items[i].storeName != newName) {
+        _items[i] = _items[i].copyWith(storeName: newName);
+        changed = true;
+      }
     }
-    state = state.copyWith(items: [...state.items]);
+    if (changed) {
+      notifyListeners();
+    }
   }
 
   void deleteItem(int index) {
-    final items = [...state.items];
-    items.removeAt(index);
-    state = state.copyWith(items: items);
+    _items.removeAt(index);
+    notifyListeners();
   }
 
-  void notifyItemChanged() {
-    state = state.copyWith(items: [...state.items]);
-  }
-
-  Future<bool> saveItems(String merchantName) async {
-    if (state.items.isEmpty) return false;
-
-    state = state.copyWith(isSaving: true);
-
-    try {
-      final fridgeItems = ScannedItemConverter.toFridgeItems(
-        state.items,
-        merchantName,
-      );
-
-      await ref.read(fridgeItemRepositoryProvider).saveItems(fridgeItems);
-      return true;
-    } catch (e) {
-      return false;
-    } finally {
-      state = state.copyWith(isSaving: false);
-    }
+  void updateItem(int index, FridgeItem newItem) {
+    _items[index] = newItem;
+    notifyListeners();
   }
 }
-
-final receiptEditControllerProvider =
-    NotifierProvider<ReceiptEditController, ReceiptEditState>(
-      ReceiptEditController.new,
-    );
