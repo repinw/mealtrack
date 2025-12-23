@@ -19,10 +19,6 @@ class FakeFridgeItem extends Fake implements FridgeItem {
   @override
   int quantity;
   @override
-  double? unitPrice;
-  @override
-  double? unitPrice;
-  @override
   bool isConsumed;
   @override
   DateTime? consumptionDate;
