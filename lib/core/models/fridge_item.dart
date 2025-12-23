@@ -8,7 +8,7 @@ class FridgeItem extends Equatable {
   @internal
   const FridgeItem({
     required this.id,
-    required this.rawText,
+    required this.name,
     required this.entryDate,
     this.isConsumed = false,
     required this.storeName,
@@ -25,7 +25,7 @@ class FridgeItem extends Equatable {
   ///
   /// Optionally accepts a [Uuid] instance and a [now] function for testing purposes.
   factory FridgeItem.create({
-    required String rawText,
+    required String name,
     Uuid? uuid,
     required String storeName,
     int quantity = 1,
@@ -36,8 +36,8 @@ class FridgeItem extends Equatable {
     Map<String, double>? discounts,
     DateTime Function()? now,
   }) {
-    if (rawText.trim().isEmpty) {
-      throw ArgumentError.value(rawText, 'rawText', 'must not be empty');
+    if (name.trim().isEmpty) {
+      throw ArgumentError.value(name, 'name', 'must not be empty');
     }
     if (storeName.trim().isEmpty) {
       throw ArgumentError.value(storeName, 'storeName', 'must not be empty');
@@ -51,7 +51,7 @@ class FridgeItem extends Equatable {
 
     return FridgeItem(
       id: (uuid ?? const Uuid()).v4(),
-      rawText: rawText,
+      name: name,
       storeName: storeName,
       quantity: quantity,
       unitPrice: unitPrice,
@@ -66,7 +66,7 @@ class FridgeItem extends Equatable {
 
   final String id;
 
-  final String rawText;
+  final String name;
 
   final DateTime entryDate;
 
@@ -91,7 +91,7 @@ class FridgeItem extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    rawText,
+    name,
     entryDate,
     isConsumed,
     consumptionDate,
@@ -111,7 +111,7 @@ class FridgeItem extends Equatable {
   factory FridgeItem.fromJson(Map<String, dynamic> json) {
     return FridgeItem(
       id: json['id'] as String,
-      rawText: json['rawText'] as String,
+      name: json['name'] as String,
       entryDate:
           DateTime.tryParse(json['entryDate'] as String? ?? '') ??
           DateTime.now(),
@@ -137,7 +137,7 @@ class FridgeItem extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'rawText': rawText,
+      'name': name,
       'entryDate': entryDate.toIso8601String(),
       'isConsumed': isConsumed,
       'consumptionDate': consumptionDate?.toIso8601String(),
@@ -153,7 +153,7 @@ class FridgeItem extends Equatable {
 
   FridgeItem copyWith({
     String? id,
-    String? rawText,
+    String? name,
     DateTime? entryDate,
     bool? isConsumed,
     DateTime? consumptionDate,
@@ -167,7 +167,7 @@ class FridgeItem extends Equatable {
   }) {
     return FridgeItem(
       id: id ?? this.id,
-      rawText: rawText ?? this.rawText,
+      name: name ?? this.name,
       entryDate: entryDate ?? this.entryDate,
       isConsumed: isConsumed ?? this.isConsumed,
       consumptionDate: consumptionDate ?? this.consumptionDate,

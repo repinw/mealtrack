@@ -48,7 +48,7 @@ void main() {
     final xFile = XFile('test_image.jpg');
     final scannedItems = [
       FridgeItem.create(
-        rawText: 'Test Product',
+        name: 'Test Product',
         quantity: 1,
         weight: '500g',
         unitPrice: 1.99,

@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/inventory_providers.dart';
 
-class InventoryItemRow extends ConsumerStatefulWidget {
+class InventoryItemRow extends ConsumerWidget {
   final FridgeItem item;
 
   const InventoryItemRow({super.key, required this.item});
 
   @override
-  ConsumerState<InventoryItemRow> createState() => _InventoryItemRowState();
-}
-
-class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
-  @override
-  Widget build(BuildContext context) {
-    final item = widget.item;
+  Widget build(BuildContext context, WidgetRef ref) {
     final isOutOfStock = item.quantity == 0;
 
     return Padding(
@@ -36,56 +30,32 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
         ),
         child: Row(
           children: [
-            _buildCategoryIcon(item.rawText),
+            _CategoryIcon(name: item.name),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.rawText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isOutOfStock ? Colors.grey : Colors.black87,
-                      decoration: isOutOfStock
-                          ? TextDecoration.lineThrough
-                          : null,
-                    ),
-                  ),
-                  if (item.weight != null && item.weight!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      item.weight!,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              child: _ItemDetails(item: item, isOutOfStock: isOutOfStock),
             ),
             const SizedBox(width: 12),
-            _buildCounterPill(isOutOfStock),
+            _CounterPill(
+              quantity: item.quantity,
+              isOutOfStock: isOutOfStock,
+              onUpdate: (delta) => _updateItemQuantity(context, ref, delta),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _updateItemQuantity(int delta) async {
+  Future<void> _updateItemQuantity(
+    BuildContext context,
+    WidgetRef ref,
+    int delta,
+  ) async {
     try {
-      await ref
-          .read(fridgeItemControllerProvider)
-          .updateQuantity(widget.item, delta);
-      // Force a rebuild to reflect the changes immediately.
-      // Since FridgeItem is mutable and modified in place, we need to tell the framework
-      // to redraw this widget even if the parent provider hasn't emitted the new list yet.
-      if (mounted) setState(() {});
+      await ref.read(fridgeItemsProvider.notifier).updateQuantity(item, delta);
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       // Fehlerbehandlung: UI zeigt Snackbar, State wird durch Provider/Hive korrigiert
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -94,17 +64,84 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       );
     }
   }
+}
 
-  Widget _buildCategoryIcon(String text) {
-    IconData iconData = Icons.kitchen;
+class _CategoryIcon extends StatelessWidget {
+  final String name;
+
+  const _CategoryIcon({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    const iconData = Icons.kitchen;
     return CircleAvatar(
       radius: 24,
       backgroundColor: Colors.grey.shade100,
       child: Icon(iconData, color: Colors.grey.shade700, size: 22),
     );
   }
+}
 
-  Widget _buildCounterPill(bool isOutOfStock) {
+class _ItemDetails extends StatelessWidget {
+  final FridgeItem item;
+  final bool isOutOfStock;
+
+  const _ItemDetails({required this.item, required this.isOutOfStock});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (item.brand != null && item.brand!.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            item.brand!,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+        Text(
+          item.name,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: isOutOfStock ? Colors.grey : Colors.black87,
+            decoration: isOutOfStock ? TextDecoration.lineThrough : null,
+          ),
+        ),
+        if (item.weight != null && item.weight!.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            item.weight!,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CounterPill extends StatelessWidget {
+  final int quantity;
+  final bool isOutOfStock;
+  final ValueChanged<int> onUpdate;
+
+  const _CounterPill({
+    required this.quantity,
+    required this.isOutOfStock,
+    required this.onUpdate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -114,14 +151,14 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildActionButton(
+          _ActionButton(
             icon: Icons.remove,
-            onTap: isOutOfStock ? null : () => _updateItemQuantity(-1),
+            onTap: isOutOfStock ? null : () => onUpdate(-1),
           ),
           SizedBox(
             width: 32,
             child: Text(
-              '${widget.item.quantity}',
+              '$quantity',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -130,19 +167,21 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
               ),
             ),
           ),
-          _buildActionButton(
-            icon: Icons.add,
-            onTap: () => _updateItemQuantity(1),
-          ),
+          _ActionButton(icon: Icons.add, onTap: () => onUpdate(1)),
         ],
       ),
     );
   }
+}
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback? onTap,
-  }) {
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _ActionButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(

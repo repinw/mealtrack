@@ -3,16 +3,16 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
-import 'package:mealtrack/features/scanner/service/text_recognition_service.dart';
+import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 
 class HomePage extends StatefulWidget {
   final ImagePicker imagePicker;
-  final TextRecognitionService textRecognitionService;
+  final FirebaseAiService firebaseAiService;
 
   const HomePage({
     super.key,
     required this.imagePicker,
-    required this.textRecognitionService,
+    required this.firebaseAiService,
   });
 
   @override
@@ -66,7 +66,9 @@ class _HomePageState extends State<HomePage> {
 
       setState(() => _isBusy = true);
 
-      final result = await widget.textRecognitionService.processImage(image);
+      final result = await widget.firebaseAiService.analyzeImageWithGemini(
+        image,
+      );
 
       if (!mounted) return;
 

@@ -2,37 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/features/inventory/data/fridge_item.dart';
-import 'package:mealtrack/features/inventory/provider/fridge_item_provider.dart';
+import 'package:mealtrack/core/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_controller.dart';
 
-class InventoryPage extends ConsumerStatefulWidget {
+class InventoryPage extends ConsumerWidget {
   const InventoryPage({super.key, required this.title});
 
   final String title;
 
   @override
-  ConsumerState<InventoryPage> createState() => _InventoryPageState();
-}
-
-class _InventoryPageState extends ConsumerState<InventoryPage> {
-  bool _showOnlyAvailable = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: _buildAppBar(),
-      body: _showOnlyAvailable ? _buildAvailableList() : _buildGroupedList(),
+      appBar: _buildAppBar(context, ref),
+      body: _buildList(ref),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) {
+    final showOnlyAvailable = ref.watch(inventoryFilterProvider);
+
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0.5,
       title: Text(
-        widget.title,
+        title,
         style: const TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.bold,
@@ -41,11 +36,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       iconTheme: const IconThemeData(color: Colors.black87),
       actions: [
         Switch(
-          value: _showOnlyAvailable,
+          value: showOnlyAvailable,
           onChanged: (value) {
-            setState(() {
-              _showOnlyAvailable = value;
-            });
+            ref.read(inventoryFilterProvider.notifier).toggle();
           },
           activeThumbColor: Colors.green,
         ),
@@ -54,8 +47,10 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             icon: const Icon(Icons.delete_forever),
             tooltip: AppLocalizations.debugHiveReset,
             onPressed: () async {
-              await ref.read(fridgeItemRepositoryProvider).deleteAllItems();
-              if (mounted) {
+              await ref
+                  .read(inventoryControllerProvider.notifier)
+                  .deleteAllItems();
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(AppLocalizations.debugDataDeleted),
@@ -68,107 +63,57 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Widget _buildAvailableList() {
-    final itemsAsync = ref.watch(availableFridgeItemsProvider);
-    return itemsAsync.when(
+  Widget _buildList(WidgetRef ref) {
+    final listAsync = ref.watch(inventoryDisplayListProvider);
+
+    return listAsync.when(
       skipLoadingOnReload: true,
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (items) {
         if (items.isEmpty) {
-          return const Center(child: Text(AppLocalizations.noAvailableItems));
+          final showOnlyAvailable = ref.read(inventoryFilterProvider);
+          return Center(
+            child: Text(
+              showOnlyAvailable
+                  ? AppLocalizations.noAvailableItems
+                  : AppLocalizations.noItemsFound,
+            ),
+          );
         }
-        return _buildAvailableItemsList(items);
-      },
-    );
-  }
 
-  Widget _buildGroupedList() {
-    final groupedAsync = ref.watch(groupedFridgeItemsProvider);
-    return groupedAsync.when(
-      skipLoadingOnReload: true,
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (groupedItems) {
-        if (groupedItems.isEmpty) {
-          return const Center(child: Text(AppLocalizations.noItemsFound));
-        }
-        return _buildGroupedItemsList(groupedItems);
-      },
-    );
-  }
+        return ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
 
-  Widget _buildAvailableItemsList(List<FridgeItem> availableItems) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: availableItems.length,
-            itemBuilder: (context, index) {
-              final item = availableItems[index];
-              return InventoryItemRow(key: ValueKey(item.id), item: item);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGroupedItemsList(
-    List<MapEntry<String, List<FridgeItem>>> groupedItems,
-  ) {
-    final flattenedItems = <dynamic>[];
-    for (final group in groupedItems) {
-      final groupItems = group.value;
-      if (groupItems.isEmpty) continue;
-
-      flattenedItems.add(_GroupHeader(groupItems.first));
-      flattenedItems.addAll(groupItems);
-      flattenedItems.add(const _GroupSpacer());
-    }
-
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: flattenedItems.length,
-            itemBuilder: (context, index) {
-              final item = flattenedItems[index];
-
-              if (item is _GroupHeader) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '${item.item.storeName} - ${_formatDate(item.item.entryDate)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
+            if (item is InventoryHeaderItem) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${item.item.storeName} - ${_formatDate(item.item.entryDate)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
                   ),
-                );
-              } else if (item is FridgeItem) {
-                return InventoryItemRow(key: ValueKey(item.id), item: item);
-              } else if (item is _GroupSpacer) {
-                return const SizedBox(height: 16);
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-      ],
+                ),
+              );
+            } else if (item is InventoryProductItem) {
+              return InventoryItemRow(
+                key: ValueKey(item.item.id),
+                item: item.item,
+              );
+            } else if (item is InventorySpacerItem) {
+              return const SizedBox(height: 16);
+            }
+            return const SizedBox.shrink();
+          },
+        );
+      },
     );
   }
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
-}
-
-class _GroupHeader {
-  final FridgeItem item;
-  const _GroupHeader(this.item);
-}
-
-class _GroupSpacer {
-  const _GroupSpacer();
 }

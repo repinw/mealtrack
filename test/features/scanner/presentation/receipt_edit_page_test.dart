@@ -11,7 +11,7 @@ void main() {
         // Arrange
         // Item 1: 10.00 - 1.00 Discount = 9.00 Effective
         final item1 = FridgeItem.create(
-          rawText: 'Item 1',
+          name: 'Item 1',
           storeName: 'Test Store',
           unitPrice: 9.0,
           quantity: 1,
@@ -20,7 +20,7 @@ void main() {
 
         // Item 2: 5.00 - 0.00 Discount = 5.00 Effective
         final item2 = FridgeItem.create(
-          rawText: 'Item 2',
+          name: 'Item 2',
           storeName: 'Test Store',
           unitPrice: 5.0,
         );
@@ -68,7 +68,7 @@ void main() {
       tester,
     ) async {
       final item = FridgeItem.create(
-        rawText: 'Item',
+        name: 'Item',
         storeName: 'SuperMarket X',
         unitPrice: 10.0,
       );
@@ -82,7 +82,7 @@ void main() {
 
     testWidgets('Updates total when item price changes', (tester) async {
       final item = FridgeItem.create(
-        rawText: 'Item',
+        name: 'Item',
         storeName: 'Store',
         unitPrice: 10.0,
       );

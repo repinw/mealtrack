@@ -1,7 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+part 'local_storage_service.g.dart';
+
+@riverpod
+LocalStorageService localStorageService(Ref ref) {
+  return LocalStorageService();
+}
 
 class LocalStorageService {
   static const String _keyInventory = 'inventory_data';
@@ -28,5 +36,10 @@ class LocalStorageService {
       debugPrint('Error loading inventory: $e');
       rethrow;
     }
+  }
+
+  Future<void> deleteAllItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyInventory);
   }
 }

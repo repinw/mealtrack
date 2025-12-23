@@ -37,14 +37,16 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     return itemsList.map((itemJson) {
       final map = itemJson as Map<String, dynamic>;
 
-      final discountsList = map['discounts'] as List<dynamic>? ?? [];
+      final discountsList = map['discounts'] as List<dynamic>?;
       final discounts = <String, double>{};
-      for (final d in discountsList) {
-        if (d is Map<String, dynamic>) {
-          final name = d['name'] as String? ?? 'Rabatt';
-          final amount = (d['amount'] as num?)?.toDouble() ?? 0.0;
-          if (amount > 0) {
-            discounts[name] = amount;
+      if (discountsList != null) {
+        for (final d in discountsList) {
+          if (d is Map<String, dynamic>) {
+            final name = d['name'] as String?;
+            final amount = (d['amount'] as num?)?.toDouble();
+            if (name != null && amount != null) {
+              discounts[name] = amount;
+            }
           }
         }
       }
@@ -53,16 +55,18 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final store = map['storeName'] as String? ?? '';
       final qty = (map['quantity'] as num?)?.toInt() ?? 1;
       final quantity = qty > 0 ? qty : 1;
-      final totalPrice = (map['totalPrice'] as num).toDouble();
+      final totalPrice = (map['totalPrice'] as num?)?.toDouble() ?? 0.0;
+      final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
       return FridgeItem.create(
-        rawText: name.isEmpty ? 'Unbekannter Artikel' : name,
+        name: name.isEmpty ? 'Unbekannter Artikel' : name,
         storeName: store.isEmpty ? 'Unbekannter Laden' : store,
         quantity: quantity,
-        unitPrice: totalPrice / quantity,
+        unitPrice: unitPrice,
         weight: map['weight'] as String?,
         brand: map['brand'] as String?,
         discounts: discounts,
+        receiptId: map['receiptId'] as String?,
       );
     }).toList();
   } catch (e, stackTrace) {

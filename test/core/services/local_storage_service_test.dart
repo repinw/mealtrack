@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/services/local_storage_service.dart';
+import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -18,7 +18,7 @@ void main() {
     // ignore: invalid_use_of_internal_member
     final item1 = FridgeItem(
       id: '1',
-      rawText: 'Item 1',
+      name: 'Item 1',
       entryDate: testDate,
       storeName: 'Store A',
       quantity: 1,
@@ -26,7 +26,7 @@ void main() {
     // ignore: invalid_use_of_internal_member
     final item2 = FridgeItem(
       id: '2',
-      rawText: 'Item 2',
+      name: 'Item 2',
       entryDate: testDate,
       storeName: 'Store B',
       quantity: 2,

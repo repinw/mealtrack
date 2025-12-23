@@ -52,7 +52,7 @@ void main() {
       final xFile = XFile('test_image.jpg');
       final scannedItems = [
         FridgeItem.create(
-          rawText: 'Test Item',
+          name: 'Test Item',
           storeName: 'Store',
           quantity: 1,
           unitPrice: 1.99,
@@ -138,44 +138,53 @@ void main() {
     expect(find.text('Ein Fehler ist aufgetreten.'), findsOneWidget);
   });
 
-  testWidgets('Shows error SnackBar when image picker throws PlatformException',
-      (tester) async {
-    when(
-      () => mockImagePicker.pickImage(source: ImageSource.gallery),
-    ).thenThrow(PlatformException(
-        code: 'photo_access_denied', message: 'Permission denied'));
+  testWidgets(
+    'Shows error SnackBar when image picker throws PlatformException',
+    (tester) async {
+      when(
+        () => mockImagePicker.pickImage(source: ImageSource.gallery),
+      ).thenThrow(
+        PlatformException(
+          code: 'photo_access_denied',
+          message: 'Permission denied',
+        ),
+      );
 
-    await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpWidget(createWidgetUnderTest());
 
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Bild aus Galerie'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.text('Ein Fehler ist aufgetreten.'), findsOneWidget);
-  });
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Ein Fehler ist aufgetreten.'), findsOneWidget);
+    },
+  );
 
   testWidgets(
-      'Shows SnackBar and does not navigate when scanner returns empty list',
-      (WidgetTester tester) async {
-    final xFile = XFile('dummy_path/image.jpg');
+    'Shows SnackBar and does not navigate when scanner returns empty list',
+    (WidgetTester tester) async {
+      final xFile = XFile('dummy_path/image.jpg');
 
-    when(() => mockImagePicker.pickImage(source: ImageSource.gallery))
-        .thenAnswer((_) async => xFile);
-    when(() => mockTextRecognitionService.processImage(xFile))
-        .thenAnswer((_) async => []);
+      when(
+        () => mockImagePicker.pickImage(source: ImageSource.gallery),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockTextRecognitionService.processImage(xFile),
+      ).thenAnswer((_) async => []);
 
-    await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpWidget(createWidgetUnderTest());
 
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Bild aus Galerie'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Keine Produkte erkannt'), findsOneWidget);
-    expect(find.byType(ReceiptEditPage), findsNothing);
-  });
+      expect(find.text('Keine Produkte erkannt'), findsOneWidget);
+      expect(find.byType(ReceiptEditPage), findsNothing);
+    },
+  );
 }

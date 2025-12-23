@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
 
-class ReceiptEditPage extends StatefulWidget {
+class ReceiptEditPage extends ConsumerStatefulWidget {
   final List<FridgeItem>? scannedItems;
   const ReceiptEditPage({super.key, this.scannedItems});
 
@@ -187,10 +189,12 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
             padding: const EdgeInsets.all(16.0),
             child: ReceiptFooter(
               total: total,
-              onSave: () {
-                // Save logic: _items contains the modified data
-                // db.save(_items);
+              onSave: () async {
                 debugPrint("Speichere ${items.length} Items");
+                await ref.read(fridgeItemsProvider.notifier).addItems(items);
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ),

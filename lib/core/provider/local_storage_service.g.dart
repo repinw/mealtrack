@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'local_storage_provider.dart';
+part of 'local_storage_service.dart';
 
 // **************************************************************************
 // RiverpodGenerator
