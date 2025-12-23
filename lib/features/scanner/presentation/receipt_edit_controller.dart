@@ -14,11 +14,9 @@ class ReceiptEditController extends ChangeNotifier {
 
   String get initialStoreName {
     try {
-      // Find the first item with a non-empty store name.
       return _items.firstWhere((item) => item.storeName.isNotEmpty).storeName;
     } catch (e) {
-      // If no item has a store name or the list is empty, return an empty string.
-      return '';
+      return 'Ladenname';
     }
   }
 

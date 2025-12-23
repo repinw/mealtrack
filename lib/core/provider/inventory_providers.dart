@@ -85,7 +85,7 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
   final groupedMap = <String, List<FridgeItem>>{};
 
   for (final item in items) {
-    final key = '${item.storeName}_${item.entryDate.millisecondsSinceEpoch}';
+    final key = '${item.storeName}_${item.entryDate.minute}';
 
     if (!groupedMap.containsKey(key)) {
       groupedMap[key] = [];
