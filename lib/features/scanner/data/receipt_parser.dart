@@ -62,8 +62,8 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
       return FridgeItem.create(
-        name: name.isEmpty ? 'Unbekannter Artikel' : name,
-        storeName: store.isEmpty ? 'Unbekannter Laden' : store,
+        name: name.isEmpty ? AppLocalizations.jsonParsingError : name,
+        storeName: store.isEmpty ? AppLocalizations.jsonParsingError : store,
         quantity: quantity,
         unitPrice: unitPrice,
         weight: map['weight'] as String?,

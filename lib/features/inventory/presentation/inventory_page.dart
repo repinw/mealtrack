@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_controller.dart';
@@ -91,7 +92,7 @@ class InventoryPage extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${item.item.storeName} - ${_formatDate(item.item.entryDate)}',
+                  '${item.item.storeName} - ${DateFormat.yMd().format(item.item.entryDate)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
@@ -111,9 +112,5 @@ class InventoryPage extends ConsumerWidget {
         );
       },
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
 }
