@@ -58,6 +58,8 @@ class _HomePageState extends State<HomePage> {
     try {
       final XFile? image = await widget.imagePicker.pickImage(
         source: ImageSource.gallery,
+        maxWidth: 1500,
+        imageQuality: 80,
       );
 
       if (image == null) {

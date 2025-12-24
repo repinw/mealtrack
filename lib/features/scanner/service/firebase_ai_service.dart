@@ -1,54 +1,59 @@
+import 'dart:convert';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart'; // Das Paket brauchst du
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
-/// A service that uses Firebase Vertex AI with Gemini to analyze receipt.
 class FirebaseAiService {
-  static const _modelName = 'gemini-2.5-flash';
+  final remoteConfig = FirebaseRemoteConfig.instance;
 
-  static const _prompt =
-      "Analysiere den Kassenbon und extrahiere strukturierte Daten."
-      "Regeln für die Ausgabe: Gib das Ergebnis ausschließlich als rohes JSON-Objekt zurück. Kein Markdown, kein erklärender Text. Das JSON muss einen Schlüssel 'items' enthalten, der eine Liste von Objekten ist."
-      "Regeln für die Artikel-Erkennung (WICHTIG):"
-      "    Ein Eintrag im Array 'items' darf nur erstellt werden, wenn es sich um ein physisches Produkt mit einem positiven Preis handelt."
-      "   Zeilen mit negativen Preisen (z.B. -1,20) oder Zeilen, die Worte wie 'Rabatt' oder 'Gutschein' im Namen enthalten, sind KEINE Artikel. Erstelle dafür kein eigenes Item-Objekt!"
-      "   Stattdessen müssen diese Zeilen als Rabatt-Objekt in das Feld discounts des unmittelbar vorangegangenen Artikels eingefügt werden."
-      "Struktur eines Artikel-Objekts:"
-      "   name: Vollständiger Name des Artikels (String). Rate den vollen Namen. Entferne Gewichtsangaben und Hersteller aus dem Namen."
-      "   brand: Marke oder Hersteller (String). Rate, falls nicht explizit genannt."
-      "  quantity: Menge (Integer). Standard: 1. Wenn '2 x' davor steht, ist es 2."
-      " totalPrice: Der Preis auf der rechten Seite (Float). Muss positiv sein."
-      " weight: Extrahiere Gewichte/Volumen (z.B. '500g', '1L', 'ST') aus dem Text und speichere sie hier, nicht im Namen."
-      "discounts: Eine Liste von Objekten. Jedes Objekt hat name (Beschreibung des Rabatts) und amount (der absolute Betrag als positive Zahl, z.B. 1.20)."
-      "storeName: Name des Ladens (z.B. Netto). Wiederhole für jedes Item.,"
-      "isLowConfidence: Boolean. Setze auf true, wenn du dir bei der Erkennung unsicher bist (z.B. unleserlich), sonst false."
-      "Beispiel-Logik: Wenn Zeile A 'Hackfleisch 7,99' ist und Zeile B 'Rabatt -1,20' ist: Erstelle EIN Item für Hackfleisch. Füge den Rabatt von 1.20 in dessen discounts-Liste ein. Erstelle KEIN Item für Zeile B.";
-
-  final GenerativeModel? _model;
-
-  FirebaseAiService({GenerativeModel? model}) : _model = model;
-
-  /// Analyzes the given image [imageData] with the Gemini model.
-  ///
-  /// Throws an exception if the analysis fails or returns no text.
   Future<List<FridgeItem>> analyzeImageWithGemini(XFile imageData) async {
+    String templateID = remoteConfig.getString("template_id");
+    if (templateID.isEmpty) templateID = "kassenbon-analyse-v1";
+
     try {
-      final model =
-          _model ?? FirebaseAI.vertexAI().generativeModel(model: _modelName);
+      // 1. WIR BLEIBEN BEIM TEMPLATE!
+      final model = FirebaseAI.vertexAI(
+        location: 'global',
+      ).templateGenerativeModel();
 
       debugPrint(AppLocalizations.imageUploading);
+      debugPrint("Starte Kompression...");
 
-      final prompt = Content.multi([
-        const TextPart(_prompt),
-        InlineDataPart('image/jpeg', await imageData.readAsBytes()),
-      ]);
+      // 2. Komprimierung & Umwandlung in JPEG
+      // Egal ob PNG, HEIC oder WebP reinkommt -> es kommt ein kleines JPEG raus.
+      final Uint8List? compressedBytes =
+          await FlutterImageCompress.compressWithFile(
+            imageData.path,
+            minWidth: 1024, // Breite begrenzen (spart MBs)
+            minHeight: 1024,
+            quality: 60, // Gute Balance
+            format: CompressFormat.jpeg, // ZWANG: Wir machen ein JPEG draus!
+          );
 
-      final response = await model.generateContent([prompt]);
+      if (compressedBytes == null) {
+        throw Exception("Bildkompression fehlgeschlagen");
+      }
+
+      final base64Image = base64Encode(compressedBytes);
+
+      debugPrint("Original: ${await imageData.length()} Bytes");
+      debugPrint(
+        "Optimiert: ${compressedBytes.length} Bytes (Sende als image/jpeg)",
+      );
+
+      // 3. Inputs für das Template
+      // Wir nutzen die Split-Methode, die wir zuletzt besprochen hatten.
+      // Da wir konvertiert haben, ist der MimeType jetzt IMMER 'image/jpeg'.
+      final inputs = {'mimeType': 'image/jpeg', 'imageData': base64Image};
+
+      // 4. Aufruf ans Template
+      final response = await model.generateContent(templateID, inputs: inputs);
+
       final extractedText = response.text;
-
       if (extractedText == null || extractedText.isEmpty) {
         throw Exception(AppLocalizations.noTextFromAi);
       }
