@@ -12,7 +12,7 @@ void main() {
       String? brand,
     }) {
       return FridgeItem.create(
-        rawText: name,
+        name: name,
         storeName: 'Test Store',
         quantity: quantity,
         unitPrice: unitPrice,
@@ -135,7 +135,7 @@ void main() {
       await tester.pump();
 
       // Assert
-      expect(updatedItem?.rawText, 'New Name');
+      expect(updatedItem?.name, 'New Name');
     });
 
     testWidgets('Happy Path: Changing price updates unitPrice', (tester) async {

@@ -8,7 +8,7 @@ class MockUuid extends Mock implements Uuid {}
 void main() {
   group('FridgeItem', () {
     const id = 'test-uuid';
-    const rawText = '2 Eier';
+    const name = '2 Eier';
     final entryDate = DateTime(2025, 12, 1);
     const storeName = 'Supermarkt';
     const quantity = 2;
@@ -20,7 +20,7 @@ void main() {
       // ignore: invalid_use_of_internal_member
       final item = FridgeItem(
         id: id,
-        rawText: rawText,
+        name: name,
         entryDate: entryDate,
         storeName: storeName,
         quantity: quantity,
@@ -29,7 +29,7 @@ void main() {
       );
 
       expect(item.id, id);
-      expect(item.rawText, rawText);
+      expect(item.name, name);
       expect(item.entryDate, entryDate);
       expect(item.storeName, storeName);
       expect(item.quantity, quantity);
@@ -43,7 +43,7 @@ void main() {
     // Testet die .create() Factory
     group('FridgeItem.create factory', () {
       test('creates an instance with generated values', () {
-        final item = FridgeItem.create(rawText: 'Milch', storeName: 'Lidl');
+        final item = FridgeItem.create(name: 'Milch', storeName: 'Lidl');
 
         // Überprüft, ob die ID ein gültiges UUID v4 Format hat.
         expect(
@@ -53,7 +53,7 @@ void main() {
           ),
           isTrue,
         );
-        expect(item.rawText, 'Milch');
+        expect(item.name, 'Milch');
         // Überprüft, ob das Datum sehr nah am aktuellen Datum liegt.
         expect(
           item.entryDate.difference(DateTime.now()).inSeconds.abs(),
@@ -69,7 +69,7 @@ void main() {
       test('creates an instance with all optional values', () {
         final discounts = {'Rabatt': 0.50};
         final item = FridgeItem.create(
-          rawText: 'Milch',
+          name: 'Milch',
           storeName: 'Lidl',
           quantity: 5,
           unitPrice: 1.29,
@@ -94,7 +94,7 @@ void main() {
 
         // Act: Erstelle das Item mit den Mocks
         final item = FridgeItem.create(
-          rawText: 'Test Item',
+          name: 'Test Item',
           storeName: 'Test Store',
           uuid: mockUuid,
           now: mockNow,
@@ -106,46 +106,40 @@ void main() {
         expect(item.storeName, 'Test Store');
       });
 
-      test('throws ArgumentError if rawText is empty or whitespace', () {
+      test('throws ArgumentError if name is empty or whitespace', () {
         // Test mit einem leeren String
         expect(
-          () => FridgeItem.create(rawText: '', storeName: 'S'),
+          () => FridgeItem.create(name: '', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
         );
 
         // Test mit einem String, der nur Leerzeichen enthält
         expect(
-          () => FridgeItem.create(rawText: '   ', storeName: 'S'),
+          () => FridgeItem.create(name: '   ', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
         );
       });
 
       test('throws ArgumentError if storeName is empty or whitespace', () {
         expect(
-          () => FridgeItem.create(rawText: 'Milch', storeName: ''),
+          () => FridgeItem.create(name: 'Milch', storeName: ''),
           throwsA(isA<ArgumentError>()),
         );
         expect(
-          () => FridgeItem.create(rawText: 'Milch', storeName: '   '),
+          () => FridgeItem.create(name: 'Milch', storeName: '   '),
           throwsA(isA<ArgumentError>()),
         );
       });
 
       test('throws ArgumentError if quantity is less than or equal to 0', () {
         expect(
-          () => FridgeItem.create(
-            rawText: 'Milch',
-            storeName: 'Lidl',
-            quantity: 0,
-          ),
+          () =>
+              FridgeItem.create(name: 'Milch', storeName: 'Lidl', quantity: 0),
           throwsA(isA<ArgumentError>()),
         );
         expect(
-          () => FridgeItem.create(
-            rawText: 'Milch',
-            storeName: 'Lidl',
-            quantity: -1,
-          ),
+          () =>
+              FridgeItem.create(name: 'Milch', storeName: 'Lidl', quantity: -1),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -153,7 +147,7 @@ void main() {
       test('initializes with receiptId if provided', () {
         const receiptId = 'receipt-123';
         final item = FridgeItem.create(
-          rawText: 'Milch',
+          name: 'Milch',
           storeName: 'Lidl',
           receiptId: receiptId,
         );
@@ -168,7 +162,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
-          rawText: rawText,
+          name: name,
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
@@ -177,7 +171,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: id,
-          rawText: rawText,
+          name: name,
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
@@ -192,7 +186,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
-          rawText: rawText,
+          name: name,
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
@@ -200,7 +194,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: 'another-id',
-          rawText: rawText,
+          name: name,
           entryDate: entryDate,
           storeName: storeName,
           quantity: quantity,
@@ -221,7 +215,7 @@ void main() {
             String? weight,
           }) => FridgeItem(
             id: '1',
-            rawText: 'a',
+            name: 'a',
             entryDate: entryDate,
             storeName: storeName,
             quantity: quantity,
@@ -241,7 +235,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: '1',
-          rawText: 'a',
+          name: 'a',
           entryDate: date,
           isConsumed: true,
           consumptionDate: date,
@@ -251,7 +245,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: '1',
-          rawText: 'a',
+          name: 'a',
           entryDate: date,
           isConsumed: true,
           consumptionDate: date,
@@ -268,7 +262,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: id,
-          rawText: rawText,
+          name: name,
           entryDate: entryDate,
           isConsumed: false,
           storeName: storeName,
@@ -278,7 +272,7 @@ void main() {
         final itemString = item.toString();
 
         expect(itemString, contains(id));
-        expect(itemString, contains(rawText));
+        expect(itemString, contains(name));
         expect(itemString, contains(entryDate.toString()));
         expect(itemString, contains(false.toString()));
       });
@@ -287,19 +281,19 @@ void main() {
     group('copyWith', () {
       test('creates a copy with updated values', () {
         // Arrange
-        final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
+        final item = FridgeItem.create(name: 'Käse', storeName: 'Aldi');
         final newDate = DateTime(2025, 12, 24);
 
         // Act
         final updatedItem = item.copyWith(
-          rawText: 'Käse (alt)',
+          name: 'Käse (alt)',
           isConsumed: true,
           consumptionDate: newDate,
         );
 
         // Assert
         expect(updatedItem.id, item.id);
-        expect(updatedItem.rawText, 'Käse (alt)');
+        expect(updatedItem.name, 'Käse (alt)');
         expect(updatedItem.isConsumed, isTrue);
         expect(updatedItem.consumptionDate, newDate);
         // Unchanged properties
@@ -308,7 +302,7 @@ void main() {
       });
 
       test('creates an identical copy when no arguments are provided', () {
-        final item = FridgeItem.create(rawText: 'Käse', storeName: 'Aldi');
+        final item = FridgeItem.create(name: 'Käse', storeName: 'Aldi');
         final copiedItem = item.copyWith();
 
         expect(copiedItem, item);
@@ -322,7 +316,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: 'test-id',
-          rawText: 'Joghurt',
+          name: 'Joghurt',
           entryDate: DateTime(2025, 11, 20),
           storeName: 'Rewe',
           quantity: 4,
@@ -337,7 +331,7 @@ void main() {
         );
 
         // Assert: Check that the properties in question were copied correctly.
-        expect(updatedItem.rawText, 'Joghurt');
+        expect(updatedItem.name, 'Joghurt');
         expect(updatedItem.isConsumed, isTrue);
         expect(updatedItem.consumptionDate, consumptionDate);
 
@@ -351,7 +345,7 @@ void main() {
       test('throws ArgumentError if unitPrice is negative', () {
         expect(
           () => FridgeItem.create(
-            rawText: 'Brot',
+            name: 'Brot',
             storeName: 'Bäcker',
             unitPrice: -2.50,
           ),
@@ -368,7 +362,7 @@ void main() {
       // ignore: invalid_use_of_internal_member
       final fullItem = FridgeItem(
         id: 'test-uuid-123',
-        rawText: 'Bio Eier 6er',
+        name: 'Bio Eier 6er',
         entryDate: entryDate,
         isConsumed: true,
         consumptionDate: consumptionDate,
@@ -384,7 +378,7 @@ void main() {
       // ignore: invalid_use_of_internal_member
       final minimalItem = FridgeItem(
         id: 'test-uuid-456',
-        rawText: 'Wasser',
+        name: 'Wasser',
         entryDate: entryDate,
         storeName: 'Supermarkt',
         quantity: 6,
@@ -395,7 +389,7 @@ void main() {
 
         expect(json, {
           'id': 'test-uuid-123',
-          'rawText': 'Bio Eier 6er',
+          'name': 'Bio Eier 6er',
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': true,
           'consumptionDate': consumptionDate.toIso8601String(),
@@ -414,7 +408,7 @@ void main() {
 
         expect(json, {
           'id': 'test-uuid-456',
-          'rawText': 'Wasser',
+          'name': 'Wasser',
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': false,
           'consumptionDate': null,
@@ -445,7 +439,7 @@ void main() {
       test('fromJson handles missing optional fields gracefully', () {
         final json = {
           'id': 'test-uuid-789',
-          'rawText': 'Kaffee',
+          'name': 'Kaffee',
           'entryDate': entryDate.toIso8601String(),
           'storeName': 'Tchibo',
           'quantity': 1,
@@ -456,7 +450,7 @@ void main() {
         // ignore: invalid_use_of_internal_member
         final expectedItem = FridgeItem(
           id: 'test-uuid-789',
-          rawText: 'Kaffee',
+          name: 'Kaffee',
           entryDate: entryDate,
           storeName: 'Tchibo',
           quantity: 1,

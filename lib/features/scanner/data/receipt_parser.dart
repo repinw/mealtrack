@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:uuid/uuid.dart';
 
 List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
-    throw const FormatException('Leerer JSON-String empfangen.');
+    throw const FormatException(AppLocalizations.emptyJsonString);
   }
 
   // Delete Gemini Json packaging if present
@@ -15,7 +17,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       .trim();
 
   if (sanitizedJson.isEmpty) {
-    throw const FormatException('Bereinigter JSON-String ist leer.');
+    throw const FormatException(AppLocalizations.sanitizedJsonEmpty);
   }
 
   try {
@@ -23,27 +25,31 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 
     List<dynamic> itemsList;
 
+    var receiptId = const Uuid().v4();
+
     if (decodedJson is Map<String, dynamic> &&
         decodedJson.containsKey('items')) {
       itemsList = decodedJson['items'] as List<dynamic>;
     } else if (decodedJson is List) {
       itemsList = decodedJson;
     } else {
-      debugPrint('Unerwartetes JSON-Format empfangen: $decodedJson');
+      debugPrint('${AppLocalizations.unexpectedJsonFormat}$decodedJson');
       return [];
     }
 
     return itemsList.map((itemJson) {
       final map = itemJson as Map<String, dynamic>;
 
-      final discountsList = map['discounts'] as List<dynamic>? ?? [];
+      final discountsList = map['discounts'] as List<dynamic>?;
       final discounts = <String, double>{};
-      for (final d in discountsList) {
-        if (d is Map<String, dynamic>) {
-          final name = d['name'] as String? ?? 'Rabatt';
-          final amount = (d['amount'] as num?)?.toDouble() ?? 0.0;
-          if (amount > 0) {
-            discounts[name] = amount;
+      if (discountsList != null) {
+        for (final d in discountsList) {
+          if (d is Map<String, dynamic>) {
+            final name = d['name'] as String?;
+            final amount = (d['amount'] as num?)?.toDouble();
+            if (name != null && amount != null) {
+              discounts[name] = amount;
+            }
           }
         }
       }
@@ -52,21 +58,23 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final store = map['storeName'] as String? ?? '';
       final qty = (map['quantity'] as num?)?.toInt() ?? 1;
       final quantity = qty > 0 ? qty : 1;
-      final totalPrice = (map['totalPrice'] as num).toDouble();
+      final totalPrice = (map['totalPrice'] as num?)?.toDouble() ?? 0.0;
+      final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
       return FridgeItem.create(
-        rawText: name.isEmpty ? 'Unbekannter Artikel' : name,
-        storeName: store.isEmpty ? 'Unbekannter Laden' : store,
+        name: name.isEmpty ? AppLocalizations.jsonParsingError : name,
+        storeName: store.isEmpty ? AppLocalizations.jsonParsingError : store,
         quantity: quantity,
-        unitPrice: totalPrice / quantity,
+        unitPrice: unitPrice,
         weight: map['weight'] as String?,
         brand: map['brand'] as String?,
         discounts: discounts,
+        receiptId: receiptId,
       );
     }).toList();
   } catch (e, stackTrace) {
     debugPrint('Fehler beim Parsen des JSON: $e');
     debugPrintStack(stackTrace: stackTrace);
-    throw FormatException('Fehler beim Parsen des JSON: $e');
+    throw FormatException('${AppLocalizations.jsonParsingError}$e');
   }
 }

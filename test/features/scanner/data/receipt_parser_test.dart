@@ -66,7 +66,7 @@ void main() {
           {
             "name": "Test Item",
             "quantity": 1,
-            "unitPrice": 10.50
+            "totalPrice": 10.50
           }
         ]
       }
@@ -75,7 +75,7 @@ void main() {
       final result = parseScannedItemsFromJson(jsonString);
 
       expect(result, isNotEmpty);
-      expect(result.first.unitPrice ?? 0, greaterThanOrEqualTo(0));
+      expect(result.first.unitPrice, greaterThanOrEqualTo(0));
     });
 
     test('parses discounts correctly', () {
@@ -101,8 +101,9 @@ void main() {
       expect(result, isNotEmpty);
       final item = result.first;
       expect(item.discounts, containsPair('Summer Sale', 2.5));
-      expect(item.discounts, containsPair('Rabatt', 1.0));
-      expect(item.discounts.length, 2);
+      expect(item.discounts, containsPair('Invalid Amount', 0.0));
+      expect(item.discounts, containsPair('Negative Amount', -5.0));
+      expect(item.discounts.length, 3);
     });
   });
 }

@@ -33,7 +33,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   void initState() {
     super.initState();
     // Initialize controllers with item values
-    _nameController = TextEditingController(text: widget.item.rawText);
+    _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
     // Display price minus discount
     _priceController = TextEditingController(
@@ -94,7 +94,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
 
   void _updateItem() {
     final newItem = widget.item.copyWith(
-      rawText: _nameController.text,
+      name: _nameController.text,
       weight: _weightController.text.isEmpty ? null : _weightController.text,
       brand: _brandController.text,
       unitPrice:

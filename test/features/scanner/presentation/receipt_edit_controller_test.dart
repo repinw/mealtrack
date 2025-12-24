@@ -4,120 +4,92 @@ import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.
 
 void main() {
   group('ReceiptEditController', () {
-    late ReceiptEditController controller;
-
-    // Helper to create items for testing.
-    // Adjust the constructor arguments below to match your actual FridgeItem definition.
-    FridgeItem createItem({
-      String name = 'Test Item',
-      String storeName = '',
-      double? unitPrice,
-      int quantity = 1,
-    }) {
-      return FridgeItem(
-        id: '',
-        storeName: storeName,
-        unitPrice: unitPrice,
-        quantity: quantity,
-        rawText: ""
-        entryDate: DateTime(ye)
-      );
-    }
-
-    test('initialStoreName returns the first non-empty store name', () {
-      final items = [
-        createItem(storeName: ''),
-        createItem(storeName: 'Target'),
-        createItem(storeName: 'Walmart'),
-      ];
-      controller = ReceiptEditController(items);
-      expect(controller.initialStoreName, 'Target');
-    });
-
-    test('initialStoreName returns empty string if no store name found', () {
-      final items = [createItem(storeName: ''), createItem(storeName: '')];
-      controller = ReceiptEditController(items);
-      expect(controller.initialStoreName, '');
-    });
-
-    test('initialStoreName returns empty string if list is empty', () {
-      controller = ReceiptEditController([]);
-      expect(controller.initialStoreName, '');
-    });
-
-    test('Calculate Total Sum with multiple quantities (Happy Path)', () {
-      // Scenario: Calculate Total Sum with multiple quantities.
-      // Setup: Item A (Price 10.0, Qty 2), Item B (Price 5.0, Qty 1).
-      final items = [
-        createItem(name: 'Item A', unitPrice: 10.0, quantity: 2),
-        createItem(name: 'Item B', unitPrice: 5.0, quantity: 1),
-      ];
-      controller = ReceiptEditController(items);
-
-      // Expectation: Total sum displayed is 25.0 (20 + 5).
-      expect(controller.total, 25.0);
-    });
-
-    test(
-      'Calculate Total Sum treats null unitPrice as 0.0 (Error Handling)',
-      () {
-        // Scenario: Null values in calculation.
-        final items = [
-          createItem(unitPrice: 10.0, quantity: 1),
-          createItem(unitPrice: null, quantity: 5), // Should be treated as 0.0
-        ];
-        controller = ReceiptEditController(items);
-
-        // Expectation: 10.0 + (0.0 * 5) = 10.0
-        expect(controller.total, 10.0);
-      },
+    final item1 = FridgeItem(
+      name: 'Apple',
+      storeName: 'Store A',
+      unitPrice: 1.50,
+      quantity: 2,
+      entryDate: DateTime.now(),
+      id: '1',
     );
 
-    test('totalQuantity sums up all quantities', () {
-      final items = [createItem(quantity: 2), createItem(quantity: 3)];
-      controller = ReceiptEditController(items);
-      expect(controller.totalQuantity, 5);
+    final item2 = FridgeItem(
+      name: 'Banana',
+      storeName: 'Store A',
+      unitPrice: 0.50,
+      quantity: 4,
+      entryDate: DateTime.now(),
+      id: '2',
+    );
+
+    test('initializes with empty list when null is passed', () {
+      final controller = ReceiptEditController(null);
+      expect(controller.items, isEmpty);
+      expect(controller.total, 0.0);
+      expect(controller.totalQuantity, 0);
     });
 
-    test('updateMerchantName updates all items and notifies listeners', () {
-      final items = [
-        createItem(storeName: 'Old Store'),
-        createItem(storeName: 'Old Store'),
-      ];
-      controller = ReceiptEditController(items);
+    test('initializes with provided items', () {
+      final controller = ReceiptEditController([item1, item2]);
+      expect(controller.items.length, 2);
+      expect(controller.items, containsAll([item1, item2]));
+    });
 
+    test('calculates total correctly', () {
+      final controller = ReceiptEditController([item1, item2]);
+      // (1.50 * 2) + (0.50 * 4) = 3.0 + 2.0 = 5.0
+      expect(controller.total, 5.0);
+    });
+
+    test('calculates totalQuantity correctly', () {
+      final controller = ReceiptEditController([item1, item2]);
+      // 2 + 4 = 6
+      expect(controller.totalQuantity, 6);
+    });
+
+    test('initialStoreName returns the first non-empty store name', () {
+      final itemEmptyStore = item1.copyWith(storeName: '');
+      final controller = ReceiptEditController([itemEmptyStore, item2]);
+
+      expect(controller.initialStoreName, 'Store A');
+    });
+
+    test('initialStoreName returns default value if no store name found', () {
+      final itemEmptyStore1 = item1.copyWith(storeName: '');
+      final itemEmptyStore2 = item2.copyWith(storeName: '');
+      final controller = ReceiptEditController([
+        itemEmptyStore1,
+        itemEmptyStore2,
+      ]);
+
+      expect(controller.initialStoreName, 'Ladenname');
+    });
+
+    test('updateMerchantName updates store name for all items', () {
+      final controller = ReceiptEditController([item1, item2]);
+      const newStoreName = 'Supermarket B';
+
+      controller.updateMerchantName(newStoreName);
+
+      expect(
+        controller.items.every((item) => item.storeName == newStoreName),
+        isTrue,
+      );
+    });
+
+    test('updateMerchantName notifies listeners when changes occur', () {
+      final controller = ReceiptEditController([item1]);
       bool notified = false;
       controller.addListener(() {
         notified = true;
       });
 
       controller.updateMerchantName('New Store');
-
       expect(notified, isTrue);
-      expect(
-        controller.items.every((item) => item.storeName == 'New Store'),
-        isTrue,
-      );
-    });
-
-    test('updateMerchantName does not notify if name is unchanged', () {
-      final items = [createItem(storeName: 'Same Name')];
-      controller = ReceiptEditController(items);
-
-      bool notified = false;
-      controller.addListener(() {
-        notified = true;
-      });
-
-      controller.updateMerchantName('Same Name');
-
-      expect(notified, isFalse);
     });
 
     test('deleteItem removes item at index and notifies listeners', () {
-      final items = [createItem(name: 'Item 1'), createItem(name: 'Item 2')];
-      controller = ReceiptEditController(items);
-
+      final controller = ReceiptEditController([item1, item2]);
       bool notified = false;
       controller.addListener(() {
         notified = true;
@@ -125,9 +97,24 @@ void main() {
 
       controller.deleteItem(0);
 
-      expect(notified, isTrue);
       expect(controller.items.length, 1);
-      expect(controller.items.first.name, 'Item 2');
+      expect(controller.items.first, item2);
+      expect(notified, isTrue);
+    });
+
+    test('updateItem replaces item at index and notifies listeners', () {
+      final controller = ReceiptEditController([item1]);
+      final newItem = item1.copyWith(name: 'Green Apple');
+
+      bool notified = false;
+      controller.addListener(() {
+        notified = true;
+      });
+
+      controller.updateItem(0, newItem);
+
+      expect(controller.items.first.name, 'Green Apple');
+      expect(notified, isTrue);
     });
   });
 }

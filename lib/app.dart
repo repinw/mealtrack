@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/features/home/presentation/home_page.dart';
-import 'package:mealtrack/features/scanner/service/text_recognition_service.dart';
+import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 
 class MealTrackApp extends StatelessWidget {
-  final ImagePicker? imagePicker;
-  final TextRecognitionService? textRecognitionService;
+  final ImagePicker imagePicker;
+  final FirebaseAiService firebaseAiService;
 
   const MealTrackApp({
     super.key,
-    this.imagePicker,
-    this.textRecognitionService,
+    required this.imagePicker,
+    required this.firebaseAiService,
   });
 
   @override
@@ -22,9 +22,8 @@ class MealTrackApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: HomePage(
-        imagePicker: imagePicker ?? ImagePicker(),
-        textRecognitionService:
-            textRecognitionService ?? TextRecognitionService(),
+        imagePicker: imagePicker,
+        firebaseAiService: firebaseAiService,
       ),
     );
   }

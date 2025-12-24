@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 
 class ReceiptEditController extends ChangeNotifier {
@@ -14,11 +15,9 @@ class ReceiptEditController extends ChangeNotifier {
 
   String get initialStoreName {
     try {
-      // Find the first item with a non-empty store name.
       return _items.firstWhere((item) => item.storeName.isNotEmpty).storeName;
     } catch (e) {
-      // If no item has a store name or the list is empty, return an empty string.
-      return '';
+      return AppLocalizations.defaultStoreName;
     }
   }
 

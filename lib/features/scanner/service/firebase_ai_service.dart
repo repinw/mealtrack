@@ -1,10 +1,12 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
-/// A service that uses Firebase Vertex AI with Gemini to analyze receipt images.
+/// A service that uses Firebase Vertex AI with Gemini to analyze receipt.
 class FirebaseAiService {
-  // Using a fast and cost-efficient model suitable for this task.
   static const _modelName = 'gemini-2.5-flash';
 
   static const _prompt =
@@ -32,12 +34,12 @@ class FirebaseAiService {
   /// Analyzes the given image [imageData] with the Gemini model.
   ///
   /// Throws an exception if the analysis fails or returns no text.
-  Future<String> analyzeImageWithGemini(XFile imageData) async {
+  Future<List<FridgeItem>> analyzeImageWithGemini(XFile imageData) async {
     try {
       final model =
           _model ?? FirebaseAI.vertexAI().generativeModel(model: _modelName);
 
-      debugPrint("Bild wird hochgeladen und analysiert...");
+      debugPrint(AppLocalizations.imageUploading);
 
       final prompt = Content.multi([
         const TextPart(_prompt),
@@ -48,14 +50,13 @@ class FirebaseAiService {
       final extractedText = response.text;
 
       if (extractedText == null || extractedText.isEmpty) {
-        throw Exception("Kein Text von der KI erhalten.");
+        throw Exception(AppLocalizations.noTextFromAi);
       }
 
-      debugPrint("KI Ergebnis: $extractedText", wrapWidth: 1024);
-      return extractedText;
+      debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
+      return parseScannedItemsFromJson(extractedText);
     } catch (e) {
-      debugPrint("Fehler bei der KI-Anfrage: $e");
-      // Rethrow the exception to be handled by the caller.
+      debugPrint("${AppLocalizations.aiRequestError}$e");
       rethrow;
     }
   }
