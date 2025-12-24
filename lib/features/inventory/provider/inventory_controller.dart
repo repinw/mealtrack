@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/inventory_providers.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

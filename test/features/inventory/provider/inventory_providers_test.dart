@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/inventory_providers.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -69,12 +69,16 @@ void main() {
       verify(() => mockStorageService.loadItems()).called(2);
     });
 
-    test('addItems saves items and invalidates state', () async {
+    test('addItems appends items to existing list and saves', () async {
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item2]);
       when(() => mockStorageService.saveItems(any())).thenAnswer((_) async {});
 
       await container.read(fridgeItemsProvider.notifier).addItems([item1]);
 
-      verify(() => mockStorageService.saveItems([item1])).called(1);
+      verify(() => mockStorageService.loadItems()).called(1);
+      verify(() => mockStorageService.saveItems([item2, item1])).called(1);
     });
 
     test('updateItem updates specific item and saves list', () async {

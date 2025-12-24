@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/core/provider/inventory_providers.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_controller.dart';
 

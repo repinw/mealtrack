@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/inventory_providers.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';

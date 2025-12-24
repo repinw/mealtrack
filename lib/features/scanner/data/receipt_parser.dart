@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:uuid/uuid.dart';
 
 List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
@@ -23,6 +24,8 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     final decodedJson = jsonDecode(sanitizedJson);
 
     List<dynamic> itemsList;
+
+    var receiptId = const Uuid().v4();
 
     if (decodedJson is Map<String, dynamic> &&
         decodedJson.containsKey('items')) {
@@ -66,7 +69,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         weight: map['weight'] as String?,
         brand: map['brand'] as String?,
         discounts: discounts,
-        receiptId: map['receiptId'] as String?,
+        receiptId: receiptId,
       );
     }).toList();
   } catch (e, stackTrace) {

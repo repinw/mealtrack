@@ -22,7 +22,8 @@ class FridgeItems extends _$FridgeItems {
 
   Future<void> addItems(List<FridgeItem> items) async {
     final service = ref.read(localStorageServiceProvider);
-    await service.saveItems(items);
+    final currentItems = await service.loadItems();
+    await service.saveItems([...currentItems, ...items]);
     ref.invalidateSelf();
   }
 
