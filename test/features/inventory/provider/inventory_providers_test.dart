@@ -77,7 +77,7 @@ void main() {
 
       await container.read(fridgeItemsProvider.notifier).addItems([item1]);
 
-      verify(() => mockStorageService.loadItems()).called(1);
+      verify(() => mockStorageService.loadItems()).called(2);
       verify(() => mockStorageService.saveItems([item2, item1])).called(1);
     });
 
@@ -99,6 +99,20 @@ void main() {
       ).called(1);
     });
 
+    test('updateItem does nothing if item not found', () async {
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final newItem = FridgeItem.create(name: 'New', storeName: 'Store');
+
+      await container.read(fridgeItemsProvider.notifier).updateItem(newItem);
+
+      verifyNever(() => mockStorageService.saveItems(any()));
+    });
+
     test('updateQuantity updates quantity and handles consumption', () async {
       when(
         () => mockStorageService.loadItems(),
@@ -110,6 +124,53 @@ void main() {
       await container
           .read(fridgeItemsProvider.notifier)
           .updateQuantity(item1, -1);
+
+      final captured = verify(
+        () => mockStorageService.saveItems(captureAny()),
+      ).captured;
+      final savedList = captured.first as List<FridgeItem>;
+      expect(savedList.first.quantity, 0);
+      expect(savedList.first.isConsumed, true);
+    });
+
+    test('updateQuantity revives consumed item', () async {
+      final consumptionDate = DateTime.now();
+      final item = FridgeItem.create(
+        name: 'Item',
+        storeName: 'Store',
+        quantity: 1,
+      ).copyWith(isConsumed: true, consumptionDate: consumptionDate);
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item]);
+      when(() => mockStorageService.saveItems(any())).thenAnswer((_) async {});
+
+      await container.read(fridgeItemsProvider.future);
+      await container
+          .read(fridgeItemsProvider.notifier)
+          .updateQuantity(item, 1);
+
+      final captured = verify(
+        () => mockStorageService.saveItems(captureAny()),
+      ).captured;
+      final saved = captured.first as List<FridgeItem>;
+      expect(saved.first.quantity, 2);
+      expect(saved.first.isConsumed, false);
+      expect(saved.first.consumptionDate, consumptionDate);
+    });
+
+    test('updateQuantity clamps negative quantity to 0 and consumes', () async {
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item2]);
+      when(() => mockStorageService.saveItems(any())).thenAnswer((_) async {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      await container
+          .read(fridgeItemsProvider.notifier)
+          .updateQuantity(item2, -5);
 
       final captured = verify(
         () => mockStorageService.saveItems(captureAny()),
@@ -162,33 +223,26 @@ void main() {
   });
 
   group('groupedFridgeItems', () {
-    test('groups items by store and entry date', () async {
-      final date1 = DateTime(2023, 1, 1);
-      final date2 = DateTime(2023, 1, 2);
-
+    test('groups items by receiptId', () async {
       final item1 = FridgeItem.create(
         name: 'A',
         storeName: 'Store1',
-        quantity: 1,
-        now: () => date1,
+        receiptId: 'R1',
       );
       final item2 = FridgeItem.create(
         name: 'B',
         storeName: 'Store1',
-        quantity: 1,
-        now: () => date1,
+        receiptId: 'R1',
       );
       final item3 = FridgeItem.create(
         name: 'C',
         storeName: 'Store1',
-        quantity: 1,
-        now: () => date2,
+        receiptId: 'R2',
       );
       final item4 = FridgeItem.create(
         name: 'D',
         storeName: 'Store2',
-        quantity: 1,
-        now: () => date1,
+        // receiptId is null
       );
 
       when(
@@ -198,9 +252,9 @@ void main() {
       final grouped = await container.read(groupedFridgeItemsProvider.future);
 
       expect(grouped.length, 3);
-      expect(grouped[0].value.length, 2); // Store1_date1
-      expect(grouped[1].value.length, 1); // Store1_date2
-      expect(grouped[2].value.length, 1); // Store2_date1
+      expect(grouped.firstWhere((e) => e.key == 'R1').value.length, 2);
+      expect(grouped.firstWhere((e) => e.key == 'R2').value.length, 1);
+      expect(grouped.firstWhere((e) => e.key == 'null').value.length, 1);
     });
   });
 }

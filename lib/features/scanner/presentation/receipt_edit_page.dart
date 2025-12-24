@@ -190,7 +190,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
             child: ReceiptFooter(
               total: total,
               onSave: () async {
-                debugPrint("Speichere ${items.length} Items");
+                debugPrint("Saving ${items.length} Items");
                 await ref.read(fridgeItemsProvider.notifier).addItems(items);
                 if (mounted) {
                   Navigator.of(context).pop();
