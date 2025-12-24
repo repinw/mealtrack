@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,30 +8,38 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/home/presentation/home_page.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
-import 'package:mealtrack/features/scanner/service/text_recognition_service.dart';
+import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockImagePicker extends Mock implements ImagePicker {}
 
-class MockTextRecognitionService extends Mock
-    implements TextRecognitionService {}
+class MockFirebaseAiService extends Mock implements FirebaseAiService {}
+
+class MockFridgeItems extends FridgeItems {
+  @override
+  Future<List<FridgeItem>> build() async => [];
+}
 
 void main() {
   late MockImagePicker mockImagePicker;
-  late MockTextRecognitionService mockTextRecognitionService;
+  late MockFirebaseAiService mockFirebaseAiService;
 
   setUp(() {
     registerFallbackValue(XFile(''));
     mockImagePicker = MockImagePicker();
-    mockTextRecognitionService = MockTextRecognitionService();
+    mockFirebaseAiService = MockFirebaseAiService();
   });
 
   Widget createWidgetUnderTest() {
-    return MaterialApp(
-      home: HomePage(
-        imagePicker: mockImagePicker,
-        textRecognitionService: mockTextRecognitionService,
+    return ProviderScope(
+      overrides: [fridgeItemsProvider.overrideWith(() => MockFridgeItems())],
+      child: MaterialApp(
+        home: HomePage(
+          imagePicker: mockImagePicker,
+          firebaseAiService: mockFirebaseAiService,
+        ),
       ),
     );
   }
@@ -66,7 +75,7 @@ void main() {
         () => mockImagePicker.pickImage(source: ImageSource.gallery),
       ).thenAnswer((_) => pickImageCompleter.future);
       when(
-        () => mockTextRecognitionService.processImage(xFile),
+        () => mockFirebaseAiService.analyzeImageWithGemini(xFile),
       ).thenAnswer((_) => processImageCompleter.future);
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -92,7 +101,9 @@ void main() {
       verify(
         () => mockImagePicker.pickImage(source: ImageSource.gallery),
       ).called(1);
-      verify(() => mockTextRecognitionService.processImage(xFile)).called(1);
+      verify(
+        () => mockFirebaseAiService.analyzeImageWithGemini(xFile),
+      ).called(1);
 
       expect(find.byType(ReceiptEditPage), findsOneWidget);
     },
@@ -114,7 +125,7 @@ void main() {
     verify(
       () => mockImagePicker.pickImage(source: ImageSource.gallery),
     ).called(1);
-    verifyNever(() => mockTextRecognitionService.processImage(any()));
+    verifyNever(() => mockFirebaseAiService.analyzeImageWithGemini(any()));
     expect(find.byType(ReceiptEditPage), findsNothing);
   });
 
@@ -124,7 +135,7 @@ void main() {
       () => mockImagePicker.pickImage(source: ImageSource.gallery),
     ).thenAnswer((_) async => xFile);
     when(
-      () => mockTextRecognitionService.processImage(xFile),
+      () => mockFirebaseAiService.analyzeImageWithGemini(xFile),
     ).thenThrow(Exception('Test Error'));
 
     await tester.pumpWidget(createWidgetUnderTest());
@@ -172,7 +183,7 @@ void main() {
         () => mockImagePicker.pickImage(source: ImageSource.gallery),
       ).thenAnswer((_) async => xFile);
       when(
-        () => mockTextRecognitionService.processImage(xFile),
+        () => mockFirebaseAiService.analyzeImageWithGemini(xFile),
       ).thenAnswer((_) async => []);
 
       await tester.pumpWidget(createWidgetUnderTest());

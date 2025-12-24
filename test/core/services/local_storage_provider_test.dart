@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/services/local_storage_provider.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
 
 void main() {

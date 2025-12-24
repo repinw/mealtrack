@@ -18,8 +18,8 @@ class AppLocalizations {
   static const String unexpectedJsonFormat =
       'Unerwartetes JSON-Format empfangen: ';
   static const String jsonParsingError = 'Fehler beim Parsen des JSON: ';
-  static const String unnownStorename = 'Unbekannter Laden';
-  static const String unnownArticle = 'Unbekannter Artikel';
+  static const String unknownStorename = 'Unbekannter Laden';
+  static const String unknownArticle = 'Unbekannter Artikel';
 
   static const String defaultStoreName = 'Ladenname';
 }
