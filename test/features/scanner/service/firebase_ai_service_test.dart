@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
@@ -69,5 +70,51 @@ void main() {
         );
       },
     );
+
+    test('analyzeImageWithGemini calls compression before analyzing', () async {
+      // Arrange
+      final compressedBytes = Uint8List(10);
+      when(
+        () => mockImageCompressor.compressWithFile(
+          any(),
+          minWidth: any(named: 'minWidth'),
+          minHeight: any(named: 'minHeight'),
+          quality: any(named: 'quality'),
+          format: any(named: 'format'),
+        ),
+      ).thenAnswer((_) async => compressedBytes);
+
+      when(() => mockXFile.length()).thenAnswer((_) async => 1000);
+
+      // Mock Remote Config to throw, so we stop execution after compression but before network call
+      // This validates that we reached the configuration step (inside _analyzeContent)
+      // implying compression succeeded and we moved forward.
+      when(
+        () => mockRemoteConfig.getString("template_id"),
+      ).thenThrow(Exception("Config reached"));
+
+      // Act & Assert
+      expect(
+        () => service.analyzeImageWithGemini(mockXFile),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Config reached'),
+          ),
+        ),
+      );
+
+      // Verify compression was called
+      verify(
+        () => mockImageCompressor.compressWithFile(
+          any(),
+          minWidth: any(named: 'minWidth'),
+          minHeight: any(named: 'minHeight'),
+          quality: any(named: 'quality'),
+          format: any(named: 'format'),
+        ),
+      ).called(1);
+    });
   });
 }

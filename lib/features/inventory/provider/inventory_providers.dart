@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
@@ -25,8 +26,8 @@ class FridgeItems extends _$FridgeItems {
     await repository.addItems(items);
     try {
       ref.invalidateSelf();
-    } catch (_) {
-      // Provider may be disposed, ignore
+    } catch (e) {
+      debugPrint('Error invalidating FridgeItems provider: $e');
     }
   }
 
@@ -35,8 +36,8 @@ class FridgeItems extends _$FridgeItems {
     await repository.updateItem(item);
     try {
       ref.invalidateSelf();
-    } catch (_) {
-      // Provider may be disposed, ignore
+    } catch (e) {
+      debugPrint('Error invalidating FridgeItems provider: $e');
     }
   }
 
@@ -45,8 +46,8 @@ class FridgeItems extends _$FridgeItems {
     await repository.updateQuantity(item, delta);
     try {
       ref.invalidateSelf();
-    } catch (_) {
-      // Provider may be disposed, ignore
+    } catch (e) {
+      debugPrint('Error invalidating FridgeItems provider: $e');
     }
   }
 
@@ -55,8 +56,8 @@ class FridgeItems extends _$FridgeItems {
     await repository.deleteAllItems();
     try {
       ref.invalidateSelf();
-    } catch (_) {
-      // Provider may be disposed, ignore
+    } catch (e) {
+      debugPrint('Error invalidating FridgeItems provider: $e');
     }
   }
 }

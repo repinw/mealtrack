@@ -148,5 +148,33 @@ void main() {
         expect(container.read(homeViewModelProvider).error, exception);
       },
     );
+    test(
+      'analyzeImageFromGallery sets success state with empty list when repository returns empty',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = XFile('path/to/image.jpg');
+
+        when(
+          () => mockImagePicker.pickImage(
+            source: ImageSource.gallery,
+            maxWidth: 1500,
+            imageQuality: 80,
+          ),
+        ).thenAnswer((_) async => file);
+
+        when(
+          () => mockReceiptRepository.analyzeReceipt(file),
+        ).thenAnswer((_) async => []);
+
+        await viewModel.analyzeImageFromGallery();
+
+        final state = container.read(homeViewModelProvider);
+        expect(state, isA<AsyncData<List<FridgeItem>>>());
+        expect(state.value, isEmpty);
+      },
+    );
   });
 }

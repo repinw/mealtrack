@@ -20,7 +20,9 @@ class FirebaseAiService {
     await remoteConfig.setConfigSettings(
       RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 3600),
-        minimumFetchInterval: const Duration(seconds: 0),
+        minimumFetchInterval: kDebugMode
+            ? const Duration(seconds: 0)
+            : const Duration(seconds: 3600),
       ),
     );
     await remoteConfig.setDefaults(const {"template_id": "receiptocr"});
@@ -67,6 +69,9 @@ class FirebaseAiService {
 
   Future<String> _analyzeContent(String base64Data, String mimeType) async {
     String templateID = remoteConfig.getString("template_id");
+    if (templateID.isEmpty) {
+      throw Exception("Remote Config 'template_id' is empty.");
+    }
     try {
       final model = FirebaseAI.vertexAI(
         location: 'global',

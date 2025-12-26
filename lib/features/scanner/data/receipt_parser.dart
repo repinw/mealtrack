@@ -9,11 +9,12 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     throw const FormatException(AppLocalizations.emptyJsonString);
   }
 
-  // Delete Gemini Json packaging if present
-  final sanitizedJson = jsonString
-      .replaceAll('```json', '')
-      .replaceAll('```', '')
-      .trim();
+  // Delete Gemini Json packaging if present using Regex
+  final pattern = RegExp(r'```(?:json)?\s*(.*?)\s*```', dotAll: true);
+  final match = pattern.firstMatch(jsonString);
+  final sanitizedJson = match != null
+      ? match.group(1)!.trim()
+      : jsonString.trim();
 
   if (sanitizedJson.isEmpty) {
     throw const FormatException(AppLocalizations.sanitizedJsonEmpty);
