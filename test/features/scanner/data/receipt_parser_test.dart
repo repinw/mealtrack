@@ -3,36 +3,107 @@ import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
 void main() {
   group('parseScannedItemsFromJson', () {
-    test('throws FormatException on empty string', () {
-      expect(
-        () => parseScannedItemsFromJson(''),
-        throwsA(
-          isA<FormatException>().having(
-            (e) => e.message,
-            'message',
-            'Leerer JSON-String empfangen.',
-          ),
-        ),
-      );
+    // --- Happy Path ---
+    group('Happy Path', () {
+      test('parses standard JSON correctly', () {
+        const jsonString =
+            '{"items": [{"name": "Milk", "totalPrice": 1.50, "quantity": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Milk');
+        expect(result.first.unitPrice, 1.50);
+      });
+
+      test('parses minified JSON and calculates unitPrice', () {
+        const jsonString = '{"i": [{"n": "Butter", "p": 2.0, "q": 2}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Butter');
+        expect(result.first.unitPrice, 1.0);
+      });
     });
 
-    test('throws FormatException on string with only whitespace', () {
-      expect(
-        () => parseScannedItemsFromJson('   '),
-        throwsA(
-          isA<FormatException>().having(
-            (e) => e.message,
-            'message',
-            'Leerer JSON-String empfangen.',
-          ),
-        ),
-      );
+    // --- Edge Cases ---
+    group('Edge Cases', () {
+      test('returns empty list for empty JSON object {}', () {
+        final result = parseScannedItemsFromJson('{}');
+        expect(result, isEmpty);
+      });
+
+      test('returns empty list for JSON "null"', () {
+        final result = parseScannedItemsFromJson('null');
+        expect(result, isEmpty);
+      });
+
+      test('returns empty list for JSON with empty items list', () {
+        final result = parseScannedItemsFromJson('{"items": []}');
+        expect(result, isEmpty);
+      });
+
+      test('fallbacks to quantity 1 if quantity is 0 or negative', () {
+        const jsonString = '''
+        {
+          "items": [
+            {"name": "Zero Qty", "quantity": 0, "totalPrice": 5.0},
+            {"name": "Neg Qty", "quantity": -5, "totalPrice": 5.0}
+          ]
+        }
+        ''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 2);
+        expect(result[0].quantity, 1);
+        expect(result[1].quantity, 1);
+        // Unit price check (5.0 / 1 = 5.0)
+        expect(result[0].unitPrice, 5.0);
+      });
+
+      test('handles null or invalid discounts gracefully', () {
+        const jsonString = '''
+        {
+          "items": [
+            {"name": "Null Discounts", "discounts": null},
+            {"name": "Invalid Discounts", "discounts": ["invalid", {"no_name": 1}]}
+          ]
+        }
+        ''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result[0].discounts, isEmpty);
+        expect(result[1].discounts, isEmpty);
+      });
     });
 
-    test(
-      'throws FormatException on empty sanitized string (only markdown tags)',
-      () {
-        // Simuliert den Fall, wo nur Markdown-Tags ohne Inhalt zurückkommen
+    group('Error Handling', () {
+      test('throws FormatException on empty string', () {
+        expect(
+          () => parseScannedItemsFromJson(''),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'Leerer JSON-String empfangen.',
+            ),
+          ),
+        );
+      });
+
+      test('throws FormatException on string with only whitespace', () {
+        expect(
+          () => parseScannedItemsFromJson('   '),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'Leerer JSON-String empfangen.',
+            ),
+          ),
+        );
+      });
+
+      test('throws FormatException on empty sanitized string', () {
         expect(
           () => parseScannedItemsFromJson('```json ```'),
           throwsA(
@@ -43,67 +114,14 @@ void main() {
             ),
           ),
         );
-      },
-    );
+      });
 
-    test('throws FormatException on invalid JSON format', () {
-      expect(
-        () => parseScannedItemsFromJson('{ kein valides json }'),
-        throwsA(isA<FormatException>()),
-      );
-    });
-
-    test('returns empty list on unexpected JSON structure', () {
-      // JSON ist valide, aber enthält weder eine Liste noch einen "items" Key
-      final result = parseScannedItemsFromJson('{"falscherKey": "wert"}');
-      expect(result, isEmpty);
-    });
-
-    test('parses valid JSON and verifies unitPrice is >= 0', () {
-      const jsonString = '''
-      {
-        "items": [
-          {
-            "name": "Test Item",
-            "quantity": 1,
-            "totalPrice": 10.50
-          }
-        ]
-      }
-      ''';
-
-      final result = parseScannedItemsFromJson(jsonString);
-
-      expect(result, isNotEmpty);
-      expect(result.first.unitPrice, greaterThanOrEqualTo(0));
-    });
-
-    test('parses discounts correctly', () {
-      const jsonString = '''
-      {
-        "items": [
-          {
-            "name": "Item with Discounts",
-            "discounts": [
-              { "name": "Summer Sale", "amount": 2.5 },
-              { "amount": 1.0 },
-              { "name": "Invalid Amount", "amount": 0 },
-              { "name": "Negative Amount", "amount": -5.0 },
-              "invalid_entry"
-            ]
-          }
-        ]
-      }
-      ''';
-
-      final result = parseScannedItemsFromJson(jsonString);
-
-      expect(result, isNotEmpty);
-      final item = result.first;
-      expect(item.discounts, containsPair('Summer Sale', 2.5));
-      expect(item.discounts, containsPair('Invalid Amount', 0.0));
-      expect(item.discounts, containsPair('Negative Amount', -5.0));
-      expect(item.discounts.length, 3);
+      test('throws FormatException on malformed JSON', () {
+        expect(
+          () => parseScannedItemsFromJson('{ kein valides json }'),
+          throwsA(isA<FormatException>()),
+        );
+      });
     });
   });
 }

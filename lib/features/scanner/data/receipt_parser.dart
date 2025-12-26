@@ -62,7 +62,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         }
       }
 
-      // --- ÄNDERUNG 3: Item-Felder (n, s, q, p...) ---
+      // --- ÄNDERUNG 3: Item-Fields (n, s, q, p...) ---
 
       // n = name
       final name = (map['n'] ?? map['name']) as String? ?? '';
@@ -74,11 +74,10 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final qty = ((map['q'] ?? map['quantity']) as num?)?.toInt() ?? 1;
       final quantity = qty > 0 ? qty : 1;
 
-      // p = totalPrice (Achtung: Das Schema liefert den GESAMTPREIS)
+      // p = totalPrice
       final totalPrice =
           ((map['p'] ?? map['totalPrice']) as num?)?.toDouble() ?? 0.0;
 
-      // Unit Price berechnen wir selbst
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
       // w = weight, b = brand
@@ -97,7 +96,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       );
     }).toList();
   } catch (e, stackTrace) {
-    debugPrint('Fehler beim Parsen des JSON: $e');
+    debugPrint('Error parsing JSON: $e');
     debugPrintStack(stackTrace: stackTrace);
     throw FormatException('${AppLocalizations.jsonParsingError}$e');
   }
