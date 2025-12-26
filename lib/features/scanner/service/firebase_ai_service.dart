@@ -8,6 +8,8 @@ import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
 class FirebaseAiService {
+  static const String _fallbackTemplateId = 'receiptocr';
+
   final FirebaseRemoteConfig remoteConfig;
   final ImageCompressor imageCompressor;
 
@@ -26,7 +28,7 @@ class FirebaseAiService {
             : const Duration(seconds: 3600),
       ),
     );
-    await remoteConfig.setDefaults(const {"template_id": "receiptocr"});
+    await remoteConfig.setDefaults(const {"template_id": _fallbackTemplateId});
     await remoteConfig.fetchAndActivate();
 
     remoteConfig.onConfigUpdated.listen((event) async {
@@ -47,7 +49,10 @@ class FirebaseAiService {
     );
 
     if (compressedBytes == null) {
-      throw Exception("Image compression failed");
+      throw ReceiptAnalysisException(
+        "Image compression failed",
+        code: 'COMPRESSION_ERROR',
+      );
     }
 
     debugPrint("Original: ${await imageFile.length()} Bytes");
@@ -71,10 +76,10 @@ class FirebaseAiService {
   Future<String> _analyzeContent(String base64Data, String mimeType) async {
     String templateID = remoteConfig.getString("template_id");
     if (templateID.isEmpty) {
-      throw ReceiptAnalysisException(
-        "Remote Config 'template_id' is empty.",
-        code: 'CONFIG_ERROR',
+      debugPrint(
+        "Remote Config 'template_id' is empty. Using fallback: $_fallbackTemplateId",
       );
+      templateID = _fallbackTemplateId;
     }
     try {
       final model = FirebaseAI.vertexAI(

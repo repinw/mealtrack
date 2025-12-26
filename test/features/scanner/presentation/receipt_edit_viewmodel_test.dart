@@ -148,5 +148,38 @@ void main() {
       final updatedState = container.read(receiptEditViewModelProvider(items));
       expect(updatedState.items.first.name, 'Green Apple');
     });
+    test('calculates total with zero quantity items correctly', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final itemZeroQty = item1.copyWith(quantity: 0, unitPrice: 10.0);
+      final state = container.read(
+        receiptEditViewModelProvider([itemZeroQty, item2]),
+      );
+
+      // (0 * 10.0) + (0.50 * 4) = 0 + 2.0 = 2.0
+      expect(state.total, 2.0);
+    });
+
+    test('deleteItem updates total price', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final items = [
+        item1,
+        item2,
+      ]; // item1 total: 3.0, item2 total: 2.0. Sum: 5.0
+      final notifier = container.read(
+        receiptEditViewModelProvider(items).notifier,
+      );
+
+      notifier.deleteItem(0); // Remove item1
+
+      // Read the state again
+      final updatedState = container.read(receiptEditViewModelProvider(items));
+
+      // Only item2 remains: 0.50 * 4 = 2.0
+      expect(updatedState.total, 2.0);
+    });
   });
 }

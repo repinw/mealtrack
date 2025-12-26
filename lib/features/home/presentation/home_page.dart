@@ -25,6 +25,7 @@ class HomePage extends ConsumerWidget {
 
       next.when(
         data: (result) {
+          if (!context.mounted) return;
           if (result.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

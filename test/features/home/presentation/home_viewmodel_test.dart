@@ -5,6 +5,7 @@ import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockImagePicker extends Mock implements ImagePicker {}
@@ -128,7 +129,10 @@ void main() {
         container.listen(homeViewModelProvider, (_, _) {});
 
         final file = XFile('path/to/image.jpg');
-        final exception = Exception('Repository Error');
+        final exception = ReceiptAnalysisException(
+          'Analysis Failed',
+          code: 'TEST_ERROR',
+        );
 
         when(
           () => mockImagePicker.pickImage(

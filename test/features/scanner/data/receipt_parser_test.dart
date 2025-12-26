@@ -41,6 +41,27 @@ void main() {
         expect(result[1].name, 'Bread');
         expect(result[1].unitPrice, 2.50);
       });
+
+      test('parses keys with string types correctly', () {
+        const jsonString = '''
+        {
+          "items": [
+            {"n": "Apple", "p": "6.0", "q": "3"},
+             {"name": "Orange", "totalPrice": "5.0", "quantity": "5"}
+          ]
+        }
+        ''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 2);
+        expect(result[0].name, 'Apple');
+        expect(result[0].unitPrice, 2.0); // 6.0 / 3
+        expect(result[0].quantity, 3);
+
+        expect(result[1].name, 'Orange');
+        expect(result[1].unitPrice, 1.0); // 5.0 / 5
+        expect(result[1].quantity, 5);
+      });
     });
 
     // --- Edge Cases ---

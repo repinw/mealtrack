@@ -51,9 +51,9 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
           if (discountItem is Map<String, dynamic>) {
             // n = name, a = amount
             final name = (discountItem['n'] ?? discountItem['name']) as String?;
-            final amount =
-                ((discountItem['a'] ?? discountItem['amount']) as num?)
-                    ?.toDouble();
+            final amount = _parseNum(
+              discountItem['a'] ?? discountItem['amount'],
+            )?.toDouble();
 
             if (name != null && amount != null) {
               discounts[name] = amount;
@@ -71,12 +71,13 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final store = (map['s'] ?? map['storeName']) as String? ?? '';
 
       // q = quantity
-      final qty = ((map['q'] ?? map['quantity']) as num?)?.toInt() ?? 1;
+      final rawQty = _parseNum(map['q'] ?? map['quantity']);
+      final qty = rawQty?.toInt() ?? 1;
       final quantity = qty > 0 ? qty : 1;
 
       // p = totalPrice
-      final totalPrice =
-          ((map['p'] ?? map['totalPrice']) as num?)?.toDouble() ?? 0.0;
+      final rawPrice = _parseNum(map['p'] ?? map['totalPrice']);
+      final totalPrice = rawPrice?.toDouble() ?? 0.0;
 
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
@@ -100,4 +101,11 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     debugPrintStack(stackTrace: stackTrace);
     throw FormatException('${AppLocalizations.jsonParsingError}$e');
   }
+}
+
+num? _parseNum(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value;
+  if (value is String) return num.tryParse(value);
+  return null;
 }
