@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFirebaseAiService extends Mock implements FirebaseAiService {}
@@ -46,13 +47,36 @@ void main() {
         verify(() => mockAiService.analyzeImageWithGemini(mockFile)).called(1);
       });
 
-      test('analyzeReceipt rethrows exception from service', () async {
-        final exception = Exception('AI Error');
+      test(
+        'analyzeReceipt rethrows ReceiptAnalysisException from service',
+        () async {
+          final exception = ReceiptAnalysisException('AI Error');
+          when(
+            () => mockAiService.analyzeImageWithGemini(mockFile),
+          ).thenThrow(exception);
+
+          expect(
+            () => repository.analyzeReceipt(mockFile),
+            throwsA(
+              isA<ReceiptAnalysisException>().having(
+                (e) => e.message,
+                'message',
+                'AI Error',
+              ),
+            ),
+          );
+        },
+      );
+
+      test('analyzeReceipt throws FormatException on invalid JSON', () async {
         when(
           () => mockAiService.analyzeImageWithGemini(mockFile),
-        ).thenThrow(exception);
+        ).thenAnswer((_) async => "Invalid JSON Response");
 
-        expect(() => repository.analyzeReceipt(mockFile), throwsA(exception));
+        expect(
+          () => repository.analyzeReceipt(mockFile),
+          throwsA(isA<FormatException>()),
+        );
       });
     });
 
@@ -69,17 +93,26 @@ void main() {
         verify(() => mockAiService.analyzePdfWithGemini(mockFile)).called(1);
       });
 
-      test('analyzePdfReceipt rethrows exception from service', () async {
-        final exception = Exception('AI Error');
-        when(
-          () => mockAiService.analyzePdfWithGemini(mockFile),
-        ).thenThrow(exception);
+      test(
+        'analyzePdfReceipt rethrows ReceiptAnalysisException from service',
+        () async {
+          final exception = ReceiptAnalysisException('AI PDF Error');
+          when(
+            () => mockAiService.analyzePdfWithGemini(mockFile),
+          ).thenThrow(exception);
 
-        expect(
-          () => repository.analyzePdfReceipt(mockFile),
-          throwsA(exception),
-        );
-      });
+          expect(
+            () => repository.analyzePdfReceipt(mockFile),
+            throwsA(
+              isA<ReceiptAnalysisException>().having(
+                (e) => e.message,
+                'message',
+                'AI PDF Error',
+              ),
+            ),
+          );
+        },
+      );
     });
   });
 }

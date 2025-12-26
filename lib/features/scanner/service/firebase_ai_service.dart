@@ -3,6 +3,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
@@ -70,7 +71,10 @@ class FirebaseAiService {
   Future<String> _analyzeContent(String base64Data, String mimeType) async {
     String templateID = remoteConfig.getString("template_id");
     if (templateID.isEmpty) {
-      throw Exception("Remote Config 'template_id' is empty.");
+      throw ReceiptAnalysisException(
+        "Remote Config 'template_id' is empty.",
+        code: 'CONFIG_ERROR',
+      );
     }
     try {
       final model = FirebaseAI.vertexAI(
@@ -82,14 +86,22 @@ class FirebaseAiService {
 
       final extractedText = response.text;
       if (extractedText == null || extractedText.isEmpty) {
-        throw Exception(AppLocalizations.noTextFromAi);
+        throw ReceiptAnalysisException(
+          'No text received from AI service',
+          code: 'NO_TEXT',
+        );
       }
 
       debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
       return extractedText;
     } catch (e) {
+      if (e is ReceiptAnalysisException) rethrow;
       debugPrint("${AppLocalizations.aiRequestError}$e");
-      rethrow;
+      throw ReceiptAnalysisException(
+        'AI Request Failed',
+        originalException: e,
+        code: 'AI_ERROR',
+      );
     }
   }
 }

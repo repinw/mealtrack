@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 import 'package:mocktail/mocktail.dart';
@@ -33,6 +34,9 @@ void main() {
       // Default mock behavior
       when(() => mockXFile.path).thenReturn('test/path/image.jpg');
       when(() => mockXFile.length()).thenAnswer((_) async => 1000);
+      when(
+        () => mockXFile.readAsBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
 
       // Default compression success
       when(
@@ -49,7 +53,6 @@ void main() {
     test(
       'analyzeImageWithGemini throws Exception when compression returns null',
       () async {
-        // Arrange
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
@@ -65,8 +68,7 @@ void main() {
           ),
         ).thenAnswer((_) async => null);
 
-        // Act & Assert
-        expect(
+        await expectLater(
           () => service.analyzeImageWithGemini(mockXFile),
           throwsA(
             isA<Exception>().having(
@@ -79,75 +81,64 @@ void main() {
       },
     );
 
-    test('analyzeImageWithGemini calls compression before analyzing', () async {
-      // Arrange
-      service = FirebaseAiService(
-        imageCompressor: mockImageCompressor,
-        remoteConfig: mockRemoteConfig,
-      );
-
-      // Force config read to fail to stop BEFORE model call
-      when(
-        () => mockRemoteConfig.getString("template_id"),
-      ).thenThrow(Exception("Config reached"));
-
-      // Act & Assert
-      expect(
-        () => service.analyzeImageWithGemini(mockXFile),
-        throwsA(
-          isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('Config reached'),
-          ),
-        ),
-      );
-
-      // Verify compression was called
-      verify(
-        () => mockImageCompressor.compressWithFile(
-          any(),
-          minWidth: any(named: 'minWidth'),
-          minHeight: any(named: 'minHeight'),
-          quality: any(named: 'quality'),
-          format: any(named: 'format'),
-        ),
-      ).called(1);
-    });
-
     test(
-      'analyzeImageWithGemini Error Path: throws Exception when template_id is empty',
+      'analyzeImageWithGemini calls compression before analyzing (Config Failure)',
       () async {
-        // Arrange
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
         );
 
-        // Mock Remote Config to return empty string
+        // Force config read to fail. This happens BEFORE the try-catch block wrapping AI calls.
+        when(
+          () => mockRemoteConfig.getString("template_id"),
+        ).thenThrow(Exception("Config reached"));
+
+        await expectLater(
+          () => service.analyzeImageWithGemini(mockXFile),
+          throwsA(predicate((e) => e.toString().contains('Config reached'))),
+        );
+
+        verify(
+          () => mockImageCompressor.compressWithFile(
+            any(),
+            minWidth: any(named: 'minWidth'),
+            minHeight: any(named: 'minHeight'),
+            quality: any(named: 'quality'),
+            format: any(named: 'format'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'analyzeImageWithGemini Error Path: throws ReceiptAnalysisException when template_id is empty',
+      () async {
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+        );
+
         when(() => mockRemoteConfig.getString("template_id")).thenReturn("");
 
-        // Act & Assert
-        expect(
+        await expectLater(
           () => service.analyzeImageWithGemini(mockXFile),
           throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
+            isA<ReceiptAnalysisException>().having(
+              (e) => e.message,
               'message',
-              contains("Remote Config 'template_id' is empty"),
+              contains("empty"),
             ),
           ),
         );
 
-        // Verify we checked the ID
         verify(() => mockRemoteConfig.getString("template_id")).called(1);
       },
     );
 
     test(
-      'analyzeImageWithGemini Happy Path: reads template_id (but fails on model execution in test)',
+      'analyzePdfWithGemini Happy Path: reads template_id (ignores Firebase crash)',
       () async {
-        // Arrange
         const templateId = 'valid_template_id';
 
         service = FirebaseAiService(
@@ -155,30 +146,59 @@ void main() {
           remoteConfig: mockRemoteConfig,
         );
 
-        // Mock Remote Config
         when(
           () => mockRemoteConfig.getString("template_id"),
         ).thenReturn(templateId);
 
-        // Since we can't mock FirebaseAI.vertexAI() static call easily without wrapper,
-        // and we don't have a initialized FirebaseApp in test,
-        // we expect it to fail with a core error (e.g. [core/no-app] or similar)
-        // or a network error if it tries to connect.
-        // We essentially just verify that it PASSED the "empty check".
+        try {
+          await service.analyzePdfWithGemini(mockXFile);
+        } catch (e) {
+          // Expected downstream failure due to missing Firebase App
+        }
+
+        verify(() => mockRemoteConfig.getString("template_id")).called(1);
+        verifyNever(
+          () => mockImageCompressor.compressWithFile(
+            any(),
+            minWidth: any(named: 'minWidth'),
+            minHeight: any(named: 'minHeight'),
+            quality: any(named: 'quality'),
+            format: any(named: 'format'),
+          ),
+        );
+      },
+    );
+
+    test(
+      'analyzeImageWithGemini Happy Path: verify compression usage (ignores Firebase crash)',
+      () async {
+        const templateId = 'valid_template_id';
+
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+        );
+
+        when(
+          () => mockRemoteConfig.getString("template_id"),
+        ).thenReturn(templateId);
 
         try {
           await service.analyzeImageWithGemini(mockXFile);
         } catch (e) {
-          // We expect an error here, but NOT "Remote Config 'template_id' is empty".
-          expect(
-            e.toString(),
-            isNot(contains("Remote Config 'template_id' is empty")),
-          );
-          // It might be "No Firebase App" or "MethodChannel" error.
+          // Expected downstream failure
         }
 
-        // Assert
         verify(() => mockRemoteConfig.getString("template_id")).called(1);
+        verify(
+          () => mockImageCompressor.compressWithFile(
+            any(),
+            minWidth: any(named: 'minWidth'),
+            minHeight: any(named: 'minHeight'),
+            quality: any(named: 'quality'),
+            format: any(named: 'format'),
+          ),
+        ).called(1);
       },
     );
   });

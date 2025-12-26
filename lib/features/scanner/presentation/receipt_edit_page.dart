@@ -100,7 +100,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                         ),
                       ),
                       Text(
-                        // Total item count based on quantity
                         "${viewModel.totalQuantity} Artikel",
                         style: const TextStyle(
                           color: Colors.grey,
