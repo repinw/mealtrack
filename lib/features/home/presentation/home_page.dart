@@ -28,7 +28,7 @@ class HomePage extends ConsumerWidget {
           if (result.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(AppLocalizations.noAvailableProcuts),
+                content: Text(AppLocalizations.noAvailableProducts),
               ),
             );
             return;

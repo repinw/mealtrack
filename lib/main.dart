@@ -11,7 +11,11 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final container = ProviderContainer();
-  await container.read(firebaseAiServiceProvider).initialize();
+  try {
+    await container.read(firebaseAiServiceProvider).initialize();
+  } catch (e) {
+    debugPrint('Failed to initialize FirebaseAiService: $e');
+  }
 
   runApp(
     UncontrolledProviderScope(

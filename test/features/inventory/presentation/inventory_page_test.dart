@@ -77,12 +77,12 @@ void main() {
     WidgetTester tester,
   ) async {
     const errorMessage = 'Something went wrong';
+    final completer = Completer<List<InventoryDisplayItem>>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith(
-            (ref) => Future.error(errorMessage, StackTrace.empty),
-          ),
+          inventoryDisplayListProvider.overrideWith((ref) => completer.future),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
@@ -94,7 +94,10 @@ void main() {
       ),
     );
 
-    await tester.pump();
+    completer.completeError(errorMessage);
+    await tester.pump(); // Process future completion
+    await tester.pump(); // Rebuild UI
+
     expect(find.text('Error: $errorMessage'), findsOneWidget);
   });
 
@@ -168,7 +171,7 @@ void main() {
     expect(tester.widget<Switch>(switchFinder).value, isFalse);
 
     await tester.tap(switchFinder);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(tester.widget<Switch>(switchFinder).value, isTrue);
   });

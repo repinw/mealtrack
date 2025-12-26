@@ -23,6 +23,24 @@ void main() {
         expect(result.first.name, 'Butter');
         expect(result.first.unitPrice, 1.0);
       });
+
+      test('parses mixed keys (minified and standard) correctly', () {
+        const jsonString = '''
+        {
+          "items": [
+            {"n": "Milk", "totalPrice": 1.50, "q": 1},
+            {"name": "Bread", "p": 2.50, "quantity": 1}
+          ]
+        }
+        ''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 2);
+        expect(result[0].name, 'Milk');
+        expect(result[0].unitPrice, 1.50);
+        expect(result[1].name, 'Bread');
+        expect(result[1].unitPrice, 2.50);
+      });
     });
 
     // --- Edge Cases ---

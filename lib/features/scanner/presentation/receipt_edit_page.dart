@@ -22,23 +22,19 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   @override
   void initState() {
     super.initState();
-    _merchantController = TextEditingController();
+    // Initialize merchant name from view model state directly
+    final viewModel = ref.read(
+      receiptEditViewModelProvider(widget.scannedItems),
+    );
+
+    _merchantController = TextEditingController(
+      text: viewModel.initialStoreName,
+    );
+
     final now = DateTime.now();
     _dateController = TextEditingController(
       text: '${now.day}.${now.month}.${now.year}',
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Initialize merchant name from view model state
-    final viewModel = ref.read(
-      receiptEditViewModelProvider(widget.scannedItems),
-    );
-    if (_merchantController.text.isEmpty) {
-      _merchantController.text = viewModel.initialStoreName;
-    }
   }
 
   @override

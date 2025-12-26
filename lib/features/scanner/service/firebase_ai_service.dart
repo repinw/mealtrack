@@ -4,9 +4,17 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
 class FirebaseAiService {
-  final remoteConfig = FirebaseRemoteConfig.instance;
+  final FirebaseRemoteConfig remoteConfig;
+  final ImageCompressor imageCompressor;
+
+  FirebaseAiService({
+    FirebaseRemoteConfig? remoteConfig,
+    ImageCompressor? imageCompressor,
+  }) : remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance,
+       imageCompressor = imageCompressor ?? DefaultImageCompressor();
 
   Future<void> initialize() async {
     await remoteConfig.setConfigSettings(
@@ -27,14 +35,13 @@ class FirebaseAiService {
     debugPrint(AppLocalizations.imageUploading);
     debugPrint("Starting compression...");
 
-    final Uint8List? compressedBytes =
-        await FlutterImageCompress.compressWithFile(
-          imageFile.path,
-          minWidth: 1024,
-          minHeight: 1024,
-          quality: 60,
-          format: CompressFormat.jpeg,
-        );
+    final Uint8List? compressedBytes = await imageCompressor.compressWithFile(
+      imageFile.path,
+      minWidth: 1024,
+      minHeight: 1024,
+      quality: 60,
+      format: CompressFormat.jpeg,
+    );
 
     if (compressedBytes == null) {
       throw Exception("Image compression failed");
