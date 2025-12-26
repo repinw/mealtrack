@@ -113,6 +113,40 @@ void main() {
         expect(result[0].discounts, isEmpty);
         expect(result[1].discounts, isEmpty);
       });
+
+      test('parses numbers with commas correctly', () {
+        const jsonString = '{"i": [{"n": "Brot", "p": "1,59", "q": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Brot');
+        expect(result.first.unitPrice, 1.59);
+      });
+
+      test('parses JSON surrounded by dirty text/markdown', () {
+        const jsonString = '''
+        Here is the JSON you asked for:
+        ```json
+        {"i": [{"n": "Clean", "p": 1.0, "q": 1}]}
+        ```
+        Hope this helps!
+        ''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Clean');
+      });
+
+      test('handles null price but existing quantity', () {
+        // q exists (1), p is null (0.0). unitPrice = 0.0 / 1 = 0.0
+        const jsonString = '{"i": [{"n": "No Price", "p": null, "q": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'No Price');
+        expect(result.first.unitPrice, 0.0);
+        expect(result.first.quantity, 1);
+      });
     });
 
     group('Error Handling', () {

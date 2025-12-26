@@ -16,6 +16,10 @@ class InventoryViewModel extends _$InventoryViewModel {
     // This avoids ref lifecycle issues
     await ref.read(fridgeItemsProvider.notifier).deleteAll();
   }
+
+  Future<void> deleteItem(String id) async {
+    await ref.read(fridgeItemsProvider.notifier).deleteItem(id);
+  }
 }
 
 // Display item classes for inventory list

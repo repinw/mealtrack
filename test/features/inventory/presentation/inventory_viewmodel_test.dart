@@ -72,6 +72,52 @@ void main() {
         throwsA(isA<Exception>()),
       );
     });
+
+    test('deleteItem calls repository and updates state correctly', () async {
+      final item1 = FridgeItem.create(
+        name: 'Item 1',
+        storeName: 'Store',
+        quantity: 2,
+        unitPrice: 10.0,
+      );
+      final item2 = FridgeItem.create(
+        name: 'Item 2',
+        storeName: 'Store',
+        quantity: 3,
+        unitPrice: 5.0,
+      );
+
+      when(
+        () => mockRepository.getItems(),
+      ).thenAnswer((_) async => [item1, item2]);
+
+      // Initialize provider
+      await container.read(fridgeItemsProvider.future);
+
+      // Setup delete mock
+      when(() => mockRepository.deleteItem(item1.id)).thenAnswer((_) async {});
+      // Setup refetch mock
+      when(() => mockRepository.getItems()).thenAnswer((_) async => [item2]);
+
+      // Act
+      await container
+          .read(inventoryViewModelProvider.notifier)
+          .deleteItem(item1.id);
+
+      // Assert
+      verify(() => mockRepository.deleteItem(item1.id)).called(1);
+
+      final currentItems = await container.read(fridgeItemsProvider.future);
+      expect(currentItems, hasLength(1));
+      expect(currentItems.first.id, item2.id);
+
+      // Verify consistency: total quantity should be just item2's quantity
+      final totalQuantity = currentItems.fold<int>(
+        0,
+        (sum, item) => sum + item.quantity,
+      );
+      expect(totalQuantity, 3);
+    });
   });
 
   group('inventoryDisplayListProvider', () {

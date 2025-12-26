@@ -106,6 +106,10 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 num? _parseNum(dynamic value) {
   if (value == null) return null;
   if (value is num) return value;
-  if (value is String) return num.tryParse(value);
+  if (value is String) {
+    // Replace comma with dot for German number formats
+    final sanitized = value.replaceAll(',', '.');
+    return num.tryParse(sanitized);
+  }
   return null;
 }

@@ -43,6 +43,12 @@ class FridgeItems extends _$FridgeItems {
     await repository.deleteAllItems();
     ref.invalidateSelf();
   }
+
+  Future<void> deleteItem(String id) async {
+    final repository = ref.read(fridgeRepositoryProvider);
+    await repository.deleteItem(id);
+    ref.invalidateSelf();
+  }
 }
 
 @riverpod

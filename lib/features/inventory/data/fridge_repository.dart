@@ -108,6 +108,23 @@ class FridgeRepository {
     }
   }
 
+  /// Deletes a single item by ID.
+  Future<void> deleteItem(String id) async {
+    try {
+      final currentItems = await getItems();
+      final updatedItems = currentItems.where((item) => item.id != id).toList();
+
+      if (currentItems.length != updatedItems.length) {
+        await saveItems(updatedItems);
+      } else {
+        debugPrint('Item with id $id not found for deletion');
+      }
+    } catch (e) {
+      debugPrint('Error deleting item in repository: $e');
+      rethrow;
+    }
+  }
+
   /// Gets only available (non-consumed) items.
   Future<List<FridgeItem>> getAvailableItems() async {
     try {

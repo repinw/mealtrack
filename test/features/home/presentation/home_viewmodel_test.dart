@@ -86,7 +86,12 @@ void main() {
       final state = container.read(homeViewModelProvider);
       expect(state, isA<AsyncData<List<FridgeItem>>>());
       expect(state.value, hasLength(1));
-      expect(state.value!.first.name, 'Apple');
+
+      final item = state.value!.first;
+      expect(item.name, 'Apple');
+      expect(item.storeName, 'Store');
+      expect(item.quantity, 1);
+      expect(item.unitPrice, 1.0);
     });
 
     test(
@@ -150,6 +155,43 @@ void main() {
 
         expect(container.read(homeViewModelProvider).hasError, true);
         expect(container.read(homeViewModelProvider).error, exception);
+      },
+    );
+
+    test(
+      'analyzeImageFromGallery sets error state when image compression fails',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = XFile('path/to/image.jpg');
+        final exception = ReceiptAnalysisException(
+          'Image compression failed',
+          code: 'COMPRESSION_ERROR',
+        );
+
+        when(
+          () => mockImagePicker.pickImage(
+            source: ImageSource.gallery,
+            maxWidth: 1500,
+            imageQuality: 80,
+          ),
+        ).thenAnswer((_) async => file);
+
+        when(
+          () => mockReceiptRepository.analyzeReceipt(file),
+        ).thenThrow(exception);
+
+        await viewModel.analyzeImageFromGallery();
+
+        final state = container.read(homeViewModelProvider);
+        expect(state.hasError, true);
+        expect(state.error, exception);
+        expect(
+          (state.error as ReceiptAnalysisException).code,
+          'COMPRESSION_ERROR',
+        );
       },
     );
     test(
