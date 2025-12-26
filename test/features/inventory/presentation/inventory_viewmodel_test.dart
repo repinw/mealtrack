@@ -30,17 +30,35 @@ void main() {
     });
 
     test('deleteAllItems calls repository and invalidates providers', () async {
-      when(() => mockRepository.deleteAllItems()).thenAnswer((_) async {});
+      // 1. Initial state: items exist
+      final initialItem = FridgeItem.create(
+        name: 'Test Item',
+        storeName: 'Test Store',
+        quantity: 1,
+        now: () => DateTime.now(),
+      );
+      when(
+        () => mockRepository.getItems(),
+      ).thenAnswer((_) async => [initialItem]);
 
+      // Ensure provider is initialized
+      await container.read(fridgeItemsProvider.future);
+
+      // 2. Mock deletion and subsequent empty fetch
+      when(() => mockRepository.deleteAllItems()).thenAnswer((_) async {});
+      when(() => mockRepository.getItems()).thenAnswer((_) async => []);
+
+      // 3. Perform deletion
       await container
           .read(inventoryViewModelProvider.notifier)
           .deleteAllItems();
 
+      // 4. Verify repository call and provider update
       verify(() => mockRepository.deleteAllItems()).called(1);
-      expect(
-        container.read(inventoryViewModelProvider),
-        const AsyncData<void>(null),
-      );
+
+      // The provider should now return empty list
+      final newItems = await container.read(fridgeItemsProvider.future);
+      expect(newItems, isEmpty);
     });
 
     test('deleteAllItems propagates error when repository fails', () async {

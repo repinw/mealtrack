@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
@@ -24,41 +23,25 @@ class FridgeItems extends _$FridgeItems {
   Future<void> addItems(List<FridgeItem> items) async {
     final repository = ref.read(fridgeRepositoryProvider);
     await repository.addItems(items);
-    try {
-      ref.invalidateSelf();
-    } catch (e) {
-      debugPrint('Error invalidating FridgeItems provider: $e');
-    }
+    ref.invalidateSelf();
   }
 
   Future<void> updateItem(FridgeItem item) async {
     final repository = ref.read(fridgeRepositoryProvider);
     await repository.updateItem(item);
-    try {
-      ref.invalidateSelf();
-    } catch (e) {
-      debugPrint('Error invalidating FridgeItems provider: $e');
-    }
+    ref.invalidateSelf();
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     final repository = ref.read(fridgeRepositoryProvider);
     await repository.updateQuantity(item, delta);
-    try {
-      ref.invalidateSelf();
-    } catch (e) {
-      debugPrint('Error invalidating FridgeItems provider: $e');
-    }
+    ref.invalidateSelf();
   }
 
   Future<void> deleteAll() async {
     final repository = ref.read(fridgeRepositoryProvider);
     await repository.deleteAllItems();
-    try {
-      ref.invalidateSelf();
-    } catch (e) {
-      debugPrint('Error invalidating FridgeItems provider: $e');
-    }
+    ref.invalidateSelf();
   }
 }
 
