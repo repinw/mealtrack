@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:mealtrack/features/home/presentation/home_controller.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 
 class HomePage extends ConsumerWidget {
@@ -11,32 +12,34 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeState = ref.watch(homeControllerProvider);
+    final homeState = ref.watch(homeViewModelProvider);
 
-    ref.listen<AsyncValue<String?>>(homeControllerProvider, (previous, next) {
-      // Only perform side-effects if transitioning from loading state
+    ref.listen<AsyncValue<List<FridgeItem>>>(homeViewModelProvider, (
+      previous,
+      next,
+    ) {
+      // Only process results when transitioning FROM loading state
+      // AND when previous state had data (meaning user initiated an action)
       if (previous?.isLoading != true) return;
+      if (!previous!.hasValue) return; // Skip initial build
 
       next.when(
         data: (result) {
-          if (result == null) return; // User cancelled
-
           if (result.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Keine Produkte erkannt')),
+              const SnackBar(
+                content: Text(AppLocalizations.noAvailableProcuts),
+              ),
             );
             return;
           }
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ReceiptEditPage(
-                  scannedItems: parseScannedItemsFromJson(result)),
+              builder: (context) => ReceiptEditPage(scannedItems: result),
             ),
           );
         },
-        loading: () {
-          // While loading, the UI is already showing a progress indicator.
-        },
+        loading: () {},
         error: (error, stack) {
           _showErrorSnackBar(context, error);
         },
@@ -67,8 +70,9 @@ class HomePage extends ConsumerWidget {
         SpeedDialChild(
           child: const Icon(Icons.photo_library),
           label: 'Bild aus Galerie',
-          onTap: () =>
-              ref.read(homeControllerProvider.notifier).analyzeImageFromGallery(),
+          onTap: () => ref
+              .read(homeViewModelProvider.notifier)
+              .analyzeImageFromGallery(),
         ),
       ],
     );

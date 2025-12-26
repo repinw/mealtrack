@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/local_storage_service.dart';
+import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 
 part 'inventory_providers.g.dart';
 
@@ -8,58 +8,56 @@ part 'inventory_providers.g.dart';
 class FridgeItems extends _$FridgeItems {
   @override
   Future<List<FridgeItem>> build() async {
-    final service = ref.watch(localStorageServiceProvider);
-    return service.loadItems();
+    final repository = ref.watch(fridgeRepositoryProvider);
+    return repository.getItems();
   }
 
   Future<void> reload() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final service = ref.read(localStorageServiceProvider);
-      return service.loadItems();
+      final repository = ref.read(fridgeRepositoryProvider);
+      return repository.getItems();
     });
   }
 
   Future<void> addItems(List<FridgeItem> items) async {
-    final service = ref.read(localStorageServiceProvider);
-    final currentItems = await service.loadItems();
-    await service.saveItems([...currentItems, ...items]);
-    ref.invalidateSelf();
+    final repository = ref.read(fridgeRepositoryProvider);
+    await repository.addItems(items);
+    try {
+      ref.invalidateSelf();
+    } catch (_) {
+      // Provider may be disposed, ignore
+    }
   }
 
   Future<void> updateItem(FridgeItem item) async {
-    final service = ref.read(localStorageServiceProvider);
-    final currentList = state.value ?? await service.loadItems();
-
-    final index = currentList.indexWhere((i) => i.id == item.id);
-    if (index != -1) {
-      final newList = List<FridgeItem>.from(currentList);
-      newList[index] = item;
-      await service.saveItems(newList);
+    final repository = ref.read(fridgeRepositoryProvider);
+    await repository.updateItem(item);
+    try {
       ref.invalidateSelf();
+    } catch (_) {
+      // Provider may be disposed, ignore
     }
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
-    var quantity = item.quantity + delta;
-    var isConsumed = item.isConsumed;
-    var consumptionDate = item.consumptionDate;
-
-    if (quantity <= 0) {
-      quantity = 0;
-      isConsumed = true;
-    } else if (isConsumed) {
-      isConsumed = false;
-      consumptionDate = null;
+    final repository = ref.read(fridgeRepositoryProvider);
+    await repository.updateQuantity(item, delta);
+    try {
+      ref.invalidateSelf();
+    } catch (_) {
+      // Provider may be disposed, ignore
     }
+  }
 
-    await updateItem(
-      item.copyWith(
-        quantity: quantity,
-        isConsumed: isConsumed,
-        consumptionDate: consumptionDate,
-      ),
-    );
+  Future<void> deleteAll() async {
+    final repository = ref.read(fridgeRepositoryProvider);
+    await repository.deleteAllItems();
+    try {
+      ref.invalidateSelf();
+    } catch (_) {
+      // Provider may be disposed, ignore
+    }
   }
 }
 
@@ -82,12 +80,10 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
   Ref ref,
 ) async {
   final items = await ref.watch(fridgeItemsProvider.future);
-
   final groupedMap = <String, List<FridgeItem>>{};
 
   for (final item in items) {
-    final key = '${item.receiptId}';
-
+    final key = item.receiptId ?? '';
     if (!groupedMap.containsKey(key)) {
       groupedMap[key] = [];
     }

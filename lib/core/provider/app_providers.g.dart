@@ -48,7 +48,7 @@ final class ImagePickerProvider
   }
 }
 
-String _$imagePickerHash() => r'4ade97b98e4e2b1423bb08eb64f280b92f8ac945';
+String _$imagePickerHash() => r'7877699a862be48e962306635347623c45e91971';
 
 @ProviderFor(firebaseAiService)
 const firebaseAiServiceProvider = FirebaseAiServiceProvider._();
@@ -95,4 +95,4 @@ final class FirebaseAiServiceProvider
   }
 }
 
-String _$firebaseAiServiceHash() => r'b2144f6ef7a680ae818c9465378af01f87ef9930';
+String _$firebaseAiServiceHash() => r'73b132728dd2e16fdd3c577c4aaed9d27c233587';

@@ -28,8 +28,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       if (decodedJson.containsKey('i')) {
         itemsList = decodedJson['i'] as List<dynamic>;
       } else if (decodedJson.containsKey('items')) {
-        itemsList =
-            decodedJson['items'] as List<dynamic>;
+        itemsList = decodedJson['items'] as List<dynamic>;
       } else {
         itemsList = [];
       }
@@ -62,7 +61,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         }
       }
 
-      // --- ÄNDERUNG 3: Item-Fields (n, s, q, p...) ---
+      // Item-Fields (n, s, q, p...) ---
 
       // n = name
       final name = (map['n'] ?? map['name']) as String? ?? '';

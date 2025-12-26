@@ -1,4 +1,7 @@
 class AppLocalizations {
+  // Home Page
+  static const String noAvailableProcuts = 'Keine Produkte erkannt';
+
   // Inventory Page
   static const String noAvailableItems = 'Keine verfügbaren Artikel';
   static const String noItemsFound = 'Keine Artikel gefunden';

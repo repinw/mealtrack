@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'home_controller.dart';
+part of 'home_viewmodel.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,44 +9,45 @@ part of 'home_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(HomeController)
-const homeControllerProvider = HomeControllerProvider._();
+@ProviderFor(HomeViewModel)
+const homeViewModelProvider = HomeViewModelProvider._();
 
-final class HomeControllerProvider
-    extends $AsyncNotifierProvider<HomeController, String?> {
-  const HomeControllerProvider._()
+final class HomeViewModelProvider
+    extends $AsyncNotifierProvider<HomeViewModel, List<FridgeItem>> {
+  const HomeViewModelProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'homeControllerProvider',
+        name: r'homeViewModelProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$homeControllerHash();
+  String debugGetCreateSourceHash() => _$homeViewModelHash();
 
   @$internal
   @override
-  HomeController create() => HomeController();
+  HomeViewModel create() => HomeViewModel();
 }
 
-String _$homeControllerHash() => r'60c5a0a415afb53c4e7ff1b391596f76022370af';
+String _$homeViewModelHash() => r'6c18b0cd8fb757c92eb9c27dab0d43b4621e09ff';
 
-abstract class _$HomeController extends $AsyncNotifier<String?> {
-  FutureOr<String?> build();
+abstract class _$HomeViewModel extends $AsyncNotifier<List<FridgeItem>> {
+  FutureOr<List<FridgeItem>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AsyncValue<String?>, String?>;
+    final ref =
+        this.ref as $Ref<AsyncValue<List<FridgeItem>>, List<FridgeItem>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<String?>, String?>,
-              AsyncValue<String?>,
+              AnyNotifier<AsyncValue<List<FridgeItem>>, List<FridgeItem>>,
+              AsyncValue<List<FridgeItem>>,
               Object?,
               Object?
             >;
