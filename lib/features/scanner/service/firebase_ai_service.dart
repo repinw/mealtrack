@@ -2,55 +2,70 @@ import 'dart:convert';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart'; // Das Paket brauchst du
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
 class FirebaseAiService {
   final remoteConfig = FirebaseRemoteConfig.instance;
 
-  Future<List<FridgeItem>> analyzeImageWithGemini(XFile imageData) async {
-    String templateID = remoteConfig.getString("template_id");
-    if (templateID.isEmpty) templateID = "kassenbon-analyse-v1";
+  Future<void> initialize() async {
+    await remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 3600),
+        minimumFetchInterval: const Duration(seconds: 0),
+      ),
+    );
+    await remoteConfig.setDefaults(const {"template_id": "receiptocr"});
+    await remoteConfig.fetchAndActivate();
 
+    remoteConfig.onConfigUpdated.listen((event) async {
+      await remoteConfig.activate();
+    });
+  }
+
+  Future<String> analyzeImageWithGemini(XFile imageFile) async {
+    debugPrint(AppLocalizations.imageUploading);
+    debugPrint("Starting compression...");
+
+    final Uint8List? compressedBytes =
+        await FlutterImageCompress.compressWithFile(
+          imageFile.path,
+          minWidth: 1024,
+          minHeight: 1024,
+          quality: 60,
+          format: CompressFormat.jpeg,
+        );
+
+    if (compressedBytes == null) {
+      throw Exception("Image compression failed");
+    }
+
+    debugPrint("Original: ${await imageFile.length()} Bytes");
+    debugPrint(
+      "Optimized: ${compressedBytes.length} Bytes (Sending as image/jpeg)",
+    );
+
+    final base64Data = base64Encode(compressedBytes);
+    return _analyzeContent(base64Data, 'image/jpeg');
+  }
+
+  Future<String> analyzePdfWithGemini(XFile pdfFile) async {
+    debugPrint("Processing PDF...");
+    final bytes = await pdfFile.readAsBytes();
+    debugPrint("PDF Size: ${bytes.length} Bytes");
+
+    final base64Data = base64Encode(bytes);
+    return _analyzeContent(base64Data, 'application/pdf');
+  }
+
+  Future<String> _analyzeContent(String base64Data, String mimeType) async {
+    String templateID = remoteConfig.getString("template_id");
     try {
-      // 1. WIR BLEIBEN BEIM TEMPLATE!
       final model = FirebaseAI.vertexAI(
         location: 'global',
       ).templateGenerativeModel();
 
-      debugPrint(AppLocalizations.imageUploading);
-      debugPrint("Starte Kompression...");
-
-      // 2. Komprimierung & Umwandlung in JPEG
-      // Egal ob PNG, HEIC oder WebP reinkommt -> es kommt ein kleines JPEG raus.
-      final Uint8List? compressedBytes =
-          await FlutterImageCompress.compressWithFile(
-            imageData.path,
-            minWidth: 1024, // Breite begrenzen (spart MBs)
-            minHeight: 1024,
-            quality: 60, // Gute Balance
-            format: CompressFormat.jpeg, // ZWANG: Wir machen ein JPEG draus!
-          );
-
-      if (compressedBytes == null) {
-        throw Exception("Bildkompression fehlgeschlagen");
-      }
-
-      final base64Image = base64Encode(compressedBytes);
-
-      debugPrint("Original: ${await imageData.length()} Bytes");
-      debugPrint(
-        "Optimiert: ${compressedBytes.length} Bytes (Sende als image/jpeg)",
-      );
-
-      // 3. Inputs für das Template
-      // Wir nutzen die Split-Methode, die wir zuletzt besprochen hatten.
-      // Da wir konvertiert haben, ist der MimeType jetzt IMMER 'image/jpeg'.
-      final inputs = {'mimeType': 'image/jpeg', 'imageData': base64Image};
-
-      // 4. Aufruf ans Template
+      final inputs = {'mimeType': mimeType, 'imageData': base64Data};
       final response = await model.generateContent(templateID, inputs: inputs);
 
       final extractedText = response.text;
@@ -59,7 +74,7 @@ class FirebaseAiService {
       }
 
       debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
-      return parseScannedItemsFromJson(extractedText);
+      return extractedText;
     } catch (e) {
       debugPrint("${AppLocalizations.aiRequestError}$e");
       rethrow;
