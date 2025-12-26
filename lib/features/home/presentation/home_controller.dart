@@ -1,18 +1,22 @@
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
+import 'package:mealtrack/core/provider/app_providers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class HomeController extends ChangeNotifier {
-  final ImagePicker imagePicker;
-  final FirebaseAiService firebaseAiService;
+part 'home_controller.g.dart';
 
-  HomeController({required this.imagePicker, required this.firebaseAiService});
+@riverpod
+class HomeController extends _$HomeController {
+  @override
+  Future<String?> build() async {
+    return null;
+  }
 
-  bool _isBusy = false;
-  bool get isBusy => _isBusy;
+  Future<void> analyzeImageFromGallery() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final imagePicker = ref.read(imagePickerProvider);
+      final firebaseAiService = ref.read(firebaseAiServiceProvider);
 
-  Future<String?> analyzeImageFromGallery() async {
-    try {
       final XFile? image = await imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1500,
@@ -23,13 +27,7 @@ class HomeController extends ChangeNotifier {
         return null;
       }
 
-      _isBusy = true;
-      notifyListeners();
-
       return await firebaseAiService.analyzeImageWithGemini(image);
-    } finally {
-      _isBusy = false;
-      notifyListeners();
-    }
+    });
   }
 }
