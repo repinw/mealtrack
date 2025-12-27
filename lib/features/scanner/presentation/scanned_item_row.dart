@@ -43,30 +43,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   }
 
   @override
-  void didUpdateWidget(ScannedItemRow oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.item != oldWidget.item) {
-      if (_nameController.text != widget.item.name) {
-        _nameController.text = widget.item.name;
-      }
-      if (_brandController.text != (widget.item.brand ?? '')) {
-        _brandController.text = widget.item.brand ?? '';
-      }
-      final priceText = (widget.item.unitPrice).toStringAsFixed(2);
-      if (_priceController.text != priceText) {
-        _priceController.text = priceText;
-      }
-      final qtyText = widget.item.quantity.toString();
-      if (_qtyController.text != qtyText) {
-        _qtyController.text = qtyText;
-      }
-      if (_weightController.text != (widget.item.weight ?? '')) {
-        _weightController.text = widget.item.weight ?? '';
-      }
-    }
-  }
-
-  @override
   void dispose() {
     _nameController.dispose();
     _brandController.dispose();
