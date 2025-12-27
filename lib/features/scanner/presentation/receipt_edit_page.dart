@@ -23,12 +23,21 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   void initState() {
     super.initState();
     // Initialize merchant name from view model state directly
-    final viewModel = ref.read(
-      receiptEditViewModelProvider(widget.scannedItems),
-    );
+    // Initialize view model
+    // Schedule initialization for the end of the frame to avoid "modifying provider during build" error
+    if (widget.scannedItems != null) {
+      Future.microtask(() {
+        ref
+            .read(receiptEditViewModelProvider.notifier)
+            .initialize(widget.scannedItems!);
+      });
+    }
+
+    // Get initial state for controllers (using read to avoid watching in initState)
+    final initialState = ref.read(receiptEditViewModelProvider);
 
     _merchantController = TextEditingController(
-      text: viewModel.initialStoreName,
+      text: initialState.initialStoreName,
     );
 
     final now = DateTime.now();
@@ -46,9 +55,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(
-      receiptEditViewModelProvider(widget.scannedItems),
-    );
+    final viewModel = ref.watch(receiptEditViewModelProvider);
     final items = viewModel.items;
     final total = viewModel.total;
 
@@ -79,11 +86,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     dateController: _dateController,
                     onMerchantChanged: (value) {
                       ref
-                          .read(
-                            receiptEditViewModelProvider(
-                              widget.scannedItems,
-                            ).notifier,
-                          )
+                          .read(receiptEditViewModelProvider.notifier)
                           .updateMerchantName(value);
                     },
                   ),
@@ -180,18 +183,10 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                       key: ValueKey(index),
                       item: item,
                       onDelete: () => ref
-                          .read(
-                            receiptEditViewModelProvider(
-                              widget.scannedItems,
-                            ).notifier,
-                          )
+                          .read(receiptEditViewModelProvider.notifier)
                           .deleteItem(index),
                       onChanged: (newItem) => ref
-                          .read(
-                            receiptEditViewModelProvider(
-                              widget.scannedItems,
-                            ).notifier,
-                          )
+                          .read(receiptEditViewModelProvider.notifier)
                           .updateItem(index, newItem),
                     );
                   }),

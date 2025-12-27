@@ -44,7 +44,7 @@ class FirebaseAiService {
       imageFile.path,
       minWidth: 1024,
       minHeight: 1024,
-      quality: 60,
+      quality: 80,
       format: CompressFormat.jpeg,
     );
 

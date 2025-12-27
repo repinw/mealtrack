@@ -31,11 +31,15 @@ class ReceiptEditState {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ReceiptEditViewModel extends _$ReceiptEditViewModel {
   @override
-  ReceiptEditState build(List<FridgeItem>? scannedItems) {
-    return ReceiptEditState(items: scannedItems ?? []);
+  ReceiptEditState build() {
+    return const ReceiptEditState(items: []);
+  }
+
+  void initialize(List<FridgeItem> scannedItems) {
+    state = ReceiptEditState(items: scannedItems);
   }
 
   void updateMerchantName(String newName) {

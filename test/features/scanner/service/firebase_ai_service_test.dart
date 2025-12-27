@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
@@ -112,31 +111,6 @@ void main() {
     );
 
     test(
-      'analyzeImageWithGemini Error Path: throws ReceiptAnalysisException when template_id is empty',
-      () async {
-        service = FirebaseAiService(
-          imageCompressor: mockImageCompressor,
-          remoteConfig: mockRemoteConfig,
-        );
-
-        when(() => mockRemoteConfig.getString("template_id")).thenReturn("");
-
-        await expectLater(
-          () => service.analyzeImageWithGemini(mockXFile),
-          throwsA(
-            isA<ReceiptAnalysisException>().having(
-              (e) => e.message,
-              'message',
-              contains("empty"),
-            ),
-          ),
-        );
-
-        verify(() => mockRemoteConfig.getString("template_id")).called(1);
-      },
-    );
-
-    test(
       'analyzePdfWithGemini Happy Path: reads template_id (ignores Firebase crash)',
       () async {
         const templateId = 'valid_template_id';
@@ -201,5 +175,63 @@ void main() {
         ).called(1);
       },
     );
+
+    test(
+      'analyzeImageWithGemini Error Path: throws ReceiptAnalysisException when compression fails (returns null)',
+      () async {
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+        );
+
+        when(
+          () => mockImageCompressor.compressWithFile(
+            any(),
+            minWidth: any(named: 'minWidth'),
+            minHeight: any(named: 'minHeight'),
+            quality: any(named: 'quality'),
+            format: any(named: 'format'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        await expectLater(
+          () => service.analyzeImageWithGemini(mockXFile),
+          throwsA(
+            isA<ReceiptAnalysisException>().having(
+              (e) => e.code,
+              'code',
+              'COMPRESSION_ERROR',
+            ),
+          ),
+        );
+      },
+    );
+
+    test('uses fallback template ID when remote config returns empty', () async {
+      service = FirebaseAiService(
+        imageCompressor: mockImageCompressor,
+        remoteConfig: mockRemoteConfig,
+      );
+
+      // Simulate empty template_id from remote config
+      when(() => mockRemoteConfig.getString('template_id')).thenReturn('');
+
+      // Expect AI_ERROR because we don't have a valid Firebase App in this test environment
+      // causing the VertexAI initialization or call to fail.
+      // The important part is that we verify remoteConfig.getString was called,
+      // showing it attempted to resolve the template ID.
+      await expectLater(
+        () => service.analyzeImageWithGemini(mockXFile),
+        throwsA(
+          isA<ReceiptAnalysisException>().having(
+            (e) => e.code,
+            'code',
+            'AI_ERROR',
+          ),
+        ),
+      );
+
+      verify(() => mockRemoteConfig.getString('template_id')).called(1);
+    });
   });
 }

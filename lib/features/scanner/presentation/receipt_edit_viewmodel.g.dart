@@ -10,30 +10,23 @@ part of 'receipt_edit_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ReceiptEditViewModel)
-const receiptEditViewModelProvider = ReceiptEditViewModelFamily._();
+const receiptEditViewModelProvider = ReceiptEditViewModelProvider._();
 
 final class ReceiptEditViewModelProvider
     extends $NotifierProvider<ReceiptEditViewModel, ReceiptEditState> {
-  const ReceiptEditViewModelProvider._({
-    required ReceiptEditViewModelFamily super.from,
-    required List<FridgeItem>? super.argument,
-  }) : super(
-         retry: null,
-         name: r'receiptEditViewModelProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  const ReceiptEditViewModelProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'receiptEditViewModelProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$receiptEditViewModelHash();
-
-  @override
-  String toString() {
-    return r'receiptEditViewModelProvider'
-        ''
-        '($argument)';
-  }
 
   @$internal
   @override
@@ -46,55 +39,17 @@ final class ReceiptEditViewModelProvider
       providerOverride: $SyncValueProvider<ReceiptEditState>(value),
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ReceiptEditViewModelProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
 }
 
 String _$receiptEditViewModelHash() =>
-    r'6e6d32372f08481d0dd1c5d8b5a63777af1c8167';
-
-final class ReceiptEditViewModelFamily extends $Family
-    with
-        $ClassFamilyOverride<
-          ReceiptEditViewModel,
-          ReceiptEditState,
-          ReceiptEditState,
-          ReceiptEditState,
-          List<FridgeItem>?
-        > {
-  const ReceiptEditViewModelFamily._()
-    : super(
-        retry: null,
-        name: r'receiptEditViewModelProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  ReceiptEditViewModelProvider call(List<FridgeItem>? scannedItems) =>
-      ReceiptEditViewModelProvider._(argument: scannedItems, from: this);
-
-  @override
-  String toString() => r'receiptEditViewModelProvider';
-}
+    r'c37d8cf0d1e40609bf3e7eadcd6824302804f050';
 
 abstract class _$ReceiptEditViewModel extends $Notifier<ReceiptEditState> {
-  late final _$args = ref.$arg as List<FridgeItem>?;
-  List<FridgeItem>? get scannedItems => _$args;
-
-  ReceiptEditState build(List<FridgeItem>? scannedItems);
+  ReceiptEditState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build(_$args);
+    final created = build();
     final ref = this.ref as $Ref<ReceiptEditState, ReceiptEditState>;
     final element =
         ref.element

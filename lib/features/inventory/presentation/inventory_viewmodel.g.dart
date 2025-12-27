@@ -34,7 +34,7 @@ final class InventoryViewModelProvider
 }
 
 String _$inventoryViewModelHash() =>
-    r'c12b67cad87cbe5341f5516773e3d33201801e65';
+    r'77b221c0b71e95df29ee5f5bf90e9b85b69212e0';
 
 abstract class _$InventoryViewModel extends $AsyncNotifier<void> {
   FutureOr<void> build();

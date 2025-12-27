@@ -23,11 +23,13 @@ void main() {
       id: '2',
     );
 
-    test('initializes with empty list when null is passed', () {
+    test('initializes with empty list when initialized with empty list', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final state = container.read(receiptEditViewModelProvider(null));
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([]);
+      final state = container.read(receiptEditViewModelProvider);
 
       expect(state.items, isEmpty);
       expect(state.total, 0.0);
@@ -38,9 +40,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final state = container.read(
-        receiptEditViewModelProvider([item1, item2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([item1, item2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       expect(state.items.length, 2);
       expect(state.items, containsAll([item1, item2]));
@@ -50,9 +52,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final state = container.read(
-        receiptEditViewModelProvider([item1, item2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([item1, item2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       // (1.50 * 2) + (0.50 * 4) = 3.0 + 2.0 = 5.0
       expect(state.total, 5.0);
@@ -62,9 +64,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final state = container.read(
-        receiptEditViewModelProvider([item1, item2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([item1, item2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       // 2 + 4 = 6
       expect(state.totalQuantity, 6);
@@ -75,9 +77,9 @@ void main() {
       addTearDown(container.dispose);
 
       final itemEmptyStore = item1.copyWith(storeName: '');
-      final state = container.read(
-        receiptEditViewModelProvider([itemEmptyStore, item2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([itemEmptyStore, item2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       expect(state.initialStoreName, 'Store A');
     });
@@ -88,9 +90,9 @@ void main() {
 
       final itemEmptyStore1 = item1.copyWith(storeName: '');
       final itemEmptyStore2 = item2.copyWith(storeName: '');
-      final state = container.read(
-        receiptEditViewModelProvider([itemEmptyStore1, itemEmptyStore2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([itemEmptyStore1, itemEmptyStore2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       expect(state.initialStoreName, 'Ladenname');
     });
@@ -100,15 +102,14 @@ void main() {
       addTearDown(container.dispose);
 
       final items = [item1, item2];
-      final notifier = container.read(
-        receiptEditViewModelProvider(items).notifier,
-      );
-      const newStoreName = 'Supermarket B';
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize(items);
 
+      const newStoreName = 'Supermarket B';
       notifier.updateMerchantName(newStoreName);
 
       // Read the state again after update
-      final updatedState = container.read(receiptEditViewModelProvider(items));
+      final updatedState = container.read(receiptEditViewModelProvider);
       expect(
         updatedState.items.every((item) => item.storeName == newStoreName),
         isTrue,
@@ -120,14 +121,13 @@ void main() {
       addTearDown(container.dispose);
 
       final items = [item1, item2];
-      final notifier = container.read(
-        receiptEditViewModelProvider(items).notifier,
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize(items);
 
       notifier.deleteItem(0);
 
       // Read the state again after deletion
-      final updatedState = container.read(receiptEditViewModelProvider(items));
+      final updatedState = container.read(receiptEditViewModelProvider);
       expect(updatedState.items.length, 1);
       expect(updatedState.items.first.name, 'Banana');
     });
@@ -137,25 +137,25 @@ void main() {
       addTearDown(container.dispose);
 
       final items = [item1];
-      final notifier = container.read(
-        receiptEditViewModelProvider(items).notifier,
-      );
-      final newItem = item1.copyWith(name: 'Green Apple');
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize(items);
 
+      final newItem = item1.copyWith(name: 'Green Apple');
       notifier.updateItem(0, newItem);
 
       // Read the state again after update
-      final updatedState = container.read(receiptEditViewModelProvider(items));
+      final updatedState = container.read(receiptEditViewModelProvider);
       expect(updatedState.items.first.name, 'Green Apple');
     });
+
     test('calculates total with zero quantity items correctly', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final itemZeroQty = item1.copyWith(quantity: 0, unitPrice: 10.0);
-      final state = container.read(
-        receiptEditViewModelProvider([itemZeroQty, item2]),
-      );
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize([itemZeroQty, item2]);
+      final state = container.read(receiptEditViewModelProvider);
 
       // (0 * 10.0) + (0.50 * 4) = 0 + 2.0 = 2.0
       expect(state.total, 2.0);
@@ -169,14 +169,14 @@ void main() {
         item1,
         item2,
       ]; // item1 total: 3.0, item2 total: 2.0. Sum: 5.0
-      final notifier = container.read(
-        receiptEditViewModelProvider(items).notifier,
-      );
+
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+      notifier.initialize(items);
 
       notifier.deleteItem(0); // Remove item1
 
       // Read the state again
-      final updatedState = container.read(receiptEditViewModelProvider(items));
+      final updatedState = container.read(receiptEditViewModelProvider);
 
       // Only item2 remains: 0.50 * 4 = 2.0
       expect(updatedState.total, 2.0);
