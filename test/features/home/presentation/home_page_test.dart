@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/home/presentation/home_page.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
@@ -18,14 +20,18 @@ class MockImagePicker extends Mock implements ImagePicker {}
 
 class MockReceiptRepository extends Mock implements ReceiptRepository {}
 
+class MockFilePicker extends Mock implements FilePicker {}
+
 void main() {
   late MockImagePicker mockImagePicker;
   late MockReceiptRepository mockReceiptRepository;
+  late MockFilePicker mockFilePicker;
 
   setUp(() {
     registerFallbackValue(XFile(''));
     mockImagePicker = MockImagePicker();
     mockReceiptRepository = MockReceiptRepository();
+    mockFilePicker = MockFilePicker();
   });
 
   Widget createWidgetUnderTest() {
@@ -33,7 +39,7 @@ void main() {
       overrides: [
         imagePickerProvider.overrideWithValue(mockImagePicker),
         receiptRepositoryProvider.overrideWithValue(mockReceiptRepository),
-        // Override inventoryDisplayListProvider to return empty list
+        filePickerProvider.overrideWithValue(mockFilePicker),
         inventoryDisplayListProvider.overrideWith((ref) async => []),
       ],
       child: const MaterialApp(home: HomePage()),
@@ -84,7 +90,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      final galleryButton = find.text('Bild aus Galerie');
+      final galleryButton = find.text(AppLocalizations.imageFromGallery);
       expect(galleryButton, findsOneWidget);
       await tester.tap(galleryButton);
 
@@ -127,7 +133,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Bild aus Galerie'));
+    await tester.tap(find.text(AppLocalizations.imageFromGallery));
     await tester.pumpAndSettle();
 
     verify(
@@ -163,12 +169,12 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
       await tester.pump();
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Keine Produkte erkannt'), findsOneWidget);
+      expect(find.text(AppLocalizations.noAvailableProducts), findsOneWidget);
       expect(find.byType(ReceiptEditPage), findsNothing);
     },
   );
@@ -195,13 +201,15 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
       await tester.pump();
       await tester.pump();
       await tester.pump();
 
       expect(
-        find.text('Ein Fehler ist aufgetreten: Exception: Generic API Error'),
+        find.text(
+          '${AppLocalizations.errorOccurred}Exception: Generic API Error',
+        ),
         findsOneWidget,
       );
       expect(find.byType(ReceiptEditPage), findsNothing);
@@ -234,13 +242,13 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
       await tester.pump(); // Trigger analysis
       await tester.pump(); // Handle error
       await tester.pump(); // Show snackbar
 
       expect(
-        find.text('Der Kassenbon konnte nicht gelesen werden (Format-Fehler).'),
+        find.text(AppLocalizations.receiptReadErrorFormat),
         findsOneWidget,
       );
     },
@@ -272,13 +280,13 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
       await tester.pump();
       await tester.pump();
       await tester.pump();
 
       expect(
-        find.text('Der Kassenbon konnte nicht gelesen werden (Format-Fehler).'),
+        find.text(AppLocalizations.receiptReadErrorFormat),
         findsOneWidget,
       );
     },
@@ -314,12 +322,12 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      final cameraButton = find.text('Bild aufnehmen');
+      final cameraButton = find.text(AppLocalizations.imageFromCamera);
       expect(cameraButton, findsOneWidget);
       await tester.tap(cameraButton);
 
       await tester.pump();
-      await tester.pump(); // loading
+      await tester.pump();
       await tester.pumpAndSettle();
 
       verify(
@@ -353,7 +361,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Bild aufnehmen'));
+    await tester.tap(find.text(AppLocalizations.imageFromCamera));
     await tester.pumpAndSettle();
 
     verify(
@@ -364,6 +372,89 @@ void main() {
       ),
     ).called(1);
     verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
+    expect(find.byType(ReceiptEditPage), findsNothing);
+  });
+
+  testWidgets(
+    'Tapping PDF option picks file and navigates to ReceiptEditPage',
+    (tester) async {
+      final file = PlatformFile(
+        name: 'receipt.pdf',
+        size: 100,
+        path: 'path/to/receipt.pdf',
+      );
+      final result = FilePickerResult([file]);
+      final scannedItems = [
+        FridgeItem.create(
+          name: 'PDF Item',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.99,
+        ),
+      ];
+
+      when(
+        () => mockFilePicker.pickFiles(
+          allowedExtensions: ['pdf'],
+          type: FileType.custom,
+        ),
+      ).thenAnswer((_) async => result);
+
+      when(
+        () => mockReceiptRepository.analyzePdfReceipt(any()),
+      ).thenAnswer((_) async => scannedItems);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      final pdfButton = find.text(AppLocalizations.imageFromPdf);
+      expect(pdfButton, findsOneWidget);
+      await tester.tap(pdfButton);
+
+      await tester.pump();
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockFilePicker.pickFiles(
+          allowedExtensions: ['pdf'],
+          type: FileType.custom,
+        ),
+      ).called(1);
+      verify(() => mockReceiptRepository.analyzePdfReceipt(any())).called(1);
+
+      expect(find.byType(ReceiptEditPage), findsOneWidget);
+      expect(find.text('PDF Item'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Does nothing if file picker (PDF) is cancelled', (tester) async {
+    when(
+      () => mockFilePicker.pickFiles(
+        allowedExtensions: ['pdf'],
+        type: FileType.custom,
+      ),
+    ).thenAnswer((_) async => null);
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AppLocalizations.imageFromPdf));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => mockFilePicker.pickFiles(
+        allowedExtensions: ['pdf'],
+        type: FileType.custom,
+      ),
+    ).called(1);
+    verifyNever(() => mockReceiptRepository.analyzePdfReceipt(any()));
     expect(find.byType(ReceiptEditPage), findsNothing);
   });
 }

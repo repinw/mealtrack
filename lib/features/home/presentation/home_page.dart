@@ -61,7 +61,7 @@ class HomePage extends ConsumerWidget {
       body: Center(
         child: homeState.isLoading
             ? const CircularProgressIndicator()
-            : const InventoryPage(title: 'Digitaler Kühlschrank'),
+            : const InventoryPage(title: AppLocalizations.digitalFridge),
       ),
     );
   }
@@ -78,17 +78,22 @@ class HomePage extends ConsumerWidget {
       children: [
         SpeedDialChild(
           child: const Icon(Icons.photo_library),
-          label: 'Bild aus Galerie',
+          label: AppLocalizations.imageFromGallery,
           onTap: () => ref
               .read(homeViewModelProvider.notifier)
               .analyzeImageFromGallery(),
         ),
         SpeedDialChild(
-          child: const Icon(Icons.camera_alt_outlined),
-          label: 'Bild aufnehmen',
-          onTap: () => ref
-              .read(homeViewModelProvider.notifier)
-              .analyzeImageFromCamera(),
+          child: const Icon(Icons.camera_alt),
+          label: AppLocalizations.imageFromCamera,
+          onTap: () =>
+              ref.read(homeViewModelProvider.notifier).analyzeImageFromCamera(),
+        ),
+        SpeedDialChild(
+          child: const Icon(Icons.picture_as_pdf_rounded),
+          label: AppLocalizations.imageFromPdf,
+          onTap: () =>
+              ref.read(homeViewModelProvider.notifier).analyzeImageFromPDF(),
         ),
       ],
     );
@@ -99,14 +104,14 @@ class HomePage extends ConsumerWidget {
     if (error is ReceiptAnalysisException) {
       if (error.code == 'INVALID_JSON' ||
           error.originalException is FormatException) {
-        message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+        message = AppLocalizations.receiptReadErrorFormat;
       } else {
         message = error.message;
       }
     } else if (message.contains('FormatException')) {
-      message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+      message = AppLocalizations.receiptReadErrorFormat;
     } else {
-      message = 'Ein Fehler ist aufgetreten: $message';
+      message = '${AppLocalizations.errorOccurred}$message';
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

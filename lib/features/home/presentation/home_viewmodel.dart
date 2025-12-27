@@ -1,3 +1,6 @@
+import 'package:mealtrack/core/l10n/app_localizations.dart';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
@@ -11,6 +14,33 @@ class HomeViewModel extends _$HomeViewModel {
   @override
   Future<List<FridgeItem>> build() async {
     return [];
+  }
+
+  Future<void> analyzeImageFromPDF() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final filePicker = ref.read(filePickerProvider);
+      final receiptRepository = ref.read(receiptRepositoryProvider);
+
+      final FilePickerResult? result = await filePicker.pickFiles(
+        allowedExtensions: ['pdf'],
+        type: FileType.custom,
+      );
+
+      if (result != null) {
+        final path = result.files.first.path;
+        if (path == null) {
+          throw const FormatException(AppLocalizations.pleaseSelectPdf);
+        }
+        if (!path.toLowerCase().endsWith('.pdf')) {
+          throw const FormatException(AppLocalizations.pleaseSelectPdf);
+        }
+
+        return await receiptRepository.analyzePdfReceipt(XFile(path));
+      } else {
+        return [];
+      }
+    });
   }
 
   Future<void> analyzeImageFromCamera() =>
