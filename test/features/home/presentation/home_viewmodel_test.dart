@@ -222,5 +222,112 @@ void main() {
         expect(state.value, isEmpty);
       },
     );
+
+    test('analyzeImageFromCamera success', () async {
+      final container = makeContainer();
+      final viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, _) {});
+
+      final file = XFile('path/to/image.jpg');
+      final expectedItems = [
+        FridgeItem.create(
+          name: 'Apple',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.0,
+        ),
+      ];
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 1500,
+          imageQuality: 80,
+        ),
+      ).thenAnswer((_) async => file);
+
+      when(
+        () => mockReceiptRepository.analyzeReceipt(file),
+      ).thenAnswer((_) async => expectedItems);
+
+      await viewModel.analyzeImageFromCamera();
+
+      verify(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 1500,
+          imageQuality: 80,
+        ),
+      ).called(1);
+      verify(() => mockReceiptRepository.analyzeReceipt(file)).called(1);
+
+      final state = container.read(homeViewModelProvider);
+      expect(state, isA<AsyncData<List<FridgeItem>>>());
+      expect(state.value, hasLength(1));
+    });
+
+    test(
+      'analyzeImageFromCamera does nothing when image picker returns null',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        when(
+          () => mockImagePicker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1500,
+            imageQuality: 80,
+          ),
+        ).thenAnswer((_) async => null);
+
+        await viewModel.analyzeImageFromCamera();
+
+        verify(
+          () => mockImagePicker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1500,
+            imageQuality: 80,
+          ),
+        ).called(1);
+        verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
+
+        final state = container.read(homeViewModelProvider);
+        expect(state, isA<AsyncData<List<FridgeItem>>>());
+        expect(state.value, isEmpty);
+      },
+    );
+
+    test(
+      'analyzeImageFromCamera sets error state when repository throws',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = XFile('path/to/image.jpg');
+        final exception = ReceiptAnalysisException(
+          'Analysis Failed',
+          code: 'TEST_ERROR',
+        );
+
+        when(
+          () => mockImagePicker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1500,
+            imageQuality: 80,
+          ),
+        ).thenAnswer((_) async => file);
+
+        when(
+          () => mockReceiptRepository.analyzeReceipt(file),
+        ).thenThrow(exception);
+
+        await viewModel.analyzeImageFromCamera();
+
+        expect(container.read(homeViewModelProvider).hasError, true);
+        expect(container.read(homeViewModelProvider).error, exception);
+      },
+    );
   });
 }

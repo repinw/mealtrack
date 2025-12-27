@@ -13,14 +13,20 @@ class HomeViewModel extends _$HomeViewModel {
     return [];
   }
 
-  Future<void> analyzeImageFromGallery() async {
+  Future<void> analyzeImageFromCamera() =>
+      _pickAndAnalyzeImage(ImageSource.camera);
+
+  Future<void> analyzeImageFromGallery() =>
+      _pickAndAnalyzeImage(ImageSource.gallery);
+
+  Future<void> _pickAndAnalyzeImage(ImageSource source) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final imagePicker = ref.read(imagePickerProvider);
       final receiptRepository = ref.read(receiptRepositoryProvider);
 
       final XFile? image = await imagePicker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 1500,
         imageQuality: 80,
       );
