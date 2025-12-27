@@ -52,12 +52,17 @@ void main() {
       'updateQuantity unconscumes item when quantity increases from 0',
       () async {
         // Arrange
-        final item = FridgeItem.create(
-          name: 'TestItem',
-          storeName: 'TestStore',
-          quantity: 0,
-          unitPrice: 1.0,
-        ).copyWith(isConsumed: true, consumptionDate: DateTime.now());
+        final item =
+            FridgeItem.create(
+              name: 'TestItem',
+              storeName: 'TestStore',
+              quantity: 1,
+              unitPrice: 1.0,
+            ).copyWith(
+              quantity: 0,
+              isConsumed: true,
+              consumptionDate: DateTime.now(),
+            );
         final items = [item];
 
         when(

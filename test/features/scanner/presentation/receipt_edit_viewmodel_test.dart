@@ -181,5 +181,24 @@ void main() {
       // Only item2 remains: 0.50 * 4 = 2.0
       expect(updatedState.total, 2.0);
     });
+
+    test('re-initialization overwrites previous state', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+
+      // Initialize with item1
+      notifier.initialize([item1]);
+      var state = container.read(receiptEditViewModelProvider);
+      expect(state.items.length, 1);
+      expect(state.items.first.name, 'Apple');
+
+      // Re-initialize with item2
+      notifier.initialize([item2]);
+      state = container.read(receiptEditViewModelProvider);
+      expect(state.items.length, 1);
+      expect(state.items.first.name, 'Banana');
+    });
   });
 }

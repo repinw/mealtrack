@@ -90,6 +90,7 @@ class FridgeRepository {
           quantity: quantity,
           isConsumed: isConsumed,
           consumptionDate: consumptionDate,
+          clearConsumptionDate: consumptionDate == null,
         ),
       );
     } catch (e) {

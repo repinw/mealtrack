@@ -20,7 +20,7 @@ final class ReceiptEditViewModelProvider
         argument: null,
         retry: null,
         name: r'receiptEditViewModelProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -42,7 +42,7 @@ final class ReceiptEditViewModelProvider
 }
 
 String _$receiptEditViewModelHash() =>
-    r'c37d8cf0d1e40609bf3e7eadcd6824302804f050';
+    r'6bc641e8136ecb6ba954fbdb46ffc7cc52ea2f3e';
 
 abstract class _$ReceiptEditViewModel extends $Notifier<ReceiptEditState> {
   ReceiptEditState build();

@@ -22,8 +22,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize merchant name from view model state directly
-    // Initialize view model
     // Schedule initialization for the end of the frame to avoid "modifying provider during build" error
     if (widget.scannedItems != null) {
       Future.microtask(() {
@@ -55,6 +53,16 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ReceiptEditState>(receiptEditViewModelProvider, (
+      previous,
+      next,
+    ) {
+      // Update controller when items are initialized
+      if ((previous?.items.isEmpty ?? true) && next.items.isNotEmpty) {
+        _merchantController.text = next.initialStoreName;
+      }
+    });
+
     final viewModel = ref.watch(receiptEditViewModelProvider);
     final items = viewModel.items;
     final total = viewModel.total;

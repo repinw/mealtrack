@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:uuid/uuid.dart';
@@ -19,8 +20,18 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     throw const FormatException(AppLocalizations.sanitizedJsonEmpty);
   }
 
+  dynamic decodedJson;
   try {
-    final decodedJson = jsonDecode(sanitizedJson);
+    decodedJson = jsonDecode(sanitizedJson);
+  } catch (e) {
+    throw ReceiptAnalysisException(
+      '${AppLocalizations.jsonParsingError}$e',
+      code: 'INVALID_JSON',
+      originalException: e,
+    );
+  }
+
+  try {
     List<dynamic> itemsList;
 
     var receiptId = const Uuid().v4();
@@ -76,7 +87,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 
       // p = totalPrice
       final rawPrice = _parseNum(map['p'] ?? map['totalPrice']);
-      final totalPrice = rawPrice?.toDouble() ?? 0.0;
+      final totalPrice = (rawPrice?.toDouble() ?? 0.0).abs();
 
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 

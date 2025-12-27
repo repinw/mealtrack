@@ -31,7 +31,7 @@ class ReceiptEditState {
   }
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 class ReceiptEditViewModel extends _$ReceiptEditViewModel {
   @override
   ReceiptEditState build() {

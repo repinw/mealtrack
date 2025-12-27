@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
 void main() {
@@ -189,11 +190,23 @@ void main() {
         );
       });
 
-      test('throws FormatException on malformed JSON', () {
+      test('throws ReceiptAnalysisException on malformed JSON', () {
         expect(
           () => parseScannedItemsFromJson('{ kein valides json }'),
-          throwsA(isA<FormatException>()),
+          throwsA(
+            isA<ReceiptAnalysisException>().having(
+              (e) => e.code,
+              'code',
+              'INVALID_JSON',
+            ),
+          ),
         );
+      });
+
+      test('converts negative price to positive', () {
+        const jsonString = '{"i": [{"n": "Negative", "p": -2.0, "q": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+        expect(result.first.unitPrice, 2.0);
       });
 
       group('Number Parsing Edge Cases', () {
