@@ -20,10 +20,8 @@ class HomePage extends ConsumerWidget {
       previous,
       next,
     ) {
-      // Only process results when transitioning FROM loading state
-      // AND when previous state had data (meaning user initiated an action)
       if (previous?.isLoading != true) return;
-      if (!previous!.hasValue) return; // Skip initial build
+      if (!previous!.hasValue) return;
 
       next.when(
         data: (result) {
@@ -85,6 +83,13 @@ class HomePage extends ConsumerWidget {
               .read(homeViewModelProvider.notifier)
               .analyzeImageFromGallery(),
         ),
+        SpeedDialChild(
+          child: const Icon(Icons.camera_alt_outlined),
+          label: 'Bild aufnehmen',
+          onTap: () => ref
+              .read(homeViewModelProvider.notifier)
+              .analyzeImageFromCamera(),
+        ),
       ],
     );
   }
@@ -92,7 +97,6 @@ class HomePage extends ConsumerWidget {
   void _showErrorSnackBar(BuildContext context, Object error) {
     String message = error.toString();
     if (error is ReceiptAnalysisException) {
-      // Ideally use error.code to map to localized strings, but for now we use the refined logic
       if (error.code == 'INVALID_JSON' ||
           error.originalException is FormatException) {
         message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
@@ -100,7 +104,6 @@ class HomePage extends ConsumerWidget {
         message = error.message;
       }
     } else if (message.contains('FormatException')) {
-      // Fallback
       message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
     } else {
       message = 'Ein Fehler ist aufgetreten: $message';

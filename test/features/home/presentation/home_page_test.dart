@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/features/home/presentation/home_page.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
@@ -187,6 +188,151 @@ void main() {
       when(
         () => mockReceiptRepository.analyzeReceipt(xFile),
       ).thenThrow(Exception('Generic API Error'));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('Ein Fehler ist aufgetreten: Exception: Generic API Error'),
+        findsOneWidget,
+      );
+      expect(find.byType(ReceiptEditPage), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Shows formatted error SnackBar when ReceiptAnalysisException with INVALID_JSON code is thrown',
+    (WidgetTester tester) async {
+      final xFile = XFile('dummy_path/image.jpg');
+      final exception = ReceiptAnalysisException(
+        'Invalid JSON',
+        code: 'INVALID_JSON',
+      );
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockReceiptRepository.analyzeReceipt(xFile),
+      ).thenThrow(exception);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.pump(); // Trigger analysis
+      await tester.pump(); // Handle error
+      await tester.pump(); // Show snackbar
+
+      expect(
+        find.text('Der Kassenbon konnte nicht gelesen werden (Format-Fehler).'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'Shows formatted error SnackBar when ReceiptAnalysisException wraps FormatException',
+    (WidgetTester tester) async {
+      final xFile = XFile('dummy_path/image.jpg');
+      final exception = ReceiptAnalysisException(
+        'Parsing failed',
+        originalException: const FormatException('Invalid JSON'),
+      );
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockReceiptRepository.analyzeReceipt(xFile),
+      ).thenThrow(exception);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bild aus Galerie'));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('Der Kassenbon konnte nicht gelesen werden (Format-Fehler).'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'Tapping camera option picks image from camera and navigates to ReceiptEditPage',
+    (tester) async {
+      final xFile = XFile('test_image_camera.jpg');
+      final scannedItems = [
+        FridgeItem.create(
+          name: 'Camera Item',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.99,
+        ),
+      ];
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockReceiptRepository.analyzeReceipt(xFile),
+      ).thenAnswer((_) async => scannedItems);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      final cameraButton = find.text('Bild aufnehmen');
+      expect(cameraButton, findsOneWidget);
+      await tester.tap(cameraButton);
+
+      await tester.pump();
+      await tester.pump(); // loading
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).called(1);
+      verify(() => mockReceiptRepository.analyzeReceipt(xFile)).called(1);
+
+      expect(find.byType(ReceiptEditPage), findsOneWidget);
+      expect(find.text('Camera Item'), findsOneWidget);
     },
   );
 }
