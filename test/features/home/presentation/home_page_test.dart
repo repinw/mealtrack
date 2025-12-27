@@ -335,4 +335,35 @@ void main() {
       expect(find.text('Camera Item'), findsOneWidget);
     },
   );
+
+  testWidgets('Does nothing if image picker (camera) is cancelled', (
+    tester,
+  ) async {
+    when(
+      () => mockImagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: any(named: 'maxWidth'),
+        imageQuality: any(named: 'imageQuality'),
+      ),
+    ).thenAnswer((_) async => null);
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bild aufnehmen'));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => mockImagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: any(named: 'maxWidth'),
+        imageQuality: any(named: 'imageQuality'),
+      ),
+    ).called(1);
+    verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
+    expect(find.byType(ReceiptEditPage), findsNothing);
+  });
 }
