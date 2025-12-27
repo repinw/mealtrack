@@ -33,7 +33,7 @@ final class HomeViewModelProvider
   HomeViewModel create() => HomeViewModel();
 }
 
-String _$homeViewModelHash() => r'6c18b0cd8fb757c92eb9c27dab0d43b4621e09ff';
+String _$homeViewModelHash() => r'fe33477b84770d1fa81ef56fc320ac34af5a0f30';
 
 abstract class _$HomeViewModel extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();

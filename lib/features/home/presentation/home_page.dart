@@ -84,11 +84,16 @@ class HomePage extends ConsumerWidget {
               .analyzeImageFromGallery(),
         ),
         SpeedDialChild(
-          child: const Icon(Icons.camera_alt_outlined),
+          child: const Icon(Icons.camera_alt),
           label: 'Bild aufnehmen',
-          onTap: () => ref
-              .read(homeViewModelProvider.notifier)
-              .analyzeImageFromCamera(),
+          onTap: () =>
+              ref.read(homeViewModelProvider.notifier).analyzeImageFromCamera(),
+        ),
+        SpeedDialChild(
+          child: const Icon(Icons.picture_as_pdf_rounded),
+          label: 'Aus PDF',
+          onTap: () =>
+              ref.read(homeViewModelProvider.notifier).analyzeImageFromPDF(),
         ),
       ],
     );

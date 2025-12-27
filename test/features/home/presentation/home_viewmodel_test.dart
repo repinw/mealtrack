@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mocktail/mocktail.dart';
@@ -12,13 +13,17 @@ class MockImagePicker extends Mock implements ImagePicker {}
 
 class MockReceiptRepository extends Mock implements ReceiptRepository {}
 
+class MockFilePicker extends Mock implements FilePicker {}
+
 void main() {
   late MockImagePicker mockImagePicker;
   late MockReceiptRepository mockReceiptRepository;
+  late MockFilePicker mockFilePicker;
 
   setUp(() {
     mockImagePicker = MockImagePicker();
     mockReceiptRepository = MockReceiptRepository();
+    mockFilePicker = MockFilePicker();
     registerFallbackValue(XFile(''));
   });
 
@@ -27,6 +32,7 @@ void main() {
       overrides: [
         imagePickerProvider.overrideWithValue(mockImagePicker),
         receiptRepositoryProvider.overrideWithValue(mockReceiptRepository),
+        filePickerProvider.overrideWithValue(mockFilePicker),
       ],
     );
     addTearDown(container.dispose);
@@ -324,6 +330,152 @@ void main() {
         ).thenThrow(exception);
 
         await viewModel.analyzeImageFromCamera();
+
+        expect(container.read(homeViewModelProvider).hasError, true);
+        expect(container.read(homeViewModelProvider).error, exception);
+      },
+    );
+
+    test('analyzeImageFromPDF success', () async {
+      final container = makeContainer();
+      final viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, _) {});
+
+      final file = PlatformFile(
+        name: 'receipt.pdf',
+        size: 100,
+        path: 'path/to/receipt.pdf',
+      );
+      final result = FilePickerResult([file]);
+
+      final expectedItems = [
+        FridgeItem.create(
+          name: 'Apple',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.0,
+        ),
+      ];
+
+      when(
+        () => mockFilePicker.pickFiles(
+          allowedExtensions: ['pdf'],
+          type: FileType.custom,
+        ),
+      ).thenAnswer((_) async => result);
+
+      when(
+        () => mockReceiptRepository.analyzePdfReceipt(any()),
+      ).thenAnswer((_) async => expectedItems);
+
+      await viewModel.analyzeImageFromPDF();
+
+      verify(
+        () => mockFilePicker.pickFiles(
+          allowedExtensions: ['pdf'],
+          type: FileType.custom,
+        ),
+      ).called(1);
+      verify(() => mockReceiptRepository.analyzePdfReceipt(any())).called(1);
+
+      final state = container.read(homeViewModelProvider);
+      expect(state, isA<AsyncData<List<FridgeItem>>>());
+      expect(state.value, hasLength(1));
+    });
+
+    test(
+      'analyzeImageFromPDF does nothing when file picker returns null (cancelled)',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        when(
+          () => mockFilePicker.pickFiles(
+            allowedExtensions: ['pdf'],
+            type: FileType.custom,
+          ),
+        ).thenAnswer((_) async => null);
+
+        await viewModel.analyzeImageFromPDF();
+
+        verify(
+          () => mockFilePicker.pickFiles(
+            allowedExtensions: ['pdf'],
+            type: FileType.custom,
+          ),
+        ).called(1);
+        verifyNever(() => mockReceiptRepository.analyzePdfReceipt(any()));
+
+        final state = container.read(homeViewModelProvider);
+        expect(state, isA<AsyncData<List<FridgeItem>>>());
+        expect(state.value, isEmpty);
+      },
+    );
+
+    test(
+      'analyzeImageFromPDF throws FormatException when file extension is not pdf',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = PlatformFile(
+          name: 'receipt.jpg',
+          size: 100,
+          path: 'path/to/receipt.jpg',
+        );
+        final result = FilePickerResult([file]);
+
+        when(
+          () => mockFilePicker.pickFiles(
+            allowedExtensions: ['pdf'],
+            type: FileType.custom,
+          ),
+        ).thenAnswer((_) async => result);
+
+        await viewModel.analyzeImageFromPDF();
+
+        final state = container.read(homeViewModelProvider);
+        expect(state.hasError, true);
+        expect(state.error, isA<FormatException>());
+        expect(
+          (state.error as FormatException).message,
+          'Bitte wähle eine PDF-Datei.',
+        );
+      },
+    );
+
+    test(
+      'analyzeImageFromPDF sets error state when repository throws',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = PlatformFile(
+          name: 'receipt.pdf',
+          size: 100,
+          path: 'path/to/receipt.pdf',
+        );
+        final result = FilePickerResult([file]);
+        final exception = ReceiptAnalysisException(
+          'Analysis Failed',
+          code: 'TEST_ERROR',
+        );
+
+        when(
+          () => mockFilePicker.pickFiles(
+            allowedExtensions: ['pdf'],
+            type: FileType.custom,
+          ),
+        ).thenAnswer((_) async => result);
+
+        when(
+          () => mockReceiptRepository.analyzePdfReceipt(any()),
+        ).thenThrow(exception);
+
+        await viewModel.analyzeImageFromPDF();
 
         expect(container.read(homeViewModelProvider).hasError, true);
         expect(container.read(homeViewModelProvider).error, exception);
