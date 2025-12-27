@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'inventory_controller.dart';
+part of 'inventory_viewmodel.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,34 +9,34 @@ part of 'inventory_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(InventoryController)
-const inventoryControllerProvider = InventoryControllerProvider._();
+@ProviderFor(InventoryViewModel)
+const inventoryViewModelProvider = InventoryViewModelProvider._();
 
-final class InventoryControllerProvider
-    extends $AsyncNotifierProvider<InventoryController, void> {
-  const InventoryControllerProvider._()
+final class InventoryViewModelProvider
+    extends $AsyncNotifierProvider<InventoryViewModel, void> {
+  const InventoryViewModelProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'inventoryControllerProvider',
+        name: r'inventoryViewModelProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$inventoryControllerHash();
+  String debugGetCreateSourceHash() => _$inventoryViewModelHash();
 
   @$internal
   @override
-  InventoryController create() => InventoryController();
+  InventoryViewModel create() => InventoryViewModel();
 }
 
-String _$inventoryControllerHash() =>
-    r'b1192d04ddb931c7f1e2ab88cd9e485f0e526dad';
+String _$inventoryViewModelHash() =>
+    r'77b221c0b71e95df29ee5f5bf90e9b85b69212e0';
 
-abstract class _$InventoryController extends $AsyncNotifier<void> {
+abstract class _$InventoryViewModel extends $AsyncNotifier<void> {
   FutureOr<void> build();
   @$mustCallSuper
   @override

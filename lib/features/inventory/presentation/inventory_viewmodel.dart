@@ -2,25 +2,27 @@ import 'dart:async';
 
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'inventory_controller.g.dart';
+part 'inventory_viewmodel.g.dart';
 
 @riverpod
-class InventoryController extends _$InventoryController {
+class InventoryViewModel extends _$InventoryViewModel {
   @override
   FutureOr<void> build() {}
 
   Future<void> deleteAllItems() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(localStorageServiceProvider).deleteAllItems();
-      ref.invalidate(fridgeItemsProvider);
-    });
+    // Delegate to fridgeItemsProvider to handle deletion
+    // This avoids ref lifecycle issues
+    await ref.read(fridgeItemsProvider.notifier).deleteAll();
+  }
+
+  Future<void> deleteItem(String id) async {
+    await ref.read(fridgeItemsProvider.notifier).deleteItem(id);
   }
 }
 
+// Display item classes for inventory list
 sealed class InventoryDisplayItem {}
 
 class InventoryHeaderItem extends InventoryDisplayItem {

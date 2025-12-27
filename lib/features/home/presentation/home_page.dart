@@ -1,42 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
-import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_viewmodel.dart';
 
-class HomePage extends StatefulWidget {
-  final ImagePicker imagePicker;
-  final FirebaseAiService firebaseAiService;
-
-  const HomePage({
-    super.key,
-    required this.imagePicker,
-    required this.firebaseAiService,
-  });
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeViewModelProvider);
 
-class _HomePageState extends State<HomePage> {
-  bool _isBusy = false;
+    ref.listen<AsyncValue<List<FridgeItem>>>(homeViewModelProvider, (
+      previous,
+      next,
+    ) {
+      // Only process results when transitioning FROM loading state
+      // AND when previous state had data (meaning user initiated an action)
+      if (previous?.isLoading != true) return;
+      if (!previous!.hasValue) return; // Skip initial build
 
-  @override
-  Widget build(BuildContext context) {
+      next.when(
+        data: (result) {
+          if (!context.mounted) return;
+          if (result.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(AppLocalizations.noAvailableProducts),
+              ),
+            );
+            return;
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProviderScope(
+                overrides: [
+                  initialScannedItemsProvider.overrideWithValue(result),
+                  receiptEditViewModelProvider.overrideWith(
+                    ReceiptEditViewModel.new,
+                  ),
+                ],
+                child: ReceiptEditPage(scannedItems: result),
+              ),
+            ),
+          );
+        },
+        loading: () {},
+        error: (error, stack) {
+          _showErrorSnackBar(context, error);
+        },
+      );
+    });
+
     return Scaffold(
-      floatingActionButton: _buildSpeedDial(),
+      floatingActionButton: _buildSpeedDial(ref, homeState.isLoading),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Center(
-        child: _isBusy
+        child: homeState.isLoading
             ? const CircularProgressIndicator()
             : const InventoryPage(title: 'Digitaler Kühlschrank'),
       ),
     );
   }
 
-  Widget _buildSpeedDial() {
-    if (_isBusy) return const SizedBox.shrink();
+  Widget _buildSpeedDial(WidgetRef ref, bool isBusy) {
+    if (isBusy) return const SizedBox.shrink();
 
     return SpeedDial(
       icon: Icons.add,
@@ -48,62 +81,29 @@ class _HomePageState extends State<HomePage> {
         SpeedDialChild(
           child: const Icon(Icons.photo_library),
           label: 'Bild aus Galerie',
-          onTap: _processImageFromGallery,
+          onTap: () => ref
+              .read(homeViewModelProvider.notifier)
+              .analyzeImageFromGallery(),
         ),
       ],
     );
   }
 
-  Future<void> _processImageFromGallery() async {
-    try {
-      final XFile? image = await widget.imagePicker.pickImage(
-        source: ImageSource.gallery,
-      );
-
-      if (image == null) {
-        return;
-      }
-
-      setState(() => _isBusy = true);
-
-      final result = await widget.firebaseAiService.analyzeImageWithGemini(
-        image,
-      );
-
-      if (!mounted) return;
-
-      if (result.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Keine Produkte erkannt')));
-        return;
-      }
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ReceiptEditPage(scannedItems: result),
-        ),
-      );
-    } catch (e, stackTrace) {
-      debugPrint('Fehler bei der Texterkennung: $e');
-      debugPrintStack(stackTrace: stackTrace);
-
-      if (mounted) {
-        _showErrorSnackBar(e);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isBusy = false);
-      }
-    }
-  }
-
-  void _showErrorSnackBar(Object error) {
+  void _showErrorSnackBar(BuildContext context, Object error) {
     String message = error.toString();
-    if (message.contains('FormatException')) {
+    if (error is ReceiptAnalysisException) {
+      // Ideally use error.code to map to localized strings, but for now we use the refined logic
+      if (error.code == 'INVALID_JSON' ||
+          error.originalException is FormatException) {
+        message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+      } else {
+        message = error.message;
+      }
+    } else if (message.contains('FormatException')) {
+      // Fallback
       message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
     } else {
-      message = 'Ein Fehler ist aufgetreten.';
+      message = 'Ein Fehler ist aufgetreten: $message';
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ReceiptHeader extends StatelessWidget {
   final TextEditingController merchantController;
   final TextEditingController dateController;
+  final ValueChanged<String>? onMerchantChanged;
 
   const ReceiptHeader({
     super.key,
     required this.merchantController,
     required this.dateController,
+    this.onMerchantChanged,
   });
 
   @override
@@ -56,6 +58,7 @@ class ReceiptHeader extends StatelessWidget {
                 ),
                 TextField(
                   controller: merchantController,
+                  onChanged: onMerchantChanged,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

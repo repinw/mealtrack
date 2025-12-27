@@ -1,63 +1,112 @@
+import 'dart:convert';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
+import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
-/// A service that uses Firebase Vertex AI with Gemini to analyze receipt.
 class FirebaseAiService {
-  static const _modelName = 'gemini-2.5-flash';
+  static const String _fallbackTemplateId = 'receiptocr';
 
-  static const _prompt =
-      "Analysiere den Kassenbon und extrahiere strukturierte Daten."
-      "Regeln für die Ausgabe: Gib das Ergebnis ausschließlich als rohes JSON-Objekt zurück. Kein Markdown, kein erklärender Text. Das JSON muss einen Schlüssel 'items' enthalten, der eine Liste von Objekten ist."
-      "Regeln für die Artikel-Erkennung (WICHTIG):"
-      "    Ein Eintrag im Array 'items' darf nur erstellt werden, wenn es sich um ein physisches Produkt mit einem positiven Preis handelt."
-      "   Zeilen mit negativen Preisen (z.B. -1,20) oder Zeilen, die Worte wie 'Rabatt' oder 'Gutschein' im Namen enthalten, sind KEINE Artikel. Erstelle dafür kein eigenes Item-Objekt!"
-      "   Stattdessen müssen diese Zeilen als Rabatt-Objekt in das Feld discounts des unmittelbar vorangegangenen Artikels eingefügt werden."
-      "Struktur eines Artikel-Objekts:"
-      "   name: Vollständiger Name des Artikels (String). Rate den vollen Namen. Entferne Gewichtsangaben und Hersteller aus dem Namen."
-      "   brand: Marke oder Hersteller (String). Rate, falls nicht explizit genannt."
-      "  quantity: Menge (Integer). Standard: 1. Wenn '2 x' davor steht, ist es 2."
-      " totalPrice: Der Preis auf der rechten Seite (Float). Muss positiv sein."
-      " weight: Extrahiere Gewichte/Volumen (z.B. '500g', '1L', 'ST') aus dem Text und speichere sie hier, nicht im Namen."
-      "discounts: Eine Liste von Objekten. Jedes Objekt hat name (Beschreibung des Rabatts) und amount (der absolute Betrag als positive Zahl, z.B. 1.20)."
-      "storeName: Name des Ladens (z.B. Netto). Wiederhole für jedes Item.,"
-      "isLowConfidence: Boolean. Setze auf true, wenn du dir bei der Erkennung unsicher bist (z.B. unleserlich), sonst false."
-      "Beispiel-Logik: Wenn Zeile A 'Hackfleisch 7,99' ist und Zeile B 'Rabatt -1,20' ist: Erstelle EIN Item für Hackfleisch. Füge den Rabatt von 1.20 in dessen discounts-Liste ein. Erstelle KEIN Item für Zeile B.";
+  final FirebaseRemoteConfig remoteConfig;
+  final ImageCompressor imageCompressor;
 
-  final GenerativeModel? _model;
+  FirebaseAiService({
+    FirebaseRemoteConfig? remoteConfig,
+    ImageCompressor? imageCompressor,
+  }) : remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance,
+       imageCompressor = imageCompressor ?? DefaultImageCompressor();
 
-  FirebaseAiService({GenerativeModel? model}) : _model = model;
+  Future<void> initialize() async {
+    await remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 30),
+        minimumFetchInterval: kDebugMode
+            ? const Duration(seconds: 0)
+            : const Duration(seconds: 3600),
+      ),
+    );
+    await remoteConfig.setDefaults(const {"template_id": _fallbackTemplateId});
+    await remoteConfig.fetchAndActivate();
 
-  /// Analyzes the given image [imageData] with the Gemini model.
-  ///
-  /// Throws an exception if the analysis fails or returns no text.
-  Future<List<FridgeItem>> analyzeImageWithGemini(XFile imageData) async {
+    remoteConfig.onConfigUpdated.listen((event) async {
+      await remoteConfig.activate();
+    });
+  }
+
+  Future<String> analyzeImageWithGemini(XFile imageFile) async {
+    debugPrint(AppLocalizations.imageUploading);
+    debugPrint("Starting compression...");
+
+    final Uint8List? compressedBytes = await imageCompressor.compressWithFile(
+      imageFile.path,
+      minWidth: 1024,
+      minHeight: 1024,
+      quality: 80,
+      format: CompressFormat.jpeg,
+    );
+
+    if (compressedBytes == null) {
+      throw ReceiptAnalysisException(
+        "Image compression failed",
+        code: 'COMPRESSION_ERROR',
+      );
+    }
+
+    debugPrint("Original: ${await imageFile.length()} Bytes");
+    debugPrint(
+      "Optimized: ${compressedBytes.length} Bytes (Sending as image/jpeg)",
+    );
+
+    final base64Data = base64Encode(compressedBytes);
+    return _analyzeContent(base64Data, 'image/jpeg');
+  }
+
+  Future<String> analyzePdfWithGemini(XFile pdfFile) async {
+    debugPrint("Processing PDF...");
+    final bytes = await pdfFile.readAsBytes();
+    debugPrint("PDF Size: ${bytes.length} Bytes");
+
+    final base64Data = base64Encode(bytes);
+    return _analyzeContent(base64Data, 'application/pdf');
+  }
+
+  Future<String> _analyzeContent(String base64Data, String mimeType) async {
+    String templateID = remoteConfig.getString("template_id");
+    if (templateID.isEmpty) {
+      debugPrint(
+        "Remote Config 'template_id' is empty. Using fallback: $_fallbackTemplateId",
+      );
+      templateID = _fallbackTemplateId;
+    }
     try {
-      final model =
-          _model ?? FirebaseAI.vertexAI().generativeModel(model: _modelName);
+      final model = FirebaseAI.vertexAI(
+        location: 'global',
+      ).templateGenerativeModel();
 
-      debugPrint(AppLocalizations.imageUploading);
+      final inputs = {'mimeType': mimeType, 'imageData': base64Data};
+      final response = await model.generateContent(templateID, inputs: inputs);
 
-      final prompt = Content.multi([
-        const TextPart(_prompt),
-        InlineDataPart('image/jpeg', await imageData.readAsBytes()),
-      ]);
-
-      final response = await model.generateContent([prompt]);
       final extractedText = response.text;
-
       if (extractedText == null || extractedText.isEmpty) {
-        throw Exception(AppLocalizations.noTextFromAi);
+        throw ReceiptAnalysisException(
+          'No text received from AI service',
+          code: 'NO_TEXT',
+        );
       }
 
       debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
-      return parseScannedItemsFromJson(extractedText);
+      return extractedText;
     } catch (e) {
+      if (e is ReceiptAnalysisException) rethrow;
       debugPrint("${AppLocalizations.aiRequestError}$e");
-      rethrow;
+      throw ReceiptAnalysisException(
+        'AI Request Failed',
+        originalException: e,
+        code: 'AI_ERROR',
+      );
     }
   }
 }

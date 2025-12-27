@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
@@ -32,7 +33,11 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(home: ReceiptEditPage(scannedItems: [item1, item2])),
+        ProviderScope(
+          child: MaterialApp(
+            home: ReceiptEditPage(scannedItems: [item1, item2]),
+          ),
+        ),
       );
 
       // Assert Initial State
@@ -60,7 +65,9 @@ void main() {
     ) async {
       // Act
       await tester.pumpWidget(
-        const MaterialApp(home: ReceiptEditPage(scannedItems: [])),
+        const ProviderScope(
+          child: MaterialApp(home: ReceiptEditPage(scannedItems: [])),
+        ),
       );
 
       // Assert
@@ -79,7 +86,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+        ProviderScope(
+          child: MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+        ),
       );
 
       expect(find.widgetWithText(TextField, 'SuperMarket X'), findsOneWidget);
@@ -93,7 +102,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+        ProviderScope(
+          child: MaterialApp(home: ReceiptEditPage(scannedItems: [item])),
+        ),
       );
 
       // Initial total
@@ -110,7 +121,9 @@ void main() {
 
     testWidgets('Shows save button', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: ReceiptEditPage(scannedItems: [])),
+        const ProviderScope(
+          child: MaterialApp(home: ReceiptEditPage(scannedItems: [])),
+        ),
       );
       expect(find.text('Speichern'), findsOneWidget);
     });

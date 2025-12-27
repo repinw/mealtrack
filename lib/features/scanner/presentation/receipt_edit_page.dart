@@ -5,7 +5,7 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
-import 'package:mealtrack/features/scanner/presentation/receipt_edit_controller.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_viewmodel.dart';
 
 class ReceiptEditPage extends ConsumerStatefulWidget {
   final List<FridgeItem>? scannedItems;
@@ -18,42 +18,48 @@ class ReceiptEditPage extends ConsumerStatefulWidget {
 class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
-  late ReceiptEditController _controller;
 
   @override
   void initState() {
     super.initState();
-    _merchantController = TextEditingController();
+    // No need to manually initialize view model, it's done via ProviderScope overrides in navigation
+
+    // Get initial state for controllers (using read to avoid watching in initState)
+    // The provider will have been initialized by the override in HomePage
+    final initialState = ref.read(receiptEditViewModelProvider);
+
+    _merchantController = TextEditingController(
+      text: initialState.initialStoreName,
+    );
+
     final now = DateTime.now();
     _dateController = TextEditingController(
       text: '${now.day}.${now.month}.${now.year}',
     );
-    _controller = ReceiptEditController(widget.scannedItems);
-    _merchantController.text = _controller.initialStoreName;
-
-    // Update all items when the user changes the merchant name
-    _merchantController.addListener(() {
-      _controller.updateMerchantName(_merchantController.text);
-    });
-
-    _controller.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _merchantController.dispose();
     _dateController.dispose();
-    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Calculate total sum
-    final items = _controller.items;
-    final total = _controller.total;
+    ref.listen<ReceiptEditState>(receiptEditViewModelProvider, (
+      previous,
+      next,
+    ) {
+      // Update controller when items are initialized
+      if ((previous?.items.isEmpty ?? true) && next.items.isNotEmpty) {
+        _merchantController.text = next.initialStoreName;
+      }
+    });
+
+    final viewModel = ref.watch(receiptEditViewModelProvider);
+    final items = viewModel.items;
+    final total = viewModel.total;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -80,6 +86,11 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                   ReceiptHeader(
                     merchantController: _merchantController,
                     dateController: _dateController,
+                    onMerchantChanged: (value) {
+                      ref
+                          .read(receiptEditViewModelProvider.notifier)
+                          .updateMerchantName(value);
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -94,8 +105,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                         ),
                       ),
                       Text(
-                        // Total item count based on quantity
-                        "${_controller.totalQuantity} Artikel",
+                        "${viewModel.totalQuantity} Artikel",
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -174,9 +184,12 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     return ScannedItemRow(
                       key: ValueKey(index),
                       item: item,
-                      onDelete: () => _controller.deleteItem(index),
-                      onChanged: (newItem) =>
-                          _controller.updateItem(index, newItem),
+                      onDelete: () => ref
+                          .read(receiptEditViewModelProvider.notifier)
+                          .deleteItem(index),
+                      onChanged: (newItem) => ref
+                          .read(receiptEditViewModelProvider.notifier)
+                          .updateItem(index, newItem),
                     );
                   }),
                   const SizedBox(height: 24),

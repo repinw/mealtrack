@@ -5,7 +5,7 @@ import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
-import 'package:mealtrack/features/inventory/provider/inventory_controller.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
 
 class InventoryPage extends ConsumerWidget {
   const InventoryPage({super.key, required this.title});
@@ -49,7 +49,7 @@ class InventoryPage extends ConsumerWidget {
             tooltip: AppLocalizations.debugHiveReset,
             onPressed: () async {
               await ref
-                  .read(inventoryControllerProvider.notifier)
+                  .read(inventoryViewModelProvider.notifier)
                   .deleteAllItems();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +68,6 @@ class InventoryPage extends ConsumerWidget {
     final listAsync = ref.watch(inventoryDisplayListProvider);
 
     return listAsync.when(
-      skipLoadingOnReload: true,
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (items) {
