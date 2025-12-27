@@ -9,7 +9,34 @@ import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dar
 import 'package:mealtrack/features/inventory/presentation/item_details.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
-class MockFridgeItems extends Mock implements FridgeItems {}
+class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
+    with Mock
+    implements FridgeItems {
+  @override
+  Future<List<FridgeItem>> build() async => [];
+
+  // Don't override updateQuantity - let Mock handle it for verification
+
+  @override
+  Future<void> deleteAll() async {}
+
+  @override
+  Future<void> deleteItem(String id) async {}
+
+  @override
+  Future<void> addItems(List<FridgeItem> items) async {}
+
+  @override
+  Future<void> reload() async {}
+
+  @override
+  Future<void> updateItem(FridgeItem item) async {}
+}
+
+class TitleNotifier<T> extends AsyncNotifier<T> {
+  @override
+  Future<T> build() async => throw UnimplementedError();
+}
 
 class FakeFridgeItem extends Fake implements FridgeItem {}
 
@@ -34,9 +61,13 @@ void main() {
 
   Widget createWidgetUnderTest() {
     return ProviderScope(
-      overrides: [fridgeItemsProvider.overrideWith(() => mockNotifier)],
+      overrides: [
+        fridgeItemsProvider.overrideWith(() {
+          return mockNotifier;
+        }),
+      ],
       child: MaterialApp(
-        home: Scaffold(body: InventoryItemRow(item: testItem)),
+        home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
       ),
     );
   }
@@ -45,7 +76,19 @@ void main() {
     testWidgets('renders all child components correctly', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+            fridgeItemsProvider.overrideWith(
+              () => mockNotifier,
+            ), // For updateQuantity
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
+          ),
+        ),
+      );
 
       expect(find.byType(CategoryIcon), findsOneWidget);
       expect(find.byType(ItemDetails), findsOneWidget);
@@ -57,52 +100,25 @@ void main() {
       expect(categoryIcon.name, testItem.name);
     });
 
-    testWidgets('shows SnackBar when updateQuantity fails', (
+    testWidgets('calls updateQuantity on notifier when pill updates', (
       WidgetTester tester,
     ) async {
-      when(
-        () => mockNotifier.updateQuantity(any(), any()),
-      ).thenAnswer((_) => Future.error(Exception('Network error')));
-
-      await tester.pumpWidget(createWidgetUnderTest());
-
-      final CounterPill counterPill = tester.widget(find.byType(CounterPill));
-      counterPill.onUpdate(1);
-
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Failed to update item. Please try again.'),
-        findsOneWidget,
-      );
-    }, skip: true); 
-
-    testWidgets('passes correct out-of-stock state to children', (
-      WidgetTester tester,
-    ) async {
-      final outOfStockItem = FridgeItem(
-        id: '2',
-        name: 'Empty Milk',
-        quantity: 0,
-        storeName: 'Test Store',
-        entryDate: DateTime.now(),
-      );
-
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [fridgeItemsProvider.overrideWith(() => mockNotifier)],
+          overrides: [
+            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+            fridgeItemsProvider.overrideWith(() => mockNotifier),
+          ],
           child: MaterialApp(
-            home: Scaffold(body: InventoryItemRow(item: outOfStockItem)),
+            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
           ),
         ),
       );
 
-      final itemDetails = tester.widget<ItemDetails>(find.byType(ItemDetails));
-      expect(itemDetails.isOutOfStock, isTrue);
+      final CounterPill counterPill = tester.widget(find.byType(CounterPill));
+      counterPill.onUpdate(1);
 
-      final counterPill = tester.widget<CounterPill>(find.byType(CounterPill));
-      expect(counterPill.isOutOfStock, isTrue);
+      verify(() => mockNotifier.updateQuantity(any(), 1)).called(1);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,8 +13,6 @@ class InventoryViewModel extends _$InventoryViewModel {
   FutureOr<void> build() {}
 
   Future<void> deleteAllItems() async {
-    // Delegate to fridgeItemsProvider to handle deletion
-    // This avoids ref lifecycle issues
     await ref.read(fridgeItemsProvider.notifier).deleteAll();
   }
 
@@ -22,42 +21,108 @@ class InventoryViewModel extends _$InventoryViewModel {
   }
 }
 
-// Display item classes for inventory list
-sealed class InventoryDisplayItem {}
+sealed class InventoryDisplayItem {
+  const InventoryDisplayItem();
+}
 
 class InventoryHeaderItem extends InventoryDisplayItem {
   final FridgeItem item;
-  InventoryHeaderItem(this.item);
+  const InventoryHeaderItem(this.item);
+
+  @override
+  bool operator ==(Object other) =>
+      other is InventoryHeaderItem &&
+      item.storeName == other.item.storeName &&
+      item.entryDate == other.item.entryDate;
+
+  @override
+  int get hashCode => Object.hash(item.storeName, item.entryDate);
 }
 
 class InventoryProductItem extends InventoryDisplayItem {
-  final FridgeItem item;
-  InventoryProductItem(this.item);
+  final String itemId;
+  const InventoryProductItem(this.itemId);
+
+  @override
+  bool operator ==(Object other) =>
+      other is InventoryProductItem && itemId == other.itemId;
+
+  @override
+  int get hashCode => itemId.hashCode;
 }
 
 class InventorySpacerItem extends InventoryDisplayItem {
-  InventorySpacerItem();
+  const InventorySpacerItem();
+
+  @override
+  bool operator ==(Object other) => other is InventorySpacerItem;
+
+  @override
+  int get hashCode => 0;
 }
 
 @riverpod
 Future<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) async {
   final showOnlyAvailable = ref.watch(inventoryFilterProvider);
 
+  final structure = await ref.watch(
+    fridgeItemsProvider.selectAsync((items) {
+      return items
+          .map(
+            (item) => (
+              id: item.id,
+              receiptId: item.receiptId ?? '',
+              storeName: item.storeName,
+              entryDate: item.entryDate,
+              hasQuantity: item.quantity > 0,
+            ),
+          )
+          .toList();
+    }),
+  );
+
   if (showOnlyAvailable) {
-    final items = await ref.watch(availableFridgeItemsProvider.future);
-    return items.map((item) => InventoryProductItem(item)).toList();
+    return structure
+        .where((s) => s.hasQuantity)
+        .map((s) => InventoryProductItem(s.id))
+        .toList();
   }
 
-  final groupedItems = await ref.watch(groupedFridgeItemsProvider.future);
+  final groupedMap =
+      <
+        String,
+        List<
+          ({
+            String id,
+            String receiptId,
+            String storeName,
+            DateTime entryDate,
+            bool hasQuantity,
+          })
+        >
+      >{};
+  for (final item in structure) {
+    groupedMap.putIfAbsent(item.receiptId, () => []).add(item);
+  }
+
   final displayList = <InventoryDisplayItem>[];
+  for (final group in groupedMap.entries) {
+    if (group.value.isEmpty) continue;
 
-  for (final group in groupedItems) {
-    final groupItems = group.value;
-    if (groupItems.isEmpty) continue;
-
-    displayList.add(InventoryHeaderItem(groupItems.first));
-    displayList.addAll(groupItems.map((item) => InventoryProductItem(item)));
-    displayList.add(InventorySpacerItem());
+    final first = group.value.first;
+    displayList.add(
+      InventoryHeaderItem(
+        FridgeItem(
+          id: first.id,
+          name: '',
+          storeName: first.storeName,
+          entryDate: first.entryDate,
+          quantity: 0,
+        ),
+      ),
+    );
+    displayList.addAll(group.value.map((s) => InventoryProductItem(s.id)));
+    displayList.add(const InventorySpacerItem());
   }
 
   return displayList;

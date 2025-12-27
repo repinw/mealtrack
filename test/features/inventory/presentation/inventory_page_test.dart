@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class MockInventoryFilterNotifier extends InventoryFilter {
@@ -21,14 +21,23 @@ class MockInventoryFilterNotifier extends InventoryFilter {
 }
 
 class MockFridgeItemsNotifier extends FridgeItems {
-  final List<FridgeItem> items;
-  MockFridgeItemsNotifier(this.items);
-
-  @override
-  Future<List<FridgeItem>> build() async => items;
-
   @override
   Future<void> deleteAll() async {}
+
+  @override
+  Future<void> addItems(List items) async {}
+
+  @override
+  Future<void> reload() async {}
+
+  @override
+  Future<void> updateItem(item) async {}
+
+  @override
+  void updateQuantity(item, int delta) {}
+
+  @override
+  Future<void> deleteItem(String id) async {}
 }
 
 void main() {
@@ -36,7 +45,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier([])),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) => Completer<List<InventoryDisplayItem>>().future,
+          ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
@@ -45,7 +56,6 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
     expect(find.text('Test Inventory'), findsOneWidget);
   });
 
@@ -55,8 +65,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fridgeItemsProvider.overrideWith(
-            (ref) async => await Completer<List<FridgeItem>>().future,
+          inventoryDisplayListProvider.overrideWith(
+            (ref) => Completer<List<InventoryDisplayItem>>().future,
           ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
@@ -73,14 +83,12 @@ void main() {
     WidgetTester tester,
   ) async {
     const errorMessage = 'Something went wrong';
-    final completer = Completer<List<FridgeItem>>();
+    final completer = Completer<List<InventoryDisplayItem>>();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fridgeItemsProvider.overrideWith(
-            (ref) async => await completer.future,
-          ),
+          inventoryDisplayListProvider.overrideWith((ref) => completer.future),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
@@ -89,11 +97,10 @@ void main() {
       ),
     );
 
-    completer.completeError(errorMessage);
-    await tester.pump(); // Process future completion
-    await tester.pump(); // Rebuild UI
+    completer.completeError(Exception(errorMessage));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Error: $errorMessage'), findsOneWidget);
+    expect(find.textContaining('Something went wrong'), findsOneWidget);
   });
 
   testWidgets(
@@ -102,7 +109,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier([])),
+            inventoryDisplayListProvider.overrideWith((ref) => []),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: false),
             ),
@@ -124,7 +131,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier([])),
+            inventoryDisplayListProvider.overrideWith((ref) => []),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: true),
             ),
@@ -146,7 +153,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier([])),
+          inventoryDisplayListProvider.overrideWith((ref) => []),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(initialValue: false),
           ),
@@ -154,8 +161,6 @@ void main() {
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
       ),
     );
-
-    await tester.pumpAndSettle();
 
     final switchFinder = find.byType(Switch);
     expect(tester.widget<Switch>(switchFinder).value, isFalse);
@@ -172,16 +177,15 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier([])),
+          inventoryDisplayListProvider.overrideWith((ref) => []),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
       ),
     );
-
-    await tester.pumpAndSettle();
 
     // Skip this test because the delete button is only visible in debug mode
     // (kDebugMode is false in test environment)

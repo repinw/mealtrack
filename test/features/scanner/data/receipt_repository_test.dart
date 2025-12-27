@@ -68,16 +68,19 @@ void main() {
         },
       );
 
-      test('analyzeReceipt throws FormatException on invalid JSON', () async {
-        when(
-          () => mockAiService.analyzeImageWithGemini(mockFile),
-        ).thenAnswer((_) async => "Invalid JSON Response");
+      test(
+        'analyzeReceipt throws ReceiptAnalysisException on invalid JSON',
+        () async {
+          when(
+            () => mockAiService.analyzeImageWithGemini(mockFile),
+          ).thenAnswer((_) async => "Invalid JSON Response");
 
-        expect(
-          () => repository.analyzeReceipt(mockFile),
-          throwsA(isA<FormatException>()),
-        );
-      });
+          await expectLater(
+            repository.analyzeReceipt(mockFile),
+            throwsA(isA<ReceiptAnalysisException>()),
+          );
+        },
+      );
     });
 
     group('analyzePdfReceipt', () {

@@ -5,7 +5,7 @@ import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
 
 class InventoryPage extends ConsumerWidget {
   const InventoryPage({super.key, required this.title});
@@ -63,19 +63,14 @@ class InventoryPage extends ConsumerWidget {
   }
 
   Widget _buildList(WidgetRef ref) {
-    final itemsAsync = ref.watch(fridgeItemsProvider);
-    final showOnlyAvailable = ref.watch(inventoryFilterProvider);
+    final listAsync = ref.watch(inventoryDisplayListProvider);
 
-    return itemsAsync.when(
+    return listAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (allItems) {
-        // Filter items if needed
-        final items = showOnlyAvailable
-            ? allItems.where((item) => item.quantity > 0).toList()
-            : allItems;
-
+      data: (items) {
         if (items.isEmpty) {
+          final showOnlyAvailable = ref.read(inventoryFilterProvider);
           return Center(
             child: Text(
               showOnlyAvailable
@@ -85,73 +80,33 @@ class InventoryPage extends ConsumerWidget {
           );
         }
 
-        // Group items by receipt if not filtering
-        if (showOnlyAvailable) {
-          // Simple list when filtering
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return InventoryItemRow(
-                key: ValueKey(items[index].id),
-                item: items[index],
+        return ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+
+            if (item is InventoryHeaderItem) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${item.item.storeName} - ${DateFormat.yMd().format(item.item.entryDate)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
               );
-            },
-          );
-        } else {
-          // Grouped list
-          final grouped = <String, List<FridgeItem>>{};
-          for (final item in items) {
-            final key = item.receiptId ?? '';
-            grouped.putIfAbsent(key, () => []).add(item);
-          }
-
-          final groups = grouped.entries.toList();
-
-          return ListView.builder(
-            itemCount: groups.fold<int>(
-              0,
-              (sum, group) =>
-                  sum + group.value.length + 2, // header + items + spacer
-            ),
-            itemBuilder: (context, index) {
-              var currentIndex = 0;
-              for (final group in groups) {
-                // Header
-                if (index == currentIndex) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      '${group.value.first.storeName} - ${DateFormat.yMd().format(group.value.first.entryDate)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  );
-                }
-                currentIndex++;
-
-                // Items
-                for (var i = 0; i < group.value.length; i++) {
-                  if (index == currentIndex) {
-                    return InventoryItemRow(
-                      key: ValueKey(group.value[i].id),
-                      item: group.value[i],
-                    );
-                  }
-                  currentIndex++;
-                }
-
-                // Spacer
-                if (index == currentIndex) {
-                  return const SizedBox(height: 16);
-                }
-                currentIndex++;
-              }
-              return const SizedBox.shrink();
-            },
-          );
-        }
+            } else if (item is InventoryProductItem) {
+              return InventoryItemRow(
+                key: ValueKey(item.itemId),
+                itemId: item.itemId,
+              );
+            } else if (item is InventorySpacerItem) {
+              return const SizedBox(height: 16);
+            }
+            return const SizedBox.shrink();
+          },
+        );
       },
     );
   }

@@ -19,7 +19,6 @@ class CounterPill extends StatefulWidget {
 
 class _CounterPillState extends State<CounterPill> {
   late int _localQuantity;
-  bool _isUpdating = false;
 
   @override
   void initState() {
@@ -30,25 +29,16 @@ class _CounterPillState extends State<CounterPill> {
   @override
   void didUpdateWidget(CounterPill oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_isUpdating && widget.quantity != oldWidget.quantity) {
+    if (widget.quantity != oldWidget.quantity) {
       _localQuantity = widget.quantity;
     }
   }
 
-  Future<void> _handleUpdate(int delta) async {
+  void _handleUpdate(int delta) {
     setState(() {
       _localQuantity += delta;
-      _isUpdating = true;
     });
-
     widget.onUpdate(delta);
-
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (mounted) {
-      setState(() {
-        _isUpdating = false;
-      });
-    }
   }
 
   @override
