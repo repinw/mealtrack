@@ -22,10 +22,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   @override
   void initState() {
     super.initState();
-    // No need to manually initialize view model, it's done via ProviderScope overrides in navigation
-
-    // Get initial state for controllers (using read to avoid watching in initState)
-    // The provider will have been initialized by the override in HomePage
     final initialState = ref.read(receiptEditViewModelProvider);
 
     _merchantController = TextEditingController(
@@ -51,7 +47,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
       previous,
       next,
     ) {
-      // Update controller when items are initialized
       if ((previous?.items.isEmpty ?? true) && next.items.isNotEmpty) {
         _merchantController.text = next.initialStoreName;
       }
@@ -82,7 +77,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // --- Header ---
                   ReceiptHeader(
                     merchantController: _merchantController,
                     dateController: _dateController,
@@ -114,8 +108,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-
-                  // --- HEADER ROW ---
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
                     child: Row(
@@ -175,14 +167,12 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-
-                  // --- List ---
                   ...items.asMap().entries.map((entry) {
                     int index = entry.key;
                     FridgeItem item = entry.value;
 
                     return ScannedItemRow(
-                      key: ValueKey(index),
+                      key: ValueKey(item.id),
                       item: item,
                       onDelete: () => ref
                           .read(receiptEditViewModelProvider.notifier)
@@ -197,7 +187,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
               ),
             ),
           ),
-          // --- Footer (Pinned) ---
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ReceiptFooter(

@@ -6,10 +6,9 @@ class ScannedItemRow extends StatefulWidget {
   final VoidCallback onDelete;
   final ValueChanged<FridgeItem> onChanged;
 
-  // --- Layout Constants ---
   static const double colQtyWidth = 30;
   static const double colWeightWidth = 55;
-  static const double colPriceWidth = 110; // Space for price, €, icon & delete
+  static const double colPriceWidth = 120; // Space for price, €, icon & delete
 
   const ScannedItemRow({
     super.key,
@@ -32,10 +31,8 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with item values
     _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
-    // Display price minus discount
     _priceController = TextEditingController(
       text: (widget.item.unitPrice ?? 0.0).toStringAsFixed(2),
     );
@@ -127,7 +124,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Quantity
             SizedBox(
               width: ScannedItemRow.colQtyWidth,
               child: TextField(
@@ -147,7 +143,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 onChanged: _onQtyChanged,
               ),
             ),
-            // Name
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,8 +204,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
               ),
             ),
             const SizedBox(width: 2),
-
-            // Price
             SizedBox(
               width: ScannedItemRow.colPriceWidth,
               child: Row(
