@@ -13,15 +13,13 @@ class HomeViewModel extends _$HomeViewModel {
     return [];
   }
 
-  Future<void> analyzeImageFromCamera() async {
-    return _analyzeImageFromImage(ImageSource.camera);
-  }
+  Future<void> analyzeImageFromCamera() =>
+      _pickAndAnalyzeImage(ImageSource.camera);
 
-  Future<void> analyzeImageFromGallery() async {
-    return _analyzeImageFromImage(ImageSource.gallery);
-  }
+  Future<void> analyzeImageFromGallery() =>
+      _pickAndAnalyzeImage(ImageSource.gallery);
 
-  Future<void> _analyzeImageFromImage(ImageSource source) async {
+  Future<void> _pickAndAnalyzeImage(ImageSource source) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final imagePicker = ref.read(imagePickerProvider);
