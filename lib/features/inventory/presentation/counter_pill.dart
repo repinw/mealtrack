@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mealtrack/features/inventory/presentation/action_button.dart';
 
-class CounterPill extends StatelessWidget {
+class CounterPill extends StatefulWidget {
   final int quantity;
   final bool isOutOfStock;
   final ValueChanged<int> onUpdate;
@@ -14,7 +14,47 @@ class CounterPill extends StatelessWidget {
   });
 
   @override
+  State<CounterPill> createState() => _CounterPillState();
+}
+
+class _CounterPillState extends State<CounterPill> {
+  late int _localQuantity;
+  bool _isUpdating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.quantity;
+  }
+
+  @override
+  void didUpdateWidget(CounterPill oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isUpdating && widget.quantity != oldWidget.quantity) {
+      _localQuantity = widget.quantity;
+    }
+  }
+
+  Future<void> _handleUpdate(int delta) async {
+    setState(() {
+      _localQuantity += delta;
+      _isUpdating = true;
+    });
+
+    widget.onUpdate(delta);
+
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (mounted) {
+      setState(() {
+        _isUpdating = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isOutOfStock = _localQuantity == 0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -26,12 +66,12 @@ class CounterPill extends StatelessWidget {
         children: [
           ActionButton(
             icon: Icons.remove,
-            onTap: isOutOfStock ? null : () => onUpdate(-1),
+            onTap: isOutOfStock ? null : () => _handleUpdate(-1),
           ),
           SizedBox(
             width: 32,
             child: Text(
-              '$quantity',
+              '$_localQuantity',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -40,7 +80,7 @@ class CounterPill extends StatelessWidget {
               ),
             ),
           ),
-          ActionButton(icon: Icons.add, onTap: () => onUpdate(1)),
+          ActionButton(icon: Icons.add, onTap: () => _handleUpdate(1)),
         ],
       ),
     );

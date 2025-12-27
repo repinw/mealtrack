@@ -5,7 +5,7 @@ import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 
 class InventoryPage extends ConsumerWidget {
   const InventoryPage({super.key, required this.title});
@@ -48,9 +48,7 @@ class InventoryPage extends ConsumerWidget {
             icon: const Icon(Icons.delete_forever),
             tooltip: AppLocalizations.debugHiveReset,
             onPressed: () async {
-              await ref
-                  .read(inventoryViewModelProvider.notifier)
-                  .deleteAllItems();
+              await ref.read(fridgeItemsProvider.notifier).deleteAll();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -65,14 +63,19 @@ class InventoryPage extends ConsumerWidget {
   }
 
   Widget _buildList(WidgetRef ref) {
-    final listAsync = ref.watch(inventoryDisplayListProvider);
+    final itemsAsync = ref.watch(fridgeItemsProvider);
+    final showOnlyAvailable = ref.watch(inventoryFilterProvider);
 
-    return listAsync.when(
+    return itemsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (items) {
+      data: (allItems) {
+        // Filter items if needed
+        final items = showOnlyAvailable
+            ? allItems.where((item) => item.quantity > 0).toList()
+            : allItems;
+
         if (items.isEmpty) {
-          final showOnlyAvailable = ref.read(inventoryFilterProvider);
           return Center(
             child: Text(
               showOnlyAvailable
@@ -82,33 +85,73 @@ class InventoryPage extends ConsumerWidget {
           );
         }
 
-        return ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-
-            if (item is InventoryHeaderItem) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '${item.item.storeName} - ${DateFormat.yMd().format(item.item.entryDate)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-              );
-            } else if (item is InventoryProductItem) {
+        // Group items by receipt if not filtering
+        if (showOnlyAvailable) {
+          // Simple list when filtering
+          return ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
               return InventoryItemRow(
-                key: ValueKey(item.item.id),
-                item: item.item,
+                key: ValueKey(items[index].id),
+                item: items[index],
               );
-            } else if (item is InventorySpacerItem) {
-              return const SizedBox(height: 16);
-            }
-            return const SizedBox.shrink();
-          },
-        );
+            },
+          );
+        } else {
+          // Grouped list
+          final grouped = <String, List<FridgeItem>>{};
+          for (final item in items) {
+            final key = item.receiptId ?? '';
+            grouped.putIfAbsent(key, () => []).add(item);
+          }
+
+          final groups = grouped.entries.toList();
+
+          return ListView.builder(
+            itemCount: groups.fold<int>(
+              0,
+              (sum, group) =>
+                  sum + group.value.length + 2, // header + items + spacer
+            ),
+            itemBuilder: (context, index) {
+              var currentIndex = 0;
+              for (final group in groups) {
+                // Header
+                if (index == currentIndex) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      '${group.value.first.storeName} - ${DateFormat.yMd().format(group.value.first.entryDate)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                }
+                currentIndex++;
+
+                // Items
+                for (var i = 0; i < group.value.length; i++) {
+                  if (index == currentIndex) {
+                    return InventoryItemRow(
+                      key: ValueKey(group.value[i].id),
+                      item: group.value[i],
+                    );
+                  }
+                  currentIndex++;
+                }
+
+                // Spacer
+                if (index == currentIndex) {
+                  return const SizedBox(height: 16);
+                }
+                currentIndex++;
+              }
+              return const SizedBox.shrink();
+            },
+          );
+        }
       },
     );
   }

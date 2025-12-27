@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
@@ -33,9 +35,37 @@ class FridgeItems extends _$FridgeItems {
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
-    final repository = ref.read(fridgeRepositoryProvider);
-    await repository.updateQuantity(item, delta);
-    ref.invalidateSelf();
+    state.whenData((items) {
+      final index = items.indexWhere((i) => i.id == item.id);
+      if (index == -1) return;
+
+      var quantity = items[index].quantity + delta;
+      var isConsumed = items[index].isConsumed;
+      DateTime? consumptionDate = items[index].consumptionDate;
+
+      if (quantity <= 0) {
+        quantity = 0;
+        isConsumed = true;
+      } else if (isConsumed) {
+        isConsumed = false;
+        consumptionDate = null;
+      }
+
+      // Update in-memory state immediately
+      final updatedItem = items[index].copyWith(
+        quantity: quantity,
+        isConsumed: isConsumed,
+        consumptionDate: consumptionDate,
+        clearConsumptionDate: consumptionDate == null,
+      );
+
+      final updatedList = [...items];
+      updatedList[index] = updatedItem;
+      state = AsyncValue.data(updatedList);
+
+      final repository = ref.read(fridgeRepositoryProvider);
+      unawaited(repository.saveItems(updatedList));
+    });
   }
 
   Future<void> deleteAll() async {

@@ -70,6 +70,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.add));
       expect(receivedValue, 1);
+      await tester.pumpAndSettle();
     });
 
     testWidgets(
@@ -90,6 +91,7 @@ void main() {
 
         await tester.tap(find.byIcon(Icons.remove));
         expect(receivedValue, -1);
+        await tester.pumpAndSettle();
       },
     );
 
@@ -111,7 +113,92 @@ void main() {
 
         await tester.tap(find.byIcon(Icons.remove));
         expect(wasCalled, isFalse);
+        await tester.pumpAndSettle();
       },
     );
+
+    testWidgets(
+      'updates local quantity immediately when add button is tapped',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CounterPill(
+                quantity: 5,
+                isOutOfStock: false,
+                onUpdate: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('5'), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.add));
+        await tester.pump();
+
+        expect(find.text('6'), findsOneWidget);
+        expect(find.text('5'), findsNothing);
+
+        await tester.pumpAndSettle();
+      },
+    );
+
+    testWidgets(
+      'updates local quantity immediately when remove button is tapped',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CounterPill(
+                quantity: 5,
+                isOutOfStock: false,
+                onUpdate: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('5'), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.remove));
+        await tester.pump(); 
+
+        expect(find.text('4'), findsOneWidget);
+        expect(find.text('5'), findsNothing);
+
+        await tester.pumpAndSettle();
+      },
+    );
+
+    testWidgets('disables remove button when local quantity reaches 0', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CounterPill(
+              quantity: 1,
+              isOutOfStock: false,
+              onUpdate: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('1'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.remove));
+      await tester.pump();
+
+      expect(find.text('0'), findsOneWidget);
+
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.remove));
+      await tester.pump();
+
+      expect(find.text('0'), findsOneWidget);
+    });
   });
 }

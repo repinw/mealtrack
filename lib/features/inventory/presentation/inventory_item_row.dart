@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -50,20 +52,20 @@ class InventoryItemRow extends ConsumerWidget {
     );
   }
 
-  Future<void> _updateItemQuantity(
-    BuildContext context,
-    WidgetRef ref,
-    int delta,
-  ) async {
-    try {
-      await ref.read(fridgeItemsProvider.notifier).updateQuantity(item, delta);
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to update item. Please try again.'),
-        ),
-      );
-    }
+  void _updateItemQuantity(BuildContext context, WidgetRef ref, int delta) {
+    unawaited(
+      ref
+          .read(fridgeItemsProvider.notifier)
+          .updateQuantity(item, delta)
+          .catchError((e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to update item. Please try again.'),
+                ),
+              );
+            }
+          }),
+    );
   }
 }
