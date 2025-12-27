@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 
 import 'package:file_picker/file_picker.dart';
@@ -24,13 +22,13 @@ class HomeViewModel extends _$HomeViewModel {
       final filePicker = ref.read(filePickerProvider);
       final receiptRepository = ref.read(receiptRepositoryProvider);
 
-      final FilePickerResult? image = await filePicker.pickFiles(
+      final FilePickerResult? result = await filePicker.pickFiles(
         allowedExtensions: ['pdf'],
         type: FileType.custom,
       );
 
-      if (image != null) {
-        final path = image.files.first.path;
+      if (result != null) {
+        final path = result.files.first.path;
         if (path == null) {
           throw const FormatException(AppLocalizations.pleaseSelectPdf);
         }
