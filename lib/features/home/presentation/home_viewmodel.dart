@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mealtrack/core/l10n/app_localizations.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -28,9 +30,12 @@ class HomeViewModel extends _$HomeViewModel {
       );
 
       if (image != null) {
-        final path = image.files.first.path!;
+        final path = image.files.first.path;
+        if (path == null) {
+          throw const FormatException(AppLocalizations.pleaseSelectPdf);
+        }
         if (!path.toLowerCase().endsWith('.pdf')) {
-          throw const FormatException('Bitte wähle eine PDF-Datei.');
+          throw const FormatException(AppLocalizations.pleaseSelectPdf);
         }
 
         return await receiptRepository.analyzePdfReceipt(XFile(path));

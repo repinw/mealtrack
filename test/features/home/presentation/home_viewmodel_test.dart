@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
@@ -441,7 +442,36 @@ void main() {
         expect(state.error, isA<FormatException>());
         expect(
           (state.error as FormatException).message,
-          'Bitte wähle eine PDF-Datei.',
+          AppLocalizations.pleaseSelectPdf,
+        );
+      },
+    );
+
+    test(
+      'analyzeImageFromPDF throws FormatException when path is null',
+      () async {
+        final container = makeContainer();
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
+
+        final file = PlatformFile(name: 'receipt.pdf', size: 100, path: null);
+        final result = FilePickerResult([file]);
+
+        when(
+          () => mockFilePicker.pickFiles(
+            allowedExtensions: ['pdf'],
+            type: FileType.custom,
+          ),
+        ).thenAnswer((_) async => result);
+
+        await viewModel.analyzeImageFromPDF();
+
+        final state = container.read(homeViewModelProvider);
+        expect(state.hasError, true);
+        expect(state.error, isA<FormatException>());
+        expect(
+          (state.error as FormatException).message,
+          AppLocalizations.pleaseSelectPdf,
         );
       },
     );

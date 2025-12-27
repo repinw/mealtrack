@@ -21,4 +21,13 @@ class AppLocalizations {
   static const String unknownArticle = 'Unbekannter Artikel';
 
   static const String defaultStoreName = 'Ladenname';
+  static const String pleaseSelectPdf = 'Bitte wähle eine PDF-Datei.';
+
+  static const String digitalFridge = 'Digitaler Kühlschrank';
+  static const String imageFromGallery = 'Bild aus Galerie';
+  static const String imageFromCamera = 'Bild aufnehmen';
+  static const String imageFromPdf = 'Aus PDF';
+  static const String receiptReadErrorFormat =
+      'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+  static const String errorOccurred = 'Ein Fehler ist aufgetreten: ';
 }
