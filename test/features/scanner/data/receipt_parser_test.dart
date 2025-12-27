@@ -217,23 +217,24 @@ void main() {
         });
 
         test('handling of thousands separators (1.200,50)', () {
-          // Dart's num.tryParse doesn't handle thousands separators well usually.
-          // We should ensure our logic at least doesn't crash or handles it if we implemented it.
-          // The current implementation only replaces , with .
-          // 1.200,50 -> 1.200.50 which is invalid double.
-          // If we expect this to work, we need to improve the parser.
-          // Based on the code: sanitized = value.replaceAll(',', '.');
-          // Let's verify what happens. "1.200,50" -> "1.200.50" -> null
-          // If null, it returns null.
-
-          // Use a case that works with current simple logic or verify it fails safely (returns null/0.0)
-          // If the goal is to SUPPORT it, we need to change code.
-          // The reviewer asked to "Check if num.tryParse handles it correctly".
-
-          const jsonString = '{"i": [{"n": "Dirty", "p": "1.200,50", "q": 1}]}';
+          // German format with thousands dot
+          const jsonString = '{"i": [{"n": "DE", "p": "1.200,50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
-          // Current implementation: returns null from _parseNum -> 0.0 or 1 for quantity
-          expect(result.first.unitPrice, 0.0);
+          expect(result.first.unitPrice, 1200.50);
+        });
+
+        test('handling of thousands separators (1,200.50)', () {
+          // US format
+          const jsonString = '{"i": [{"n": "US", "p": "1,200.50", "q": 1}]}';
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.first.unitPrice, 1200.50);
+        });
+
+        test('handling of spaces (1 200.50)', () {
+          // Space as separator
+          const jsonString = '{"i": [{"n": "Space", "p": "1 200.50", "q": 1}]}';
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.first.unitPrice, 1200.50);
         });
 
         test('handles invalid price strings ("kostenlos") gracefully', () {

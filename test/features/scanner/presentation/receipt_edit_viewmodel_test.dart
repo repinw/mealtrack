@@ -24,11 +24,11 @@ void main() {
     );
 
     test('initializes with empty list when initialized with empty list', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue([])],
+      );
       addTearDown(container.dispose);
 
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([]);
       final state = container.read(receiptEditViewModelProvider);
 
       expect(state.items, isEmpty);
@@ -37,11 +37,13 @@ void main() {
     });
 
     test('initializes with provided items', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
+        ],
+      );
       addTearDown(container.dispose);
 
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([item1, item2]);
       final state = container.read(receiptEditViewModelProvider);
 
       expect(state.items.length, 2);
@@ -49,11 +51,13 @@ void main() {
     });
 
     test('calculates total correctly', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
+        ],
+      );
       addTearDown(container.dispose);
 
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([item1, item2]);
       final state = container.read(receiptEditViewModelProvider);
 
       // (1.50 * 2) + (0.50 * 4) = 3.0 + 2.0 = 5.0
@@ -61,11 +65,13 @@ void main() {
     });
 
     test('calculates totalQuantity correctly', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
+        ],
+      );
       addTearDown(container.dispose);
 
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([item1, item2]);
       final state = container.read(receiptEditViewModelProvider);
 
       // 2 + 4 = 6
@@ -73,37 +79,50 @@ void main() {
     });
 
     test('initialStoreName returns the first non-empty store name', () {
-      final container = ProviderContainer();
+      final itemEmptyStore = item1.copyWith(storeName: '');
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([
+            itemEmptyStore,
+            item2,
+          ]),
+        ],
+      );
       addTearDown(container.dispose);
 
-      final itemEmptyStore = item1.copyWith(storeName: '');
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([itemEmptyStore, item2]);
       final state = container.read(receiptEditViewModelProvider);
 
       expect(state.initialStoreName, 'Store A');
     });
 
     test('initialStoreName returns default value if no store name found', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
       final itemEmptyStore1 = item1.copyWith(storeName: '');
       final itemEmptyStore2 = item2.copyWith(storeName: '');
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([itemEmptyStore1, itemEmptyStore2]);
+
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([
+            itemEmptyStore1,
+            itemEmptyStore2,
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
       final state = container.read(receiptEditViewModelProvider);
 
       expect(state.initialStoreName, 'Ladenname');
     });
 
     test('updateMerchantName updates store name for all items', () {
-      final container = ProviderContainer();
+      final items = [item1, item2];
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
+      );
       addTearDown(container.dispose);
 
-      final items = [item1, item2];
       final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize(items);
+      // Removed initialization via method
 
       const newStoreName = 'Supermarket B';
       notifier.updateMerchantName(newStoreName);
@@ -117,12 +136,13 @@ void main() {
     });
 
     test('deleteItem removes item at index', () {
-      final container = ProviderContainer();
+      final items = [item1, item2];
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
+      );
       addTearDown(container.dispose);
 
-      final items = [item1, item2];
       final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize(items);
 
       notifier.deleteItem(0);
 
@@ -133,12 +153,13 @@ void main() {
     });
 
     test('updateItem replaces item at index', () {
-      final container = ProviderContainer();
+      final items = [item1];
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
+      );
       addTearDown(container.dispose);
 
-      final items = [item1];
       final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize(items);
 
       final newItem = item1.copyWith(name: 'Green Apple');
       notifier.updateItem(0, newItem);
@@ -149,12 +170,14 @@ void main() {
     });
 
     test('calculates total with zero quantity items correctly', () {
-      final container = ProviderContainer();
+      final itemZeroQty = item1.copyWith(quantity: 0, unitPrice: 10.0);
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([itemZeroQty, item2]),
+        ],
+      );
       addTearDown(container.dispose);
 
-      final itemZeroQty = item1.copyWith(quantity: 0, unitPrice: 10.0);
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize([itemZeroQty, item2]);
       final state = container.read(receiptEditViewModelProvider);
 
       // (0 * 10.0) + (0.50 * 4) = 0 + 2.0 = 2.0
@@ -162,16 +185,17 @@ void main() {
     });
 
     test('deleteItem updates total price', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
       final items = [
         item1,
         item2,
       ]; // item1 total: 3.0, item2 total: 2.0. Sum: 5.0
 
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
+      );
+      addTearDown(container.dispose);
+
       final notifier = container.read(receiptEditViewModelProvider.notifier);
-      notifier.initialize(items);
 
       notifier.deleteItem(0); // Remove item1
 
@@ -182,23 +206,34 @@ void main() {
       expect(updatedState.total, 2.0);
     });
 
-    test('re-initialization overwrites previous state', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      're-initialization via provider override is not possible at runtime but different containers allow different inits',
+      () {
+        // Since we got rid of initialize method, we can't "re-initialize" a live notifier.
+        // We can only test that different containers start with different states.
+        final container1 = ProviderContainer(
+          overrides: [
+            initialScannedItemsProvider.overrideWithValue([item1]),
+          ],
+        );
 
-      final notifier = container.read(receiptEditViewModelProvider.notifier);
+        final state1 = container1.read(receiptEditViewModelProvider);
+        expect(state1.items.length, 1);
+        expect(state1.items.first.name, 'Apple');
 
-      // Initialize with item1
-      notifier.initialize([item1]);
-      var state = container.read(receiptEditViewModelProvider);
-      expect(state.items.length, 1);
-      expect(state.items.first.name, 'Apple');
+        final container2 = ProviderContainer(
+          overrides: [
+            initialScannedItemsProvider.overrideWithValue([item2]),
+          ],
+        );
 
-      // Re-initialize with item2
-      notifier.initialize([item2]);
-      state = container.read(receiptEditViewModelProvider);
-      expect(state.items.length, 1);
-      expect(state.items.first.name, 'Banana');
-    });
+        final state2 = container2.read(receiptEditViewModelProvider);
+        expect(state2.items.length, 1);
+        expect(state2.items.first.name, 'Banana');
+
+        container1.dispose();
+        container2.dispose();
+      },
+    );
   });
 }

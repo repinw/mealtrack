@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_viewmodel.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -36,7 +38,15 @@ class HomePage extends ConsumerWidget {
           }
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ReceiptEditPage(scannedItems: result),
+              builder: (context) => ProviderScope(
+                overrides: [
+                  initialScannedItemsProvider.overrideWithValue(result),
+                  receiptEditViewModelProvider.overrideWith(
+                    ReceiptEditViewModel.new,
+                  ),
+                ],
+                child: ReceiptEditPage(scannedItems: result),
+              ),
             ),
           );
         },
@@ -81,10 +91,19 @@ class HomePage extends ConsumerWidget {
 
   void _showErrorSnackBar(BuildContext context, Object error) {
     String message = error.toString();
-    if (message.contains('FormatException')) {
+    if (error is ReceiptAnalysisException) {
+      // Ideally use error.code to map to localized strings, but for now we use the refined logic
+      if (error.code == 'INVALID_JSON' ||
+          error.originalException is FormatException) {
+        message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+      } else {
+        message = error.message;
+      }
+    } else if (message.contains('FormatException')) {
+      // Fallback
       message = 'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
     } else {
-      message = 'Ein Fehler ist aufgetreten.';
+      message = 'Ein Fehler ist aufgetreten: $message';
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

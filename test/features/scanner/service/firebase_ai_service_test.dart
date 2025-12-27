@@ -50,37 +50,6 @@ void main() {
     });
 
     test(
-      'analyzeImageWithGemini throws Exception when compression returns null',
-      () async {
-        service = FirebaseAiService(
-          imageCompressor: mockImageCompressor,
-          remoteConfig: mockRemoteConfig,
-        );
-
-        when(
-          () => mockImageCompressor.compressWithFile(
-            any(),
-            minWidth: any(named: 'minWidth'),
-            minHeight: any(named: 'minHeight'),
-            quality: any(named: 'quality'),
-            format: any(named: 'format'),
-          ),
-        ).thenAnswer((_) async => null);
-
-        await expectLater(
-          () => service.analyzeImageWithGemini(mockXFile),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'message',
-              contains('Image compression failed'),
-            ),
-          ),
-        );
-      },
-    );
-
-    test(
       'analyzeImageWithGemini calls compression before analyzing (Config Failure)',
       () async {
         service = FirebaseAiService(

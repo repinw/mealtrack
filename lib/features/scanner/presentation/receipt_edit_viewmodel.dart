@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -31,15 +32,14 @@ class ReceiptEditState {
   }
 }
 
+final initialScannedItemsProvider = Provider<List<FridgeItem>>((ref) => []);
+
 @riverpod
 class ReceiptEditViewModel extends _$ReceiptEditViewModel {
   @override
   ReceiptEditState build() {
-    return const ReceiptEditState(items: []);
-  }
-
-  void initialize(List<FridgeItem> scannedItems) {
-    state = ReceiptEditState(items: scannedItems);
+    final initialItems = ref.watch(initialScannedItemsProvider);
+    return ReceiptEditState(items: initialItems);
   }
 
   void updateMerchantName(String newName) {

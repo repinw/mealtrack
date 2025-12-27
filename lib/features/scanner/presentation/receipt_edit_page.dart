@@ -22,16 +22,10 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   @override
   void initState() {
     super.initState();
-    // Schedule initialization for the end of the frame to avoid "modifying provider during build" error
-    if (widget.scannedItems != null) {
-      Future.microtask(() {
-        ref
-            .read(receiptEditViewModelProvider.notifier)
-            .initialize(widget.scannedItems!);
-      });
-    }
+    // No need to manually initialize view model, it's done via ProviderScope overrides in navigation
 
     // Get initial state for controllers (using read to avoid watching in initState)
+    // The provider will have been initialized by the override in HomePage
     final initialState = ref.read(receiptEditViewModelProvider);
 
     _merchantController = TextEditingController(

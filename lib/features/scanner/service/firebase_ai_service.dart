@@ -22,7 +22,7 @@ class FirebaseAiService {
   Future<void> initialize() async {
     await remoteConfig.setConfigSettings(
       RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 3600),
+        fetchTimeout: const Duration(seconds: 30),
         minimumFetchInterval: kDebugMode
             ? const Duration(seconds: 0)
             : const Duration(seconds: 3600),

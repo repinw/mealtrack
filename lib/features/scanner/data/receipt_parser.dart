@@ -5,6 +5,16 @@ import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:uuid/uuid.dart';
 
+// Mappings for the minified JSON keys used in the LLM prompt to save tokens:
+// n = name
+// s = storeName
+// q = quantity
+// p = totalPrice
+// w = weight
+// b = brand
+// d = discounts
+// a = amount (in discount)
+
 List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
     throw const FormatException(AppLocalizations.emptyJsonString);
@@ -117,9 +127,36 @@ num? _parseNum(dynamic value) {
   if (value == null) return null;
   if (value is num) return value;
   if (value is String) {
-    // Replace comma with dot for German number formats
-    final sanitized = value.replaceAll(',', '.');
-    return num.tryParse(sanitized);
+    if (value.trim().isEmpty) return null;
+    try {
+      String s = value.trim();
+      // Handle typical formats:
+      // If valid standard number (e.g. 12.34), helper methods handle it.
+      // But we need to handle locale-specific formats.
+
+      // Check for mixed separators to guess locale
+      if (s.contains(',') && s.contains('.')) {
+        final lastComma = s.lastIndexOf(',');
+        final lastDot = s.lastIndexOf('.');
+        if (lastComma > lastDot) {
+          // German/EU format: 1.234,56 -> remove dots, replace comma with dot
+          s = s.replaceAll('.', '').replaceAll(',', '.');
+        } else {
+          // US/UK format: 1,234.56 -> remove commas
+          s = s.replaceAll(',', '');
+        }
+      } else if (s.contains(',')) {
+        // Only comma: 2,50 -> 2.50
+        // Or 1,200 (could be 1200 or 1.2). Assume decimal separator if < 3 decimals or > 3?
+        // Safer strict rule: If comma is present, and NO dots, replace with dot for parsing.
+        s = s.replaceAll(',', '.');
+      }
+      // Cleanup spaces
+      s = s.replaceAll(RegExp(r'\s+'), '');
+      return num.tryParse(s);
+    } catch (e) {
+      return null;
+    }
   }
   return null;
 }
