@@ -112,100 +112,6 @@ void main() {
 
       verifyNever(() => mockStorageService.saveItems(any()));
     });
-
-    // Skip these tests because debounced behavior is difficult to test
-    // The timer gets cancelled when container.dispose runs in tearDown
-    test(
-      'updateQuantity updates quantity and handles consumption',
-      () async {
-        when(
-          () => mockStorageService.loadItems(),
-        ).thenAnswer((_) async => [item1]);
-        when(
-          () => mockStorageService.saveItems(any()),
-        ).thenAnswer((_) async {});
-
-        await container.read(fridgeItemsProvider.future);
-
-        container.read(fridgeItemsProvider.notifier).updateQuantity(item1, -1);
-
-        // Wait for debounce timer (1000ms) + buffer
-        await Future.delayed(const Duration(milliseconds: 1200));
-
-        final captured = verify(
-          () => mockStorageService.saveItems(captureAny()),
-        ).captured;
-        final savedList = captured.first as List<FridgeItem>;
-        expect(savedList.first.quantity, 0);
-        expect(savedList.first.isConsumed, true);
-      },
-      skip:
-          'Debounced behavior is hard to test with ProviderContainer lifecycle',
-    );
-
-    test(
-      'updateQuantity revives consumed item',
-      () async {
-        final consumptionDate = DateTime.now();
-        final item = FridgeItem.create(
-          name: 'Item',
-          storeName: 'Store',
-          quantity: 1,
-        ).copyWith(isConsumed: true, consumptionDate: consumptionDate);
-
-        when(
-          () => mockStorageService.loadItems(),
-        ).thenAnswer((_) async => [item]);
-        when(
-          () => mockStorageService.saveItems(any()),
-        ).thenAnswer((_) async {});
-
-        await container.read(fridgeItemsProvider.future);
-
-        container.read(fridgeItemsProvider.notifier).updateQuantity(item, 1);
-
-        // Wait for debounce timer
-        await Future.delayed(const Duration(milliseconds: 1200));
-
-        final captured = verify(
-          () => mockStorageService.saveItems(captureAny()),
-        ).captured;
-        final saved = captured.first as List<FridgeItem>;
-        expect(saved.first.quantity, 2);
-        expect(saved.first.isConsumed, false);
-        expect(saved.first.consumptionDate, consumptionDate);
-      },
-      skip:
-          'Debounced behavior is hard to test with ProviderContainer lifecycle',
-    );
-
-    test(
-      'updateQuantity clamps negative quantity to 0 and consumes',
-      () async {
-        when(
-          () => mockStorageService.loadItems(),
-        ).thenAnswer((_) async => [item2]);
-        when(
-          () => mockStorageService.saveItems(any()),
-        ).thenAnswer((_) async {});
-
-        await container.read(fridgeItemsProvider.future);
-
-        container.read(fridgeItemsProvider.notifier).updateQuantity(item2, -5);
-
-        // Wait for debounce timer
-        await Future.delayed(const Duration(milliseconds: 1200));
-
-        final captured = verify(
-          () => mockStorageService.saveItems(captureAny()),
-        ).captured;
-        final savedList = captured.first as List<FridgeItem>;
-        expect(savedList.first.quantity, 0);
-        expect(savedList.first.isConsumed, true);
-      },
-      skip:
-          'Debounced behavior is hard to test with ProviderContainer lifecycle',
-    );
   });
 
   group('InventoryFilter', () {
@@ -282,6 +188,123 @@ void main() {
       expect(grouped.firstWhere((e) => e.key == 'R1').value.length, 2);
       expect(grouped.firstWhere((e) => e.key == 'R2').value.length, 1);
       expect(grouped.firstWhere((e) => e.key == '').value.length, 1);
+    });
+  });
+
+  group('fridgeItemProvider', () {
+    test('returns correct item by ID when data is loaded', () async {
+      final item1 = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+      );
+      final item2 = FridgeItem.create(
+        name: 'Banana',
+        storeName: 'Store',
+        quantity: 3,
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1, item2]);
+
+      // Load items first
+      await container.read(fridgeItemsProvider.future);
+
+      // Now fridgeItemProvider should return the correct item
+      final result = container.read(fridgeItemProvider(item1.id));
+      expect(result.name, 'Apple');
+      expect(result.quantity, 5);
+    });
+
+    test('returns loading item when state is not yet loaded', () {
+      // Don't load items - the state should be AsyncLoading
+      when(() => mockStorageService.loadItems()).thenAnswer((_) async {
+        // Delay to ensure we read before it completes
+        await Future.delayed(const Duration(milliseconds: 100));
+        return [];
+      });
+
+      // Read immediately without waiting
+      final result = container.read(fridgeItemProvider('any-id'));
+
+      // Should return the loading placeholder item
+      expect(result.id, 'loading');
+      expect(result.name, 'Loading...');
+    });
+
+    test('returns loading item when item ID is not found', () async {
+      final item1 = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Request an ID that doesn't exist
+      final result = container.read(fridgeItemProvider('non-existent-id'));
+
+      expect(result.id, 'loading');
+      expect(result.name, 'Loading...');
+    });
+  });
+
+  group('updateQuantity optimistic update', () {
+    test(
+      'updates state immediately before async operation completes',
+      () async {
+        final item = FridgeItem.create(
+          name: 'Apple',
+          storeName: 'Store',
+          quantity: 5,
+        );
+
+        when(
+          () => mockStorageService.loadItems(),
+        ).thenAnswer((_) async => [item]);
+        when(() => mockStorageService.saveItems(any())).thenAnswer((_) async {
+          // Simulate slow save
+          await Future.delayed(const Duration(milliseconds: 500));
+        });
+
+        // Load items first
+        await container.read(fridgeItemsProvider.future);
+
+        // Trigger optimistic update
+        container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
+
+        // State should be updated IMMEDIATELY (optimistic)
+        final stateAfterUpdate = container.read(fridgeItemsProvider);
+        expect(stateAfterUpdate.asData?.value.first.quantity, 4);
+      },
+    );
+
+    test('does nothing when state is still loading', () async {
+      final item = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+      );
+
+      when(() => mockStorageService.loadItems()).thenAnswer((_) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        return [item];
+      });
+
+      // Don't await - state is still loading
+      container.read(fridgeItemsProvider);
+
+      // This should do nothing since state is loading
+      container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
+
+      // State should still be loading
+      final state = container.read(fridgeItemsProvider);
+      expect(state.isLoading, true);
     });
   });
 }

@@ -119,9 +119,12 @@ void main() {
           () => mockRepository.getItems(),
         ).thenAnswer((_) async => [item1, item2, item3]);
 
-        final displayList = await container.read(
-          inventoryDisplayListProvider.future,
-        );
+        // Wait for fridge items to load first
+        await container.read(fridgeItemsProvider.future);
+
+        // inventoryDisplayListProvider returns AsyncValue synchronously
+        final displayListAsync = container.read(inventoryDisplayListProvider);
+        final displayList = displayListAsync.value!;
 
         expect(displayList.length, 7);
 
@@ -154,9 +157,11 @@ void main() {
 
       container.read(inventoryFilterProvider.notifier).toggle();
 
-      final displayList = await container.read(
-        inventoryDisplayListProvider.future,
-      );
+      // Wait for fridge items to load first
+      await container.read(fridgeItemsProvider.future);
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
 
       expect(displayList.length, 2);
       expect(displayList[0], isA<InventoryProductItem>());
@@ -168,9 +173,11 @@ void main() {
     test('returns empty list when no items exist', () async {
       when(() => mockRepository.getItems()).thenAnswer((_) async => []);
 
-      final displayList = await container.read(
-        inventoryDisplayListProvider.future,
-      );
+      // Wait for fridge items to load first
+      await container.read(fridgeItemsProvider.future);
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
 
       expect(displayList, isEmpty);
     });

@@ -40,7 +40,9 @@ void main() {
         imagePickerProvider.overrideWithValue(mockImagePicker),
         receiptRepositoryProvider.overrideWithValue(mockReceiptRepository),
         filePickerProvider.overrideWithValue(mockFilePicker),
-        inventoryDisplayListProvider.overrideWith((ref) async => []),
+        inventoryDisplayListProvider.overrideWith(
+          (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+        ),
       ],
       child: const MaterialApp(home: HomePage()),
     );

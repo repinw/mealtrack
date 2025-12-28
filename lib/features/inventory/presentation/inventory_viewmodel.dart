@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'inventory_viewmodel.g.dart';
 
@@ -62,68 +61,66 @@ class InventorySpacerItem extends InventoryDisplayItem {
 }
 
 @riverpod
-Future<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) async {
+AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
   final showOnlyAvailable = ref.watch(inventoryFilterProvider);
 
-  final structure = await ref.watch(
-    fridgeItemsProvider.selectAsync((items) {
-      return items
-          .map(
-            (item) => (
-              id: item.id,
-              receiptId: item.receiptId ?? '',
-              storeName: item.storeName,
-              entryDate: item.entryDate,
-              hasQuantity: item.quantity > 0,
-            ),
-          )
-          .toList();
-    }),
-  );
+  final fridgeState = ref.watch(fridgeItemsProvider);
 
-  if (showOnlyAvailable) {
-    return structure
-        .where((s) => s.hasQuantity)
-        .map((s) => InventoryProductItem(s.id))
-        .toList();
-  }
-
-  final groupedMap =
-      <
-        String,
-        List<
-          ({
-            String id,
-            String receiptId,
-            String storeName,
-            DateTime entryDate,
-            bool hasQuantity,
-          })
-        >
-      >{};
-  for (final item in structure) {
-    groupedMap.putIfAbsent(item.receiptId, () => []).add(item);
-  }
-
-  final displayList = <InventoryDisplayItem>[];
-  for (final group in groupedMap.entries) {
-    if (group.value.isEmpty) continue;
-
-    final first = group.value.first;
-    displayList.add(
-      InventoryHeaderItem(
-        FridgeItem(
-          id: first.id,
-          name: '',
-          storeName: first.storeName,
-          entryDate: first.entryDate,
-          quantity: 0,
-        ),
+  return fridgeState.whenData((items) {
+    final structure = items.map(
+      (item) => (
+        id: item.id,
+        receiptId: item.receiptId ?? '',
+        storeName: item.storeName,
+        entryDate: item.entryDate,
+        hasQuantity: item.quantity > 0,
       ),
     );
-    displayList.addAll(group.value.map((s) => InventoryProductItem(s.id)));
-    displayList.add(const InventorySpacerItem());
-  }
 
-  return displayList;
+    if (showOnlyAvailable) {
+      return structure
+          .where((s) => s.hasQuantity)
+          .map<InventoryDisplayItem>((s) => InventoryProductItem(s.id))
+          .toList();
+    }
+
+    final groupedMap =
+        <
+          String,
+          List<
+            ({
+              String id,
+              String receiptId,
+              String storeName,
+              DateTime entryDate,
+              bool hasQuantity,
+            })
+          >
+        >{};
+    for (final item in structure) {
+      groupedMap.putIfAbsent(item.receiptId, () => []).add(item);
+    }
+
+    final displayList = <InventoryDisplayItem>[];
+    for (final group in groupedMap.entries) {
+      if (group.value.isEmpty) continue;
+
+      final first = group.value.first;
+      displayList.add(
+        InventoryHeaderItem(
+          FridgeItem(
+            id: first.id,
+            name: '',
+            storeName: first.storeName,
+            entryDate: first.entryDate,
+            quantity: 0,
+          ),
+        ),
+      );
+      displayList.addAll(group.value.map((s) => InventoryProductItem(s.id)));
+      displayList.add(const InventorySpacerItem());
+    }
+
+    return displayList;
+  });
 }

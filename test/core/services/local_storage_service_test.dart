@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
@@ -7,10 +8,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late LocalStorageService service;
+  late ProviderContainer container;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    service = LocalStorageService();
+    container = ProviderContainer();
+    service = container.read(localStorageServiceProvider);
+  });
+
+  tearDown(() {
+    container.dispose();
   });
 
   group('LocalStorageService', () {

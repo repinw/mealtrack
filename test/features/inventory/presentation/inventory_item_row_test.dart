@@ -12,10 +12,17 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
     with Mock
     implements FridgeItems {
+  // Track updateQuantity calls manually since we need to override the method
+  final List<(FridgeItem, int)> updateQuantityCalls = [];
+
   @override
   Future<List<FridgeItem>> build() async => [];
 
-  // Don't override updateQuantity - let Mock handle it for verification
+  // Override updateQuantity since it accesses state.asData which isn't set up
+  @override
+  Future<void> updateQuantity(FridgeItem item, int delta) async {
+    updateQuantityCalls.add((item, delta));
+  }
 
   @override
   Future<void> deleteAll() async {}
@@ -118,7 +125,9 @@ void main() {
       final CounterPill counterPill = tester.widget(find.byType(CounterPill));
       counterPill.onUpdate(1);
 
-      verify(() => mockNotifier.updateQuantity(any(), 1)).called(1);
+      // Verify the call was tracked (can't use mocktail verify with overridden method)
+      expect(mockNotifier.updateQuantityCalls.length, 1);
+      expect(mockNotifier.updateQuantityCalls.first.$2, 1);
     });
   });
 }

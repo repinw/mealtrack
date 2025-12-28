@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -10,17 +7,9 @@ part 'inventory_providers.g.dart';
 
 @riverpod
 class FridgeItems extends _$FridgeItems {
-  Timer? _saveTimer;
-  final Map<String, int> _pendingDeltas = {};
-
   @override
   Future<List<FridgeItem>> build() async {
     final repository = ref.watch(fridgeRepositoryProvider);
-
-    ref.onDispose(() {
-      _saveTimer?.cancel();
-    });
-
     return repository.getItems();
   }
 
@@ -44,55 +33,34 @@ class FridgeItems extends _$FridgeItems {
     ref.invalidateSelf();
   }
 
-  void updateQuantity(FridgeItem item, int delta) {
-    _pendingDeltas[item.id] = (_pendingDeltas[item.id] ?? 0) + delta;
+  Future<void> updateQuantity(FridgeItem item, int delta) async {
+    // FIX: Statt state.valueOrNull nutzen wir state.asData?.value
+    // Das prüft: "Haben wir Daten?" -> Wenn ja, gib mir den Wert.
+    final previousList = state.asData?.value;
 
-    _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 1000), _applyPendingDeltas);
-  }
+    // Wenn die Liste noch lädt oder null ist, brechen wir ab
+    if (previousList == null) return;
 
-  Future<void> _applyPendingDeltas() async {
-    if (_pendingDeltas.isEmpty) return;
+    final newQuantity = item.quantity + delta;
 
-    final deltasToApply = Map<String, int>.from(_pendingDeltas);
-    _pendingDeltas.clear();
+    // Optimistic Update: Neue Liste erstellen
+    final updatedList = [
+      for (final i in previousList)
+        if (i.id == item.id) i.copyWith(quantity: newQuantity) else i,
+    ];
 
-    state = state.whenData((items) {
-      final updatedList = [...items];
+    // State sofort aktualisieren (ohne Loading Screen)
+    state = AsyncValue.data(updatedList);
 
-      for (final entry in deltasToApply.entries) {
-        final index = items.indexWhere((i) => i.id == entry.key);
-        if (index == -1) continue;
-
-        final currentItem = items[index];
-        var quantity = currentItem.quantity + entry.value;
-        var isConsumed = currentItem.isConsumed;
-        DateTime? consumptionDate = currentItem.consumptionDate;
-
-        if (quantity <= 0) {
-          quantity = 0;
-          isConsumed = true;
-        } else if (isConsumed) {
-          isConsumed = false;
-          consumptionDate = null;
-        }
-
-        updatedList[index] = currentItem.copyWith(
-          quantity: quantity,
-          isConsumed: isConsumed,
-          consumptionDate: consumptionDate,
-          clearConsumptionDate: consumptionDate == null,
-        );
-      }
-
-      return updatedList;
-    });
-
+    // DB Update im Hintergrund
     try {
       final repository = ref.read(fridgeRepositoryProvider);
-      await repository.saveItems(state.asData?.value ?? []);
-    } catch (e) {
-      debugPrint('Error saving quantity update: $e');
+      await repository.updateQuantity(item, delta);
+    } catch (e, st) {
+      // Falls DB fehlschlägt: Fehler anzeigen und alten State wiederherstellen
+      // oder Liste neu laden.
+      state = AsyncValue.error(e, st);
+      // Optional: ref.invalidateSelf(); um die echten Daten neu zu laden
     }
   }
 
@@ -141,30 +109,37 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
   return groupedMap.entries.toList();
 }
 
+// 1. Definiere ein konstantes Fallback-Item
+final _loadingItem = FridgeItem(
+  id: 'loading',
+  name: 'Loading...',
+  quantity: 0,
+  storeName: '',
+  entryDate: DateTime(1970),
+);
+
 final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
   ref,
   id,
 ) {
   return ref.watch(
-    fridgeItemsProvider.select(
-      (state) =>
-          state.asData?.value.firstWhere(
-            (element) => element.id == id,
-            orElse: () => FridgeItem(
-              id: id,
-              name: 'Loading...',
-              quantity: 0,
-              storeName: '',
-              entryDate: DateTime.now(),
-            ),
-          ) ??
-          FridgeItem(
-            id: id,
-            name: 'Loading...',
-            quantity: 0,
-            storeName: '',
-            entryDate: DateTime.now(),
-          ),
-    ),
+    fridgeItemsProvider.select((state) {
+      // 2. Sicherer Zugriff auf die Liste
+      final items = state.asData?.value;
+
+      // Wenn die Liste noch lädt (null ist), geben wir sofort das konstante Item zurück
+      if (items == null) return _loadingItem;
+
+      // 3. Suche das Item
+      try {
+        return items.firstWhere(
+          (element) => element.id == id,
+          // Falls ID nicht gefunden: Konstantes Item zurückgeben
+          orElse: () => _loadingItem,
+        );
+      } catch (_) {
+        return _loadingItem;
+      }
+    }),
   );
 });

@@ -34,7 +34,7 @@ class MockFridgeItemsNotifier extends FridgeItems {
   Future<void> updateItem(item) async {}
 
   @override
-  void updateQuantity(item, int delta) {}
+  Future<void> updateQuantity(item, int delta) async {}
 
   @override
   Future<void> deleteItem(String id) async {}
@@ -46,7 +46,7 @@ void main() {
       ProviderScope(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
-            (ref) => Completer<List<InventoryDisplayItem>>().future,
+            (ref) => const AsyncValue.loading(),
           ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
@@ -66,7 +66,7 @@ void main() {
       ProviderScope(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
-            (ref) => Completer<List<InventoryDisplayItem>>().future,
+            (ref) => const AsyncValue.loading(),
           ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
@@ -83,12 +83,14 @@ void main() {
     WidgetTester tester,
   ) async {
     const errorMessage = 'Something went wrong';
-    final completer = Completer<List<InventoryDisplayItem>>();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => completer.future),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) =>
+                AsyncValue.error(Exception(errorMessage), StackTrace.current),
+          ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
@@ -97,7 +99,6 @@ void main() {
       ),
     );
 
-    completer.completeError(Exception(errorMessage));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Something went wrong'), findsOneWidget);
@@ -109,7 +110,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            inventoryDisplayListProvider.overrideWith((ref) => []),
+            inventoryDisplayListProvider.overrideWith(
+              (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+            ),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: false),
             ),
@@ -131,7 +134,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            inventoryDisplayListProvider.overrideWith((ref) => []),
+            inventoryDisplayListProvider.overrideWith(
+              (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+            ),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: true),
             ),
@@ -153,7 +158,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => []),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+          ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(initialValue: false),
           ),
@@ -170,25 +177,4 @@ void main() {
 
     expect(tester.widget<Switch>(switchFinder).value, isTrue);
   });
-
-  testWidgets('InventoryPage deletes items and shows snackbar', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => []),
-          inventoryFilterProvider.overrideWith(
-            () => MockInventoryFilterNotifier(),
-          ),
-          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
-        ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
-      ),
-    );
-
-    // Skip this test because the delete button is only visible in debug mode
-    // (kDebugMode is false in test environment)
-    expect(find.byIcon(Icons.delete_forever), findsNothing);
-  }, skip: true);
 }
