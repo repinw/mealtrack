@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mealtrack/features/inventory/presentation/action_button.dart';
 
-class CounterPill extends StatefulWidget {
+class CounterPill extends StatelessWidget {
   final int quantity;
   final bool isOutOfStock;
   final ValueChanged<int> onUpdate;
@@ -14,37 +14,7 @@ class CounterPill extends StatefulWidget {
   });
 
   @override
-  State<CounterPill> createState() => _CounterPillState();
-}
-
-class _CounterPillState extends State<CounterPill> {
-  late int _localQuantity;
-
-  @override
-  void initState() {
-    super.initState();
-    _localQuantity = widget.quantity;
-  }
-
-  @override
-  void didUpdateWidget(CounterPill oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.quantity != oldWidget.quantity) {
-      _localQuantity = widget.quantity;
-    }
-  }
-
-  void _handleUpdate(int delta) {
-    setState(() {
-      _localQuantity += delta;
-    });
-    widget.onUpdate(delta);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isOutOfStock = _localQuantity == 0;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -56,12 +26,12 @@ class _CounterPillState extends State<CounterPill> {
         children: [
           ActionButton(
             icon: Icons.remove,
-            onTap: isOutOfStock ? null : () => _handleUpdate(-1),
+            onTap: isOutOfStock ? null : () => onUpdate(-1),
           ),
           SizedBox(
             width: 32,
             child: Text(
-              '$_localQuantity',
+              '$quantity',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -70,7 +40,7 @@ class _CounterPillState extends State<CounterPill> {
               ),
             ),
           ),
-          ActionButton(icon: Icons.add, onTap: () => _handleUpdate(1)),
+          ActionButton(icon: Icons.add, onTap: () => onUpdate(1)),
         ],
       ),
     );

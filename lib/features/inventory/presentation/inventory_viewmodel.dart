@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
+
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 part 'inventory_viewmodel.g.dart';
@@ -25,17 +25,18 @@ sealed class InventoryDisplayItem {
 }
 
 class InventoryHeaderItem extends InventoryDisplayItem {
-  final FridgeItem item;
-  const InventoryHeaderItem(this.item);
+  final String storeName;
+  final DateTime entryDate;
+  const InventoryHeaderItem({required this.storeName, required this.entryDate});
 
   @override
   bool operator ==(Object other) =>
       other is InventoryHeaderItem &&
-      item.storeName == other.item.storeName &&
-      item.entryDate == other.item.entryDate;
+      storeName == other.storeName &&
+      entryDate == other.entryDate;
 
   @override
-  int get hashCode => Object.hash(item.storeName, item.entryDate);
+  int get hashCode => Object.hash(storeName, entryDate);
 }
 
 class InventoryProductItem extends InventoryDisplayItem {
@@ -108,13 +109,8 @@ AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
       final first = group.value.first;
       displayList.add(
         InventoryHeaderItem(
-          FridgeItem(
-            id: first.id,
-            name: '',
-            storeName: first.storeName,
-            entryDate: first.entryDate,
-            quantity: 0,
-          ),
+          storeName: first.storeName,
+          entryDate: first.entryDate,
         ),
       );
       displayList.addAll(group.value.map((s) => InventoryProductItem(s.id)));

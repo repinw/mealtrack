@@ -129,10 +129,7 @@ void main() {
         expect(displayList.length, 7);
 
         expect(displayList[0], isA<InventoryHeaderItem>());
-        expect(
-          (displayList[0] as InventoryHeaderItem).item.storeName,
-          'Store A',
-        );
+        expect((displayList[0] as InventoryHeaderItem).storeName, 'Store A');
         expect(displayList[1], isA<InventoryProductItem>());
         expect((displayList[1] as InventoryProductItem).itemId, item1.id);
         expect(displayList[2], isA<InventoryProductItem>());
@@ -140,10 +137,7 @@ void main() {
         expect(displayList[3], isA<InventorySpacerItem>());
 
         expect(displayList[4], isA<InventoryHeaderItem>());
-        expect(
-          (displayList[4] as InventoryHeaderItem).item.storeName,
-          'Store B',
-        );
+        expect((displayList[4] as InventoryHeaderItem).storeName, 'Store B');
         expect(displayList[5], isA<InventoryProductItem>());
         expect((displayList[5] as InventoryProductItem).itemId, item3.id);
         expect(displayList[6], isA<InventorySpacerItem>());

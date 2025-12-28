@@ -34,33 +34,22 @@ class FridgeItems extends _$FridgeItems {
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
-    // FIX: Statt state.valueOrNull nutzen wir state.asData?.value
-    // Das prüft: "Haben wir Daten?" -> Wenn ja, gib mir den Wert.
     final previousList = state.asData?.value;
-
-    // Wenn die Liste noch lädt oder null ist, brechen wir ab
     if (previousList == null) return;
 
     final newQuantity = item.quantity + delta;
-
-    // Optimistic Update: Neue Liste erstellen
     final updatedList = [
       for (final i in previousList)
         if (i.id == item.id) i.copyWith(quantity: newQuantity) else i,
     ];
-
-    // State sofort aktualisieren (ohne Loading Screen)
     state = AsyncValue.data(updatedList);
 
-    // DB Update im Hintergrund
     try {
       final repository = ref.read(fridgeRepositoryProvider);
       await repository.updateQuantity(item, delta);
-    } catch (e, st) {
-      // Falls DB fehlschlägt: Fehler anzeigen und alten State wiederherstellen
-      // oder Liste neu laden.
-      state = AsyncValue.error(e, st);
-      // Optional: ref.invalidateSelf(); um die echten Daten neu zu laden
+    } catch (e) {
+      state = AsyncValue.data(previousList);
+      rethrow;
     }
   }
 
@@ -109,7 +98,6 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
   return groupedMap.entries.toList();
 }
 
-// 1. Definiere ein konstantes Fallback-Item
 final _loadingItem = FridgeItem(
   id: 'loading',
   name: 'Loading...',
@@ -124,17 +112,12 @@ final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
 ) {
   return ref.watch(
     fridgeItemsProvider.select((state) {
-      // 2. Sicherer Zugriff auf die Liste
       final items = state.asData?.value;
-
-      // Wenn die Liste noch lädt (null ist), geben wir sofort das konstante Item zurück
       if (items == null) return _loadingItem;
 
-      // 3. Suche das Item
       try {
         return items.firstWhere(
           (element) => element.id == id,
-          // Falls ID nicht gefunden: Konstantes Item zurückgeben
           orElse: () => _loadingItem,
         );
       } catch (_) {

@@ -8,7 +8,7 @@ class ScannedItemRow extends StatefulWidget {
 
   static const double colQtyWidth = 30;
   static const double colWeightWidth = 55;
-  static const double colPriceWidth = 120; // Space for price, €, icon & delete
+  static const double colPriceWidth = 120;
 
   const ScannedItemRow({
     super.key,
@@ -99,7 +99,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
       quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
     );
 
-    // Notify parent to recalculate total
     widget.onChanged(newItem);
   }
 
@@ -184,7 +183,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
 
             const SizedBox(width: 12),
 
-            // Weight
             SizedBox(
               width: ScannedItemRow.colWeightWidth,
               child: TextField(
