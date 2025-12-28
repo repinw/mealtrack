@@ -100,7 +100,7 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
 
 final _loadingItem = FridgeItem(
   id: 'loading',
-  name: 'Loading...',
+  name: '',
   quantity: 0,
   storeName: '',
   entryDate: DateTime(1970),

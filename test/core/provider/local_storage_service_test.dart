@@ -62,12 +62,13 @@ void main() {
       expect(items, [item1, item2]);
     });
 
-    test('loadItems throws FormatException when JSON is invalid', () async {
+    test('loadItems returns empty list when JSON is invalid', () async {
       SharedPreferences.setMockInitialValues({
         'inventory_data': 'invalid_json_string',
       });
 
-      expect(() => service.loadItems(), throwsA(isA<FormatException>()));
+      final items = await service.loadItems();
+      expect(items, isEmpty);
     });
 
     test('deleteAllItems removes data from SharedPreferences', () async {

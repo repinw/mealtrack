@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:equatable/equatable.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
@@ -20,7 +20,7 @@ class InventoryViewModel extends _$InventoryViewModel {
   }
 }
 
-sealed class InventoryDisplayItem {
+sealed class InventoryDisplayItem extends Equatable {
   const InventoryDisplayItem();
 }
 
@@ -30,13 +30,7 @@ class InventoryHeaderItem extends InventoryDisplayItem {
   const InventoryHeaderItem({required this.storeName, required this.entryDate});
 
   @override
-  bool operator ==(Object other) =>
-      other is InventoryHeaderItem &&
-      storeName == other.storeName &&
-      entryDate == other.entryDate;
-
-  @override
-  int get hashCode => Object.hash(storeName, entryDate);
+  List<Object?> get props => [storeName, entryDate];
 }
 
 class InventoryProductItem extends InventoryDisplayItem {
@@ -44,21 +38,14 @@ class InventoryProductItem extends InventoryDisplayItem {
   const InventoryProductItem(this.itemId);
 
   @override
-  bool operator ==(Object other) =>
-      other is InventoryProductItem && itemId == other.itemId;
-
-  @override
-  int get hashCode => itemId.hashCode;
+  List<Object?> get props => [itemId];
 }
 
 class InventorySpacerItem extends InventoryDisplayItem {
   const InventorySpacerItem();
 
   @override
-  bool operator ==(Object other) => other is InventorySpacerItem;
-
-  @override
-  int get hashCode => 0;
+  List<Object?> get props => [];
 }
 
 @riverpod

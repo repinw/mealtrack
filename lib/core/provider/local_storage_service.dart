@@ -13,17 +13,14 @@ Future<SharedPreferences> sharedPreferences(Ref ref) {
 
 @Riverpod(keepAlive: true)
 LocalStorageService localStorageService(Ref ref) {
-  return LocalStorageService(ref);
+  return LocalStorageService(ref.watch(sharedPreferencesProvider.future));
 }
 
 class LocalStorageService {
-  final Ref _ref;
+  final Future<SharedPreferences> _prefs;
   static const String _keyInventory = 'inventory_data';
 
-  LocalStorageService(this._ref);
-
-  Future<SharedPreferences> get _prefs =>
-      _ref.read(sharedPreferencesProvider.future);
+  LocalStorageService(this._prefs);
 
   Future<void> saveItems(List<FridgeItem> items) async {
     final prefs = await _prefs;
@@ -45,7 +42,7 @@ class LocalStorageService {
       return decodedList.map((e) => FridgeItem.fromJson(e)).toList();
     } catch (e) {
       debugPrint('Error loading inventory: $e');
-      rethrow;
+      return [];
     }
   }
 
