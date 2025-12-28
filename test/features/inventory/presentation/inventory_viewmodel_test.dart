@@ -175,5 +175,95 @@ void main() {
 
       expect(displayList, isEmpty);
     });
+
+    test(
+      'groups items with null receiptId together and shows valid header',
+      () async {
+        final fixedDate = DateTime(2023, 6, 15, 10, 30, 0);
+        final itemWithNullReceipt1 = FridgeItem.create(
+          name: 'Milk',
+          storeName: 'Local Shop',
+          quantity: 2,
+          now: () => fixedDate,
+        ); // receiptId is null by default
+        final itemWithNullReceipt2 = FridgeItem.create(
+          name: 'Bread',
+          storeName: 'Local Shop',
+          quantity: 1,
+          now: () => fixedDate,
+        ); // receiptId is null by default
+        final itemWithReceipt = FridgeItem.create(
+          name: 'Apple',
+          storeName: 'Supermarket',
+          quantity: 3,
+          now: () => fixedDate,
+        ).copyWith(receiptId: 'receipt-abc');
+
+        when(() => mockRepository.getItems()).thenAnswer(
+          (_) async => [
+            itemWithNullReceipt1,
+            itemWithNullReceipt2,
+            itemWithReceipt,
+          ],
+        );
+
+        await container.read(fridgeItemsProvider.future);
+
+        final displayListAsync = container.read(inventoryDisplayListProvider);
+        final displayList = displayListAsync.value!;
+
+        // Should have 2 groups: one for null/empty receiptId, one for 'receipt-abc'
+        // Group 1: Header + 2 items + Spacer = 4
+        // Group 2: Header + 1 item + Spacer = 3
+        expect(displayList.length, 7);
+
+        // First group (null receiptId items)
+        expect(displayList[0], isA<InventoryHeaderItem>());
+        final header1 = displayList[0] as InventoryHeaderItem;
+        expect(header1.storeName, 'Local Shop'); // Not empty!
+        expect(header1.entryDate, fixedDate);
+        expect(displayList[1], isA<InventoryProductItem>());
+        expect(displayList[2], isA<InventoryProductItem>());
+        expect(displayList[3], isA<InventorySpacerItem>());
+
+        // Second group (with receiptId)
+        expect(displayList[4], isA<InventoryHeaderItem>());
+        final header2 = displayList[4] as InventoryHeaderItem;
+        expect(header2.storeName, 'Supermarket');
+      },
+    );
+
+    test('items with empty string receiptId grouped same as null', () async {
+      final fixedDate = DateTime(2023, 6, 15);
+      final itemWithNullReceipt = FridgeItem.create(
+        name: 'Item A',
+        storeName: 'Store',
+        quantity: 1,
+        now: () => fixedDate,
+      ); // null receiptId
+      final itemWithEmptyReceipt = FridgeItem.create(
+        name: 'Item B',
+        storeName: 'Store',
+        quantity: 1,
+        now: () => fixedDate,
+      ).copyWith(receiptId: ''); // empty string receiptId
+
+      when(
+        () => mockRepository.getItems(),
+      ).thenAnswer((_) async => [itemWithNullReceipt, itemWithEmptyReceipt]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
+
+      // Both items should be in the same group (empty string key)
+      // Header + 2 items + Spacer = 4
+      expect(displayList.length, 4);
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      expect(displayList[1], isA<InventoryProductItem>());
+      expect(displayList[2], isA<InventoryProductItem>());
+      expect(displayList[3], isA<InventorySpacerItem>());
+    });
   });
 }

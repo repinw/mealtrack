@@ -37,7 +37,7 @@ class InventoryList extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${item.storeName} - ${DateFormat.yMd().format(item.entryDate)}',
+                  '${item.storeName} - ${DateFormat.yMd(Localizations.localeOf(context).toString()).format(item.entryDate)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,

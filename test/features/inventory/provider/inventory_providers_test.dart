@@ -306,5 +306,65 @@ void main() {
       final state = container.read(fridgeItemsProvider);
       expect(state.isLoading, true);
     });
+
+    test('rolls back state when repository throws exception', () async {
+      final item = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item]);
+      when(
+        () => mockStorageService.saveItems(any()),
+      ).thenThrow(Exception('Network error'));
+
+      // Load items first
+      await container.read(fridgeItemsProvider.future);
+
+      // Verify initial state
+      final initialState = container.read(fridgeItemsProvider);
+      expect(initialState.asData?.value.first.quantity, 5);
+
+      // Trigger optimistic update (should fail and rollback)
+      try {
+        await container
+            .read(fridgeItemsProvider.notifier)
+            .updateQuantity(item, -1);
+      } catch (_) {
+        // Expected to throw
+      }
+
+      // State should be rolled back to original value
+      final stateAfterRollback = container.read(fridgeItemsProvider);
+      expect(stateAfterRollback.asData?.value.first.quantity, 5);
+    });
+
+    test('rethrows exception after rollback', () async {
+      final item = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item]);
+      when(
+        () => mockStorageService.saveItems(any()),
+      ).thenThrow(Exception('Network error'));
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Should rethrow the exception
+      expect(
+        () => container
+            .read(fridgeItemsProvider.notifier)
+            .updateQuantity(item, -1),
+        throwsException,
+      );
+    });
   });
 }

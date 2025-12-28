@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/category_icon.dart';
 import 'package:mealtrack/features/inventory/presentation/counter_pill.dart';
@@ -12,16 +13,18 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
     with Mock
     implements FridgeItems {
-  // Track updateQuantity calls manually since we need to override the method
   final List<(FridgeItem, int)> updateQuantityCalls = [];
+  bool shouldThrowOnUpdate = false;
 
   @override
   Future<List<FridgeItem>> build() async => [];
 
-  // Override updateQuantity since it accesses state.asData which isn't set up
   @override
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     updateQuantityCalls.add((item, delta));
+    if (shouldThrowOnUpdate) {
+      throw Exception('Network error');
+    }
   }
 
   @override
@@ -69,9 +72,8 @@ void main() {
   Widget createWidgetUnderTest() {
     return ProviderScope(
       overrides: [
-        fridgeItemsProvider.overrideWith(() {
-          return mockNotifier;
-        }),
+        fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+        fridgeItemsProvider.overrideWith(() => mockNotifier),
       ],
       child: MaterialApp(
         home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
@@ -83,19 +85,7 @@ void main() {
     testWidgets('renders all child components correctly', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
-            fridgeItemsProvider.overrideWith(
-              () => mockNotifier,
-            ), // For updateQuantity
-          ],
-          child: MaterialApp(
-            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.byType(CategoryIcon), findsOneWidget);
       expect(find.byType(ItemDetails), findsOneWidget);
@@ -107,27 +97,88 @@ void main() {
       expect(categoryIcon.name, testItem.name);
     });
 
-    testWidgets('calls updateQuantity on notifier when pill updates', (
+    testWidgets('renders empty widget when item is loading placeholder', (
       WidgetTester tester,
     ) async {
+      final loadingItem = FridgeItem(
+        id: 'loading',
+        name: 'Loading...',
+        quantity: 0,
+        storeName: '',
+        entryDate: DateTime(1970),
+      );
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+            fridgeItemProvider('some-id').overrideWithValue(loadingItem),
             fridgeItemsProvider.overrideWith(() => mockNotifier),
           ],
-          child: MaterialApp(
-            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
+          child: const MaterialApp(
+            home: Scaffold(body: InventoryItemRow(itemId: 'some-id')),
           ),
         ),
       );
 
+      expect(find.byType(SizedBox), findsOneWidget);
+      expect(find.byType(CategoryIcon), findsNothing);
+      expect(find.byType(ItemDetails), findsNothing);
+      expect(find.byType(CounterPill), findsNothing);
+    });
+
+    testWidgets('calls updateQuantity on notifier when pill updates', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+
       final CounterPill counterPill = tester.widget(find.byType(CounterPill));
       counterPill.onUpdate(1);
 
-      // Verify the call was tracked (can't use mocktail verify with overridden method)
       expect(mockNotifier.updateQuantityCalls.length, 1);
       expect(mockNotifier.updateQuantityCalls.first.$2, 1);
+    });
+
+    testWidgets('shows SnackBar when updateQuantity fails', (
+      WidgetTester tester,
+    ) async {
+      mockNotifier.shouldThrowOnUpdate = true;
+
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      // Tap the add button to trigger updateQuantity
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      // Verify SnackBar is shown with correct message
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text(AppLocalizations.quantityUpdateFailed), findsOneWidget);
+    });
+
+    testWidgets('SnackBar has floating behavior on error', (
+      WidgetTester tester,
+    ) async {
+      mockNotifier.shouldThrowOnUpdate = true;
+
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      expect(snackBar.behavior, SnackBarBehavior.floating);
+    });
+
+    testWidgets('no SnackBar shown when updateQuantity succeeds', (
+      WidgetTester tester,
+    ) async {
+      mockNotifier.shouldThrowOnUpdate = false;
+
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsNothing);
     });
   });
 }
