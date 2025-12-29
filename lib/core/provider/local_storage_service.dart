@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:mealtrack/core/exceptions/storage_exception.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +43,13 @@ class LocalStorageService {
       return decodedList.map((e) => FridgeItem.fromJson(e)).toList();
     } catch (e) {
       debugPrint('Error loading inventory: $e');
-      return [];
+
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      final backupKey = '${_keyInventory}_corrupt_$timestamp';
+      await prefs.setString(backupKey, jsonString);
+      debugPrint('Backed up corrupt inventory to $backupKey');
+
+      throw StorageException('Failed to parse inventory data', e);
     }
   }
 

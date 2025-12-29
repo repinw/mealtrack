@@ -15,12 +15,15 @@ ReceiptRepository receiptRepository(Ref ref) {
   );
 }
 
+/// Repository for handling receipt scanning and analysis.
+/// Coordinates between Firebase AI service and data parsing.
 class ReceiptRepository {
   final FirebaseAiService _firebaseAiService;
 
   ReceiptRepository({required FirebaseAiService firebaseAiService})
     : _firebaseAiService = firebaseAiService;
 
+  /// Analyzes an image receipt and returns parsed fridge items.
   Future<List<FridgeItem>> analyzeReceipt(XFile imageFile) async {
     try {
       debugPrint('Repository: Starting receipt analysis from image');
@@ -38,6 +41,7 @@ class ReceiptRepository {
     }
   }
 
+  /// Analyzes a PDF receipt and returns parsed fridge items.
   Future<List<FridgeItem>> analyzePdfReceipt(XFile pdfFile) async {
     try {
       debugPrint('Repository: Starting receipt analysis from PDF');
