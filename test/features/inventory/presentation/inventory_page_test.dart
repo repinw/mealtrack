@@ -202,10 +202,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Verify the header is displayed with store name and date
     expect(find.textContaining('Test Store'), findsOneWidget);
-    expect(find.textContaining('12'), findsOneWidget); // Month or day
-    expect(find.textContaining('28'), findsOneWidget); // Day
-    expect(find.textContaining('2024'), findsOneWidget); // Year
+    expect(find.textContaining('12'), findsOneWidget);
+    expect(find.textContaining('28'), findsOneWidget);
+    expect(find.textContaining('2024'), findsOneWidget);
   });
 }

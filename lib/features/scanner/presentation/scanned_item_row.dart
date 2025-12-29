@@ -34,7 +34,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
     _priceController = TextEditingController(
-      text: (widget.item.unitPrice ?? 0.0).toStringAsFixed(2),
+      text: (widget.item.unitPrice).toStringAsFixed(2),
     );
     _qtyController = TextEditingController(
       text: widget.item.quantity.toString(),
