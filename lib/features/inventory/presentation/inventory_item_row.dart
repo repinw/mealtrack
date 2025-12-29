@@ -1,18 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/presentation/category_icon.dart';
 import 'package:mealtrack/features/inventory/presentation/counter_pill.dart';
 import 'package:mealtrack/features/inventory/presentation/item_details.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class InventoryItemRow extends ConsumerWidget {
-  final FridgeItem item;
+  final String itemId;
 
-  const InventoryItemRow({super.key, required this.item});
+  const InventoryItemRow({super.key, required this.itemId});
+
+  void _handleQuantityUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    item,
+    int delta,
+  ) {
+    ref
+        .read(fridgeItemsProvider.notifier)
+        .updateQuantity(item, delta)
+        .catchError((_) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.quantityUpdateFailed),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        });
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final item = ref.watch(fridgeItemProvider(itemId));
+
+    if (item.id == 'loading') {
+      return const SizedBox.shrink();
+    }
+
     final isOutOfStock = item.quantity == 0;
 
     return Padding(
@@ -42,28 +69,12 @@ class InventoryItemRow extends ConsumerWidget {
             CounterPill(
               quantity: item.quantity,
               isOutOfStock: isOutOfStock,
-              onUpdate: (delta) => _updateItemQuantity(context, ref, delta),
+              onUpdate: (delta) =>
+                  _handleQuantityUpdate(context, ref, item, delta),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _updateItemQuantity(
-    BuildContext context,
-    WidgetRef ref,
-    int delta,
-  ) async {
-    try {
-      await ref.read(fridgeItemsProvider.notifier).updateQuantity(item, delta);
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to update item. Please try again.'),
-        ),
-      );
-    }
   }
 }

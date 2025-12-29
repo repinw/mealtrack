@@ -30,4 +30,6 @@ class AppLocalizations {
   static const String receiptReadErrorFormat =
       'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
   static const String errorOccurred = 'Ein Fehler ist aufgetreten: ';
+  static const String quantityUpdateFailed =
+      'Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.';
 }

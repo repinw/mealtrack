@@ -62,12 +62,10 @@ final class InventoryDisplayListProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<InventoryDisplayItem>>,
-          List<InventoryDisplayItem>,
-          FutureOr<List<InventoryDisplayItem>>
+          AsyncValue<List<InventoryDisplayItem>>,
+          AsyncValue<List<InventoryDisplayItem>>
         >
-    with
-        $FutureModifier<List<InventoryDisplayItem>>,
-        $FutureProvider<List<InventoryDisplayItem>> {
+    with $Provider<AsyncValue<List<InventoryDisplayItem>>> {
   const InventoryDisplayListProvider._()
     : super(
         from: null,
@@ -84,15 +82,24 @@ final class InventoryDisplayListProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<InventoryDisplayItem>> $createElement(
+  $ProviderElement<AsyncValue<List<InventoryDisplayItem>>> $createElement(
     $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ) => $ProviderElement(pointer);
 
   @override
-  FutureOr<List<InventoryDisplayItem>> create(Ref ref) {
+  AsyncValue<List<InventoryDisplayItem>> create(Ref ref) {
     return inventoryDisplayList(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<List<InventoryDisplayItem>> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride:
+          $SyncValueProvider<AsyncValue<List<InventoryDisplayItem>>>(value),
+    );
   }
 }
 
 String _$inventoryDisplayListHash() =>
-    r'f8293b01645f06b1cff0f464d0d77a6cca104399';
+    r'2007a69c242dcd7209e410ae6f90de357d4c0665';

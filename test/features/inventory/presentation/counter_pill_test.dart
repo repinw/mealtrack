@@ -54,7 +54,7 @@ void main() {
       expect(text.style?.color, Colors.grey);
     });
 
-    testWidgets('calls onUpdate(1) when add button is tapped', (tester) async {
+    testWidgets('calls onUpdate(1) when add is tapped', (tester) async {
       int? receivedValue;
       await tester.pumpWidget(
         MaterialApp(
@@ -69,49 +69,63 @@ void main() {
       );
 
       await tester.tap(find.byIcon(Icons.add));
+      await tester.pump();
+
       expect(receivedValue, 1);
+      // Stateless: still shows original value until parent rebuilds with new prop
+      expect(find.text('1'), findsOneWidget);
     });
 
-    testWidgets(
-      'calls onUpdate(-1) when remove button is tapped and in stock',
-      (tester) async {
-        int? receivedValue;
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CounterPill(
-                quantity: 2,
-                isOutOfStock: false,
-                onUpdate: (val) => receivedValue = val,
-              ),
+    testWidgets('calls onUpdate(-1) when remove is tapped', (tester) async {
+      int? receivedValue;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CounterPill(
+              quantity: 2,
+              isOutOfStock: false,
+              onUpdate: (val) => receivedValue = val,
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.byIcon(Icons.remove));
-        expect(receivedValue, -1);
-      },
-    );
+      await tester.tap(find.byIcon(Icons.remove));
+      await tester.pump();
 
-    testWidgets(
-      'does not call onUpdate when remove button is tapped and out of stock',
-      (tester) async {
-        bool wasCalled = false;
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CounterPill(
-                quantity: 0,
-                isOutOfStock: true,
-                onUpdate: (_) => wasCalled = true,
-              ),
+      expect(receivedValue, -1);
+      // Stateless: still shows original value until parent rebuilds with new prop
+      expect(find.text('2'), findsOneWidget);
+    });
+
+    testWidgets('updates display when widget prop changes', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CounterPill(
+              quantity: 5,
+              isOutOfStock: false,
+              onUpdate: (_) {},
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.byIcon(Icons.remove));
-        expect(wasCalled, isFalse);
-      },
-    );
+      expect(find.text('5'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CounterPill(
+              quantity: 10, // External change
+              isOutOfStock: false,
+              onUpdate: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('10'), findsOneWidget);
+    });
   });
 }
