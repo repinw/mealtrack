@@ -2,7 +2,7 @@
 
 // coverage:ignore-file
 
-part of 'home_viewmodel.dart';
+part of 'scanner_viewmodel.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -11,33 +11,33 @@ part of 'home_viewmodel.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(HomeViewModel)
-const homeViewModelProvider = HomeViewModelProvider._();
+@ProviderFor(ScannerViewModel)
+const scannerViewModelProvider = ScannerViewModelProvider._();
 
-final class HomeViewModelProvider
-    extends $AsyncNotifierProvider<HomeViewModel, List<FridgeItem>> {
-  const HomeViewModelProvider._()
+final class ScannerViewModelProvider
+    extends $AsyncNotifierProvider<ScannerViewModel, List<FridgeItem>> {
+  const ScannerViewModelProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'homeViewModelProvider',
+        name: r'scannerViewModelProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$homeViewModelHash();
+  String debugGetCreateSourceHash() => _$scannerViewModelHash();
 
   @$internal
   @override
-  HomeViewModel create() => HomeViewModel();
+  ScannerViewModel create() => ScannerViewModel();
 }
 
-String _$homeViewModelHash() => r'6be098a6607d88ecbedd221f6baa7ee3e6049c98';
+String _$scannerViewModelHash() => r'a474c1255f2d8765f74bc1a0afec5b7fafb92523';
 
-abstract class _$HomeViewModel extends $AsyncNotifier<List<FridgeItem>> {
+abstract class _$ScannerViewModel extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();
   @$mustCallSuper
   @override

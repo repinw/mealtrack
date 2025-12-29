@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/inventory/presentation/item_details.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/item_details.dart';
 
 void main() {
   Widget buildTestWidget(FridgeItem item, {bool isOutOfStock = false}) {

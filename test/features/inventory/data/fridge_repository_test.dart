@@ -17,7 +17,7 @@ void main() {
 
   group('FridgeRepository', () {
     test('updateQuantity consumes item when quantity reaches 0', () async {
-      // Arrange
+      
       final item = FridgeItem.create(
         name: 'TestItem',
         storeName: 'TestStore',
@@ -33,11 +33,10 @@ void main() {
         () => mockLocalStorageService.saveItems(any()),
       ).thenAnswer((_) async {});
 
-      // Act
-      // Reduce quantity by 1 (1 - 1 = 0)
+      
       await repository.updateQuantity(item, -1);
 
-      // Assert
+      
       final captured = verify(
         () => mockLocalStorageService.saveItems(captureAny()),
       ).captured;
@@ -51,7 +50,7 @@ void main() {
     test(
       'updateQuantity unconscumes item when quantity increases from 0',
       () async {
-        // Arrange
+        
         final item =
             FridgeItem.create(
               name: 'TestItem',
@@ -72,10 +71,10 @@ void main() {
           () => mockLocalStorageService.saveItems(any()),
         ).thenAnswer((_) async {});
 
-        // Act
+        
         await repository.updateQuantity(item, 1);
 
-        // Assert
+        
         final captured = verify(
           () => mockLocalStorageService.saveItems(captureAny()),
         ).captured;
@@ -349,6 +348,85 @@ void main() {
       final emptyKeyGroup = result.firstWhere((e) => e.key == '');
       expect(emptyKeyGroup.value.length, 1);
       expect(emptyKeyGroup.value.first.name, 'Banana');
+    });
+
+   
+    test('saveItems rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.saveItems(any()),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.saveItems([]), throwsException);
+    });
+
+    test('addItems rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.addItems([]), throwsException);
+    });
+
+    test('updateItem rethrows exceptions', () async {
+      final item = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+        unitPrice: 1.0,
+      );
+
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.updateItem(item), throwsException);
+    });
+
+    test('updateQuantity rethrows exceptions', () async {
+      final item = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 5,
+        unitPrice: 1.0,
+      );
+
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.updateQuantity(item, 1), throwsException);
+    });
+
+    test('deleteAllItems rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.deleteAllItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.deleteAllItems(), throwsException);
+    });
+
+    test('deleteItem rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.deleteItem('some-id'), throwsException);
+    });
+
+    test('getAvailableItems rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.getAvailableItems(), throwsException);
+    });
+
+    test('getGroupedItems rethrows exceptions', () async {
+      when(
+        () => mockLocalStorageService.loadItems(),
+      ).thenThrow(Exception('Storage error'));
+
+      expect(() => repository.getGroupedItems(), throwsException);
     });
   });
 }

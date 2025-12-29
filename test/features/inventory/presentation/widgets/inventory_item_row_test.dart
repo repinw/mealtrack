@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/inventory/presentation/category_icon.dart';
-import 'package:mealtrack/features/inventory/presentation/counter_pill.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
-import 'package:mealtrack/features/inventory/presentation/item_details.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/category_icon.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/item_details.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
@@ -145,11 +145,9 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      // Tap the add button to trigger updateQuantity
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
-      // Verify SnackBar is shown with correct message
       expect(find.byType(SnackBar), findsOneWidget);
       expect(find.text(AppLocalizations.quantityUpdateFailed), findsOneWidget);
     });

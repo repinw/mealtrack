@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_item_row.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 
 class InventoryList extends ConsumerWidget {
   const InventoryList({super.key});

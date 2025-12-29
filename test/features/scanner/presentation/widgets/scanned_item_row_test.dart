@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
+import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
 
 void main() {
   group('ScannedItemRow Widget Test', () {
@@ -378,6 +378,151 @@ void main() {
       await tester.enterText(priceFinder, 'abc');
       await tester.pump();
       expect(updatedItem?.unitPrice, 0.0);
+    });
+
+    testWidgets('didUpdateWidget updates name controller when item changes', (
+      tester,
+    ) async {
+      final item1 = createItem(name: 'Original Name');
+      final item2 = createItem(name: 'Updated Name');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item1,
+              onDelete: () {},
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Original Name'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item2,
+              onDelete: () {},
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      final nameField = tester.widget<TextField>(
+        find.byKey(const Key('nameField')),
+      );
+      expect(nameField.controller?.text, 'Updated Name');
+    });
+
+    testWidgets('didUpdateWidget updates price controller when price changes', (
+      tester,
+    ) async {
+      final item1 = createItem(unitPrice: 10.0);
+      final item2 = item1.copyWith(unitPrice: 25.0);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item1,
+              onDelete: () {},
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item2,
+              onDelete: () {},
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      final priceField = tester.widget<TextField>(
+        find.byKey(const Key('priceField')),
+      );
+      expect(priceField.controller?.text, '25.00');
+    });
+
+    testWidgets(
+      'didUpdateWidget updates quantity controller when quantity changes',
+      (tester) async {
+        final item1 = createItem(quantity: 1);
+        final item2 = item1.copyWith(quantity: 5);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ScannedItemRow(
+                item: item1,
+                onDelete: () {},
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ScannedItemRow(
+                item: item2,
+                onDelete: () {},
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump();
+
+        final qtyField = tester.widget<TextField>(
+          find.byKey(const Key('quantityField')),
+        );
+        expect(qtyField.controller?.text, '5');
+      },
+    );
+
+    testWidgets('Clearing brand field sets brand to null', (tester) async {
+      final item = FridgeItem.create(
+        name: 'Test Item',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 10.0,
+        brand: 'TestBrand',
+      );
+      FridgeItem? updatedItem;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
+          ),
+        ),
+      );
+
+      final brandFinder = find.byKey(const Key('brandField'));
+      await tester.enterText(brandFinder, '');
+      await tester.pump();
+      expect(updatedItem?.brand, isNull);
     });
   });
 }

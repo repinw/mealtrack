@@ -1,0 +1,6 @@
+﻿85% 34/40 lib\features\inventory\presentation\viewmodel\inventory_viewmodel.dart
+91.9% 57/62 lib\features\scanner\data\receipt_parser.dart
+83.3% 15/18 lib\features\scanner\data\receipt_repository.dart
+83.6% 56/67 lib\features\scanner\presentation\receipt_edit_page.dart
+95.3% 101/106 lib\features\scanner\presentation\widgets\scanned_item_row.dart
+93% 40/43 lib\features\scanner\service\firebase_ai_service.dart

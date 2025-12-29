@@ -17,6 +17,22 @@ class MockXFile extends Mock implements XFile {}
 
 class FakeRemoteConfigSettings extends Fake implements RemoteConfigSettings {}
 
+abstract class GenerativeModelInterface {
+  Future<GenerateContentResponseInterface> generateContent(
+    String templateId, {
+    Map<String, dynamic>? inputs,
+  });
+}
+
+abstract class GenerateContentResponseInterface {
+  String? get text;
+}
+
+class MockGenerativeModel extends Mock implements GenerativeModelInterface {}
+
+class MockGenerateContentResponse extends Mock
+    implements GenerateContentResponseInterface {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(CompressFormat.jpeg);
@@ -28,11 +44,13 @@ void main() {
     late MockImageCompressor mockImageCompressor;
     late MockFirebaseRemoteConfig mockRemoteConfig;
     late MockXFile mockXFile;
+    late MockGenerativeModel mockGenerativeModel;
 
     setUp(() {
       mockImageCompressor = MockImageCompressor();
       mockRemoteConfig = MockFirebaseRemoteConfig();
       mockXFile = MockXFile();
+      mockGenerativeModel = MockGenerativeModel();
 
       when(() => mockXFile.path).thenReturn('test/path/image.jpg');
       when(() => mockXFile.length()).thenAnswer((_) async => 1000);
@@ -125,6 +143,7 @@ void main() {
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
+          modelProvider: () => mockGenerativeModel,
         );
 
         when(
@@ -148,71 +167,153 @@ void main() {
       },
     );
 
+    test('analyzeImageWithGemini returns text on success', () async {
+      const templateId = 'valid_template_id';
+      const expectedText = 'Receipt Data';
+
+      final mockResponse = MockGenerateContentResponse();
+      when(() => mockResponse.text).thenReturn(expectedText);
+
+      service = FirebaseAiService(
+        imageCompressor: mockImageCompressor,
+        remoteConfig: mockRemoteConfig,
+        modelProvider: () => mockGenerativeModel,
+      );
+
+      when(
+        () => mockRemoteConfig.getString("template_id"),
+      ).thenReturn(templateId);
+
+      when(
+        () => mockGenerativeModel.generateContent(
+          templateId,
+          inputs: any(named: 'inputs'),
+        ),
+      ).thenAnswer((_) async => mockResponse);
+
+      final result = await service.analyzeImageWithGemini(mockXFile);
+
+      expect(result, expectedText);
+
+      verify(() => mockRemoteConfig.getString("template_id")).called(1);
+      verify(
+        () => mockImageCompressor.compressWithFile(
+          any(),
+          minWidth: any(named: 'minWidth'),
+          minHeight: any(named: 'minHeight'),
+          quality: any(named: 'quality'),
+          format: any(named: 'format'),
+        ),
+      ).called(1);
+    });
+
     test(
-      'analyzePdfWithGemini Happy Path: reads template_id (ignores Firebase crash)',
+      'analyzeImageWithGemini throws NO_TEXT when AI returns empty text',
       () async {
         const templateId = 'valid_template_id';
+
+        final mockResponse = MockGenerateContentResponse();
+        when(() => mockResponse.text).thenReturn('');
 
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
+          modelProvider: () => mockGenerativeModel,
         );
 
         when(
           () => mockRemoteConfig.getString("template_id"),
         ).thenReturn(templateId);
 
-        try {
-          await service.analyzePdfWithGemini(mockXFile);
-        } catch (e) {
-          // Expected downstream failure due to missing Firebase App
-        }
+        when(
+          () => mockGenerativeModel.generateContent(
+            templateId,
+            inputs: any(named: 'inputs'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
 
-        verify(() => mockRemoteConfig.getString("template_id")).called(1);
-        verifyNever(
-          () => mockImageCompressor.compressWithFile(
-            any(),
-            minWidth: any(named: 'minWidth'),
-            minHeight: any(named: 'minHeight'),
-            quality: any(named: 'quality'),
-            format: any(named: 'format'),
+        await expectLater(
+          () => service.analyzeImageWithGemini(mockXFile),
+          throwsA(
+            isA<ReceiptAnalysisException>().having(
+              (e) => e.code,
+              'code',
+              'NO_TEXT',
+            ),
           ),
         );
       },
     );
 
     test(
-      'analyzeImageWithGemini Happy Path: verify compression usage (ignores Firebase crash)',
+      'analyzeImageWithGemini throws NO_TEXT when AI returns null text',
       () async {
         const templateId = 'valid_template_id';
+
+        final mockResponse = MockGenerateContentResponse();
+        when(() => mockResponse.text).thenReturn(null); 
 
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
+          modelProvider: () => mockGenerativeModel,
         );
 
         when(
           () => mockRemoteConfig.getString("template_id"),
         ).thenReturn(templateId);
 
-        try {
-          await service.analyzeImageWithGemini(mockXFile);
-        } catch (e) {
-          // Expected downstream failure
-        }
-
-        verify(() => mockRemoteConfig.getString("template_id")).called(1);
-        verify(
-          () => mockImageCompressor.compressWithFile(
-            any(),
-            minWidth: any(named: 'minWidth'),
-            minHeight: any(named: 'minHeight'),
-            quality: any(named: 'quality'),
-            format: any(named: 'format'),
+        when(
+          () => mockGenerativeModel.generateContent(
+            templateId,
+            inputs: any(named: 'inputs'),
           ),
-        ).called(1);
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          () => service.analyzeImageWithGemini(mockXFile),
+          throwsA(
+            isA<ReceiptAnalysisException>().having(
+              (e) => e.code,
+              'code',
+              'NO_TEXT',
+            ),
+          ),
+        );
       },
     );
+
+    test('analyzeImageWithGemini throws AI_ERROR when model fails', () async {
+      const templateId = 'valid_template_id';
+
+      service = FirebaseAiService(
+        imageCompressor: mockImageCompressor,
+        remoteConfig: mockRemoteConfig,
+        modelProvider: () => mockGenerativeModel,
+      );
+
+      when(
+        () => mockRemoteConfig.getString("template_id"),
+      ).thenReturn(templateId);
+
+      when(
+        () => mockGenerativeModel.generateContent(
+          templateId,
+          inputs: any(named: 'inputs'),
+        ),
+      ).thenThrow(Exception('API Error'));
+
+      await expectLater(
+        () => service.analyzeImageWithGemini(mockXFile),
+        throwsA(
+          isA<ReceiptAnalysisException>().having(
+            (e) => e.code,
+            'code',
+            'AI_ERROR',
+          ),
+        ),
+      );
+    });
 
     test(
       'analyzeImageWithGemini Error Path: throws ReceiptAnalysisException when compression fails (returns null)',
@@ -245,26 +346,60 @@ void main() {
       },
     );
 
-    test('uses fallback template ID when remote config returns empty', () async {
+    test(
+      'uses fallback template ID when remote config returns empty',
+      () async {
+        final mockResponse = MockGenerateContentResponse();
+        when(() => mockResponse.text).thenReturn('Success');
+
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+          modelProvider: () => mockGenerativeModel,
+        );
+
+        when(() => mockRemoteConfig.getString('template_id')).thenReturn('');
+        when(
+          () => mockGenerativeModel.generateContent(
+            'receiptocr',
+            inputs: any(named: 'inputs'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final result = await service.analyzeImageWithGemini(mockXFile);
+        expect(result, 'Success');
+
+        verify(() => mockRemoteConfig.getString('template_id')).called(1);
+      },
+    );
+
+    test('analyzePdfWithGemini Happy Path', () async {
+      const templateId = 'valid_template_id';
+      const expectedText = 'PDF Data';
+
+      final mockResponse = MockGenerateContentResponse();
+      when(() => mockResponse.text).thenReturn(expectedText);
+
       service = FirebaseAiService(
         imageCompressor: mockImageCompressor,
         remoteConfig: mockRemoteConfig,
+        modelProvider: () => mockGenerativeModel,
       );
 
-      when(() => mockRemoteConfig.getString('template_id')).thenReturn('');
+      when(
+        () => mockRemoteConfig.getString("template_id"),
+      ).thenReturn(templateId);
 
-      await expectLater(
-        () => service.analyzeImageWithGemini(mockXFile),
-        throwsA(
-          isA<ReceiptAnalysisException>().having(
-            (e) => e.code,
-            'code',
-            'AI_ERROR',
-          ),
+      when(
+        () => mockGenerativeModel.generateContent(
+          templateId,
+          inputs: any(named: 'inputs'),
         ),
-      );
+      ).thenAnswer((_) async => mockResponse);
 
-      verify(() => mockRemoteConfig.getString('template_id')).called(1);
+      final result = await service.analyzePdfWithGemini(mockXFile);
+
+      expect(result, expectedText);
     });
   });
 }

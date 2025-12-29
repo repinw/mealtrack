@@ -4,7 +4,6 @@ import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
 void main() {
   group('parseScannedItemsFromJson', () {
-    // --- Happy Path ---
     group('Happy Path', () {
       test('parses standard JSON correctly', () {
         const jsonString =
@@ -56,16 +55,15 @@ void main() {
 
         expect(result.length, 2);
         expect(result[0].name, 'Apple');
-        expect(result[0].unitPrice, 2.0); // 6.0 / 3
+        expect(result[0].unitPrice, 2.0);
         expect(result[0].quantity, 3);
 
         expect(result[1].name, 'Orange');
-        expect(result[1].unitPrice, 1.0); // 5.0 / 5
+        expect(result[1].unitPrice, 1.0);
         expect(result[1].quantity, 5);
       });
     });
 
-    // --- Edge Cases ---
     group('Edge Cases', () {
       test('returns empty list for empty JSON object {}', () {
         final result = parseScannedItemsFromJson('{}');
@@ -96,7 +94,6 @@ void main() {
         expect(result.length, 2);
         expect(result[0].quantity, 1);
         expect(result[1].quantity, 1);
-        // Unit price check (5.0 / 1 = 5.0)
         expect(result[0].unitPrice, 5.0);
       });
 
@@ -139,7 +136,6 @@ void main() {
       });
 
       test('handles null price but existing quantity', () {
-        // q exists (1), p is null (0.0). unitPrice = 0.0 / 1 = 0.0
         const jsonString = '{"i": [{"n": "No Price", "p": null, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
 
@@ -217,21 +213,18 @@ void main() {
         });
 
         test('handling of thousands separators (1.200,50)', () {
-          // German format with thousands dot
           const jsonString = '{"i": [{"n": "DE", "p": "1.200,50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 1200.50);
         });
 
         test('handling of thousands separators (1,200.50)', () {
-          // US format
           const jsonString = '{"i": [{"n": "US", "p": "1,200.50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 1200.50);
         });
 
         test('handling of spaces (1 200.50)', () {
-          // Space as separator
           const jsonString = '{"i": [{"n": "Space", "p": "1 200.50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 1200.50);
@@ -242,7 +235,103 @@ void main() {
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 0.0);
         });
+
+        test('handles empty string price gracefully', () {
+          const jsonString = '{"i": [{"n": "Empty", "p": "", "q": 1}]}';
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.first.unitPrice, 0.0);
+        });
       });
+
+      test('parses direct JSON array (not wrapped in object)', () {
+        const jsonString =
+            '[{"name": "Apple", "totalPrice": 2.0, "quantity": 2}]';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Apple');
+        expect(result.first.unitPrice, 1.0);
+      });
+
+      test('uses fallback text when name is empty', () {
+        const jsonString =
+            '{"items": [{"name": "", "totalPrice": 1.0, "quantity": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.name, contains('Parsen'));
+      });
+
+      test('uses fallback text when storeName is empty', () {
+        const jsonString =
+            '{"items": [{"name": "Test", "storeName": "", "totalPrice": 1.0, "quantity": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.storeName, contains('Parsen'));
+      });
+
+      test('returns empty list when JSON object has no items/i key', () {
+        const jsonString = '{"other": "data", "noItems": true}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result, isEmpty);
+      });
+
+      test('parses discounts with minified keys (n, a)', () {
+        const jsonString = '''{
+          "items": [
+            {
+              "name": "Discounted",
+              "totalPrice": 10.0,
+              "quantity": 1,
+              "discounts": [{"n": "Sale", "a": 2.0}]
+            }
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.discounts, {'Sale': 2.0});
+      });
+
+      test('parses weight and brand fields', () {
+        const jsonString = '''{
+          "i": [
+            {"n": "Cheese", "p": 5.0, "q": 1, "w": "200g", "b": "BrandX"}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.weight, '200g');
+        expect(result.first.brand, 'BrandX');
+      });
+
+      test(
+        'returns empty list for unexpected JSON format (primitive value)',
+        () {
+          final result = parseScannedItemsFromJson('42');
+          expect(result, isEmpty);
+        },
+      );
+
+      test('returns empty list for unexpected JSON format (boolean)', () {
+        final result = parseScannedItemsFromJson('true');
+        expect(result, isEmpty);
+      });
+
+      test('returns empty list for unexpected JSON format (string)', () {
+        final result = parseScannedItemsFromJson('"just a string"');
+        expect(result, isEmpty);
+      });
+
+      test(
+        'throws FormatException when item is not a Map (type error in parsing)',
+        () {
+          const jsonString = '{"items": ["not a map", "another string"]}';
+          expect(
+            () => parseScannedItemsFromJson(jsonString),
+            throwsA(isA<FormatException>()),
+          );
+        },
+      );
     });
   });
 }
