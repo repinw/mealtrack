@@ -208,29 +208,23 @@ void main() {
         () => mockStorageService.loadItems(),
       ).thenAnswer((_) async => [item1, item2]);
 
-      // Load items first
       await container.read(fridgeItemsProvider.future);
 
-      // Now fridgeItemProvider should return the correct item
       final result = container.read(fridgeItemProvider(item1.id));
       expect(result.name, 'Apple');
       expect(result.quantity, 5);
     });
 
     test('returns loading item when state is not yet loaded', () {
-      // Don't load items - the state should be AsyncLoading
       when(() => mockStorageService.loadItems()).thenAnswer((_) async {
-        // Delay to ensure we read before it completes
         await Future.delayed(const Duration(milliseconds: 100));
         return [];
       });
 
-      // Read immediately without waiting
       final result = container.read(fridgeItemProvider('any-id'));
 
-      // Should return the loading placeholder item
       expect(result.id, 'loading');
-      expect(result.name, 'Loading...');
+      expect(result.name, 'Lädt...');
     });
 
     test('returns loading item when item ID is not found', () async {
@@ -246,11 +240,10 @@ void main() {
 
       await container.read(fridgeItemsProvider.future);
 
-      // Request an ID that doesn't exist
       final result = container.read(fridgeItemProvider('non-existent-id'));
 
       expect(result.id, 'loading');
-      expect(result.name, 'Loading...');
+      expect(result.name, 'Lädt...');
     });
   });
 
@@ -268,17 +261,13 @@ void main() {
           () => mockStorageService.loadItems(),
         ).thenAnswer((_) async => [item]);
         when(() => mockStorageService.saveItems(any())).thenAnswer((_) async {
-          // Simulate slow save
           await Future.delayed(const Duration(milliseconds: 500));
         });
 
-        // Load items first
         await container.read(fridgeItemsProvider.future);
 
-        // Trigger optimistic update
         container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
 
-        // State should be updated IMMEDIATELY (optimistic)
         final stateAfterUpdate = container.read(fridgeItemsProvider);
         expect(stateAfterUpdate.asData?.value.first.quantity, 4);
       },
@@ -296,13 +285,10 @@ void main() {
         return [item];
       });
 
-      // Don't await - state is still loading
-      container.read(fridgeItemsProvider);
+          container.read(fridgeItemsProvider);
 
-      // This should do nothing since state is loading
       container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
 
-      // State should still be loading
       final state = container.read(fridgeItemsProvider);
       expect(state.isLoading, true);
     });
@@ -321,14 +307,11 @@ void main() {
         () => mockStorageService.saveItems(any()),
       ).thenThrow(Exception('Network error'));
 
-      // Load items first
       await container.read(fridgeItemsProvider.future);
 
-      // Verify initial state
       final initialState = container.read(fridgeItemsProvider);
       expect(initialState.asData?.value.first.quantity, 5);
 
-      // Trigger optimistic update (should fail and rollback)
       try {
         await container
             .read(fridgeItemsProvider.notifier)
@@ -337,7 +320,6 @@ void main() {
         // Expected to throw
       }
 
-      // State should be rolled back to original value
       final stateAfterRollback = container.read(fridgeItemsProvider);
       expect(stateAfterRollback.asData?.value.first.quantity, 5);
     });
@@ -358,7 +340,6 @@ void main() {
 
       await container.read(fridgeItemsProvider.future);
 
-      // Should rethrow the exception
       expect(
         () => container
             .read(fridgeItemsProvider.notifier)

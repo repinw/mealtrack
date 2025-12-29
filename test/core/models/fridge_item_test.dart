@@ -458,6 +458,23 @@ void main() {
 
         expect(itemFromJson, expectedItem);
       });
+
+      test('fromJson uses DateTime.now() for invalid entryDate', () {
+        final json = {
+          'id': 'test-uuid-invalid-date',
+          'name': 'Test',
+          'entryDate': 'not-a-valid-date',
+          'storeName': 'Store',
+          'quantity': 1,
+        };
+
+        final itemFromJson = FridgeItem.fromJson(json);
+
+        expect(
+          itemFromJson.entryDate.difference(DateTime.now()).inSeconds.abs(),
+          lessThan(2),
+        );
+      });
     });
   });
 }

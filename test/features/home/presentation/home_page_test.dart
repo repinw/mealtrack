@@ -459,4 +459,73 @@ void main() {
     verifyNever(() => mockReceiptRepository.analyzePdfReceipt(any()));
     expect(find.byType(ReceiptEditPage), findsNothing);
   });
+
+  testWidgets(
+    'Shows error message from ReceiptAnalysisException when not INVALID_JSON and not wrapping FormatException',
+    (WidgetTester tester) async {
+      final xFile = XFile('dummy_path/image.jpg');
+      final exception = ReceiptAnalysisException(
+        'Custom error message',
+        code: 'SOME_OTHER_CODE',
+      );
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockReceiptRepository.analyzeReceipt(xFile),
+      ).thenThrow(exception);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Custom error message'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Shows formatted error SnackBar when error string contains FormatException',
+    (WidgetTester tester) async {
+      final xFile = XFile('dummy_path/image.jpg');
+
+      when(
+        () => mockImagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: any(named: 'maxWidth'),
+          imageQuality: any(named: 'imageQuality'),
+        ),
+      ).thenAnswer((_) async => xFile);
+      when(
+        () => mockReceiptRepository.analyzeReceipt(xFile),
+      ).thenThrow(const FormatException('Bad data'));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(AppLocalizations.imageFromGallery));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text(AppLocalizations.receiptReadErrorFormat),
+        findsOneWidget,
+      );
+    },
+  );
 }

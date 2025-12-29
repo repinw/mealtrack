@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/exceptions/storage_exception.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,7 +84,7 @@ void main() {
       // Save invalid JSON
       await prefs.setString('inventory_data', '{ invalid_json }');
 
-      expect(() => service.loadItems(), throwsA(isA<FormatException>()));
+      expect(() => service.loadItems(), throwsA(isA<StorageException>()));
     });
   });
 }
