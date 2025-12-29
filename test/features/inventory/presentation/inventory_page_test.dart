@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,12 +19,24 @@ class MockInventoryFilterNotifier extends InventoryFilter {
   }
 }
 
-class MockInventoryViewModelNotifier extends InventoryViewModel {
+class MockFridgeItemsNotifier extends FridgeItems {
   @override
-  void build() {}
+  Future<void> deleteAll() async {}
 
   @override
-  Future<void> deleteAllItems() async {}
+  Future<void> addItems(List items) async {}
+
+  @override
+  Future<void> reload() async {}
+
+  @override
+  Future<void> updateItem(item) async {}
+
+  @override
+  Future<void> updateQuantity(item, int delta) async {}
+
+  @override
+  Future<void> deleteItem(String id) async {}
 }
 
 void main() {
@@ -34,13 +45,10 @@ void main() {
       ProviderScope(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
-            (ref) => Completer<List<InventoryDisplayItem>>().future,
+            (ref) => const AsyncValue.loading(),
           ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
-          ),
-          inventoryViewModelProvider.overrideWith(
-            () => MockInventoryViewModelNotifier(),
           ),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
@@ -57,13 +65,10 @@ void main() {
       ProviderScope(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
-            (ref) => Completer<List<InventoryDisplayItem>>().future,
+            (ref) => const AsyncValue.loading(),
           ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
-          ),
-          inventoryViewModelProvider.overrideWith(
-            () => MockInventoryViewModelNotifier(),
           ),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
@@ -77,28 +82,25 @@ void main() {
     WidgetTester tester,
   ) async {
     const errorMessage = 'Something went wrong';
-    final completer = Completer<List<InventoryDisplayItem>>();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => completer.future),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) =>
+                AsyncValue.error(Exception(errorMessage), StackTrace.current),
+          ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
-          ),
-          inventoryViewModelProvider.overrideWith(
-            () => MockInventoryViewModelNotifier(),
           ),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
       ),
     );
 
-    completer.completeError(errorMessage);
-    await tester.pump(); // Process future completion
-    await tester.pump(); // Rebuild UI
+    await tester.pumpAndSettle();
 
-    expect(find.text('Error: $errorMessage'), findsOneWidget);
+    expect(find.textContaining('Something went wrong'), findsOneWidget);
   });
 
   testWidgets(
@@ -107,12 +109,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            inventoryDisplayListProvider.overrideWith((ref) => []),
+            inventoryDisplayListProvider.overrideWith(
+              (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+            ),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: false),
-            ),
-            inventoryViewModelProvider.overrideWith(
-              () => MockInventoryViewModelNotifier(),
             ),
           ],
           child: const MaterialApp(
@@ -121,6 +122,7 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
       expect(find.text(AppLocalizations.noItemsFound), findsOneWidget);
     },
   );
@@ -131,12 +133,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            inventoryDisplayListProvider.overrideWith((ref) => []),
+            inventoryDisplayListProvider.overrideWith(
+              (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+            ),
             inventoryFilterProvider.overrideWith(
               () => MockInventoryFilterNotifier(initialValue: true),
-            ),
-            inventoryViewModelProvider.overrideWith(
-              () => MockInventoryViewModelNotifier(),
             ),
           ],
           child: const MaterialApp(
@@ -145,6 +146,7 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
       expect(find.text(AppLocalizations.noAvailableItems), findsOneWidget);
     },
   );
@@ -155,12 +157,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => []),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
+          ),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(initialValue: false),
-          ),
-          inventoryViewModelProvider.overrideWith(
-            () => MockInventoryViewModelNotifier(),
           ),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
@@ -176,26 +177,35 @@ void main() {
     expect(tester.widget<Switch>(switchFinder).value, isTrue);
   });
 
-  testWidgets('InventoryPage deletes items and shows snackbar', (
+  testWidgets('InventoryList header displays store name and date', (
     WidgetTester tester,
   ) async {
+    final testDate = DateTime(2024, 12, 28);
+    final headerItem = InventoryHeaderItem(
+      storeName: 'Test Store',
+      entryDate: testDate,
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryDisplayListProvider.overrideWith((ref) => []),
-          inventoryFilterProvider.overrideWith(
-            () => MockInventoryFilterNotifier(),
+          inventoryDisplayListProvider.overrideWith(
+            (ref) => AsyncValue.data(<InventoryDisplayItem>[headerItem]),
           ),
-          inventoryViewModelProvider.overrideWith(
-            () => MockInventoryViewModelNotifier(),
+          inventoryFilterProvider.overrideWith(
+            () => MockInventoryFilterNotifier(initialValue: false),
           ),
         ],
         child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
       ),
     );
 
-    // Skip this test because the delete button is only visible in debug mode
-    // (kDebugMode is false in test environment)
-    expect(find.byIcon(Icons.delete_forever), findsNothing);
-  }, skip: true);
+    await tester.pumpAndSettle();
+
+    // Verify the header is displayed with store name and date
+    expect(find.textContaining('Test Store'), findsOneWidget);
+    expect(find.textContaining('12'), findsOneWidget); // Month or day
+    expect(find.textContaining('28'), findsOneWidget); // Day
+    expect(find.textContaining('2024'), findsOneWidget); // Year
+  });
 }

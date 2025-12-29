@@ -1,16 +1,24 @@
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/exceptions/storage_exception.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late LocalStorageService service;
+  late ProviderContainer container;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    service = LocalStorageService();
+    container = ProviderContainer();
+    service = container.read(localStorageServiceProvider);
+  });
+
+  tearDown(() {
+    container.dispose();
   });
 
   group('LocalStorageService', () {
@@ -55,13 +63,29 @@ void main() {
       expect(items, [item1, item2]);
     });
 
-    test('loadItems throws FormatException when JSON is invalid', () async {
-      SharedPreferences.setMockInitialValues({
-        'inventory_data': 'invalid_json_string',
-      });
+    test(
+      'loadItems throws StorageException and backs up data when JSON is invalid',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('inventory_data', 'invalid_json_string');
 
-      expect(() => service.loadItems(), throwsA(isA<FormatException>()));
-    });
+        final manualService = LocalStorageService(Future.value(prefs));
+
+        try {
+          await manualService.loadItems();
+          fail('Should have thrown StorageException');
+        } on StorageException catch (_) {}
+
+        final keys = prefs.getKeys();
+        final backupKey = keys.firstWhere(
+          (k) => k.startsWith('inventory_data_corrupt_'),
+          orElse: () => '',
+        );
+
+        expect(backupKey, isNotEmpty, reason: 'Backup key not found');
+        expect(prefs.getString(backupKey), 'invalid_json_string');
+      },
+    );
 
     test('deleteAllItems removes data from SharedPreferences', () async {
       await service.saveItems([item1]);

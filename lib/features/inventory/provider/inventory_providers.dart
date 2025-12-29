@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
@@ -33,9 +34,23 @@ class FridgeItems extends _$FridgeItems {
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
-    final repository = ref.read(fridgeRepositoryProvider);
-    await repository.updateQuantity(item, delta);
-    ref.invalidateSelf();
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    final newQuantity = item.quantity + delta;
+    final updatedList = [
+      for (final i in previousList)
+        if (i.id == item.id) i.copyWith(quantity: newQuantity) else i,
+    ];
+    state = AsyncValue.data(updatedList);
+
+    try {
+      final repository = ref.read(fridgeRepositoryProvider);
+      await repository.updateQuantity(item, delta);
+    } catch (e) {
+      state = AsyncValue.data(previousList);
+      rethrow;
+    }
   }
 
   Future<void> deleteAll() async {
@@ -82,3 +97,32 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
 
   return groupedMap.entries.toList();
 }
+
+final _loadingItem = FridgeItem(
+  id: 'loading',
+  name: '',
+  quantity: 0,
+  storeName: '',
+  entryDate: DateTime(1970),
+);
+
+final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
+  ref,
+  id,
+) {
+  return ref.watch(
+    fridgeItemsProvider.select((state) {
+      final items = state.asData?.value;
+      if (items == null) return _loadingItem;
+
+      try {
+        return items.firstWhere(
+          (element) => element.id == id,
+          orElse: () => _loadingItem,
+        );
+      } catch (_) {
+        return _loadingItem;
+      }
+    }),
+  );
+});

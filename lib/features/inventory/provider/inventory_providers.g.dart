@@ -33,7 +33,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'6bde401e8b9afebdb865d230f283bc851abc7deb';
+String _$fridgeItemsHash() => r'd6ce16728d684b98ca43fd72b6416d4c1b536c36';
 
 abstract class _$FridgeItems extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();
