@@ -90,10 +90,15 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   }
 
   void _updateItem() {
+    final weightText = _weightController.text;
+    final brandText = _brandController.text;
+
     final newItem = widget.item.copyWith(
       name: _nameController.text,
-      weight: _weightController.text.isEmpty ? null : _weightController.text,
-      brand: _brandController.text,
+      weight: weightText.isNotEmpty ? weightText : null,
+      clearWeight: weightText.isEmpty,
+      brand: brandText.isNotEmpty ? brandText : null,
+      clearBrand: brandText.isEmpty,
       unitPrice:
           double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
       quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
@@ -126,6 +131,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
             SizedBox(
               width: ScannedItemRow.colQtyWidth,
               child: TextField(
+                key: const Key('quantityField'),
                 controller: _qtyController,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
@@ -148,6 +154,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextField(
+                    key: const Key('brandField'),
                     controller: _brandController,
                     style: const TextStyle(
                       fontSize: 11,
@@ -163,6 +170,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                     onChanged: (_) => _updateItem(),
                   ),
                   TextField(
+                    key: const Key('nameField'),
                     controller: _nameController,
                     maxLines: 1,
                     style: const TextStyle(
@@ -186,6 +194,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
             SizedBox(
               width: ScannedItemRow.colWeightWidth,
               child: TextField(
+                key: const Key('weightField'),
                 controller: _weightController,
                 textAlign: TextAlign.right,
                 style: const TextStyle(
@@ -222,6 +231,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                   SizedBox(
                     width: 45,
                     child: TextField(
+                      key: const Key('priceField'),
                       controller: _priceController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,

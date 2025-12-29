@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
@@ -14,9 +15,12 @@ class MockFirebaseRemoteConfig extends Mock implements FirebaseRemoteConfig {}
 
 class MockXFile extends Mock implements XFile {}
 
+class FakeRemoteConfigSettings extends Fake implements RemoteConfigSettings {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(CompressFormat.jpeg);
+    registerFallbackValue(FakeRemoteConfigSettings());
   });
 
   group('FirebaseAiService', () {
@@ -47,6 +51,76 @@ void main() {
           format: any(named: 'format'),
         ),
       ).thenAnswer((_) async => Uint8List(10));
+    });
+
+    group('initialize', () {
+      test('sets config settings and fetches remote config', () async {
+        final configUpdatedController =
+            StreamController<RemoteConfigUpdate>.broadcast();
+
+        when(
+          () => mockRemoteConfig.setConfigSettings(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRemoteConfig.setDefaults(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRemoteConfig.fetchAndActivate(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRemoteConfig.onConfigUpdated,
+        ).thenAnswer((_) => configUpdatedController.stream);
+        when(() => mockRemoteConfig.activate()).thenAnswer((_) async => true);
+
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+        );
+
+        await service.initialize();
+
+        verify(() => mockRemoteConfig.setConfigSettings(any())).called(1);
+        verify(() => mockRemoteConfig.setDefaults(any())).called(1);
+        verify(() => mockRemoteConfig.fetchAndActivate()).called(1);
+
+        await configUpdatedController.close();
+      });
+
+      test('listens to config updates and activates on change', () async {
+        final configUpdatedController =
+            StreamController<RemoteConfigUpdate>.broadcast();
+
+        when(
+          () => mockRemoteConfig.setConfigSettings(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRemoteConfig.setDefaults(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRemoteConfig.fetchAndActivate(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRemoteConfig.onConfigUpdated,
+        ).thenAnswer((_) => configUpdatedController.stream);
+        when(() => mockRemoteConfig.activate()).thenAnswer((_) async => true);
+
+        service = FirebaseAiService(
+          imageCompressor: mockImageCompressor,
+          remoteConfig: mockRemoteConfig,
+        );
+
+        await service.initialize();
+
+        // Simulate a config update event
+        configUpdatedController.add(RemoteConfigUpdate({'template_id'}));
+
+        // Allow the async listener to process
+        await Future<void>.delayed(Duration.zero);
+
+        verify(() => mockRemoteConfig.activate()).called(1);
+
+        await configUpdatedController.close();
+      });
     });
 
     test(

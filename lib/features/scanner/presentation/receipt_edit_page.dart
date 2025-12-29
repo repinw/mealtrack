@@ -194,7 +194,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
               onSave: () async {
                 debugPrint("Saving ${items.length} Items");
                 await ref.read(fridgeItemsProvider.notifier).addItems(items);
-                if (mounted) {
+                if (context.mounted) {
                   Navigator.of(context).pop();
                 }
               },

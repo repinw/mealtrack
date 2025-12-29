@@ -165,6 +165,9 @@ class FridgeItem extends Equatable {
     String? receiptId,
     String? brand,
     bool clearConsumptionDate = false,
+    bool clearWeight = false,
+    bool clearBrand = false,
+    bool clearReceiptId = false,
   }) {
     return FridgeItem(
       id: id ?? this.id,
@@ -177,10 +180,10 @@ class FridgeItem extends Equatable {
       storeName: storeName ?? this.storeName,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
-      weight: weight ?? this.weight,
+      weight: clearWeight ? null : (weight ?? this.weight),
       discounts: discounts ?? this.discounts,
-      receiptId: receiptId ?? this.receiptId,
-      brand: brand ?? this.brand,
+      receiptId: clearReceiptId ? null : (receiptId ?? this.receiptId),
+      brand: clearBrand ? null : (brand ?? this.brand),
     );
   }
 }

@@ -17,7 +17,7 @@ class FirebaseAiService {
     FirebaseRemoteConfig? remoteConfig,
     ImageCompressor? imageCompressor,
   }) : remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance,
-       imageCompressor = imageCompressor ?? DefaultImageCompressor();
+       imageCompressor = imageCompressor ?? ImageCompressor();
 
   Future<void> initialize() async {
     await remoteConfig.setConfigSettings(
