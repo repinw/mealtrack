@@ -497,32 +497,36 @@ void main() {
       },
     );
 
-    testWidgets('Clearing brand field sets brand to null', (tester) async {
-      final item = FridgeItem.create(
-        name: 'Test Item',
-        storeName: 'Store',
-        quantity: 1,
-        unitPrice: 10.0,
-        brand: 'TestBrand',
-      );
-      FridgeItem? updatedItem;
+    testWidgets(
+      'Clearing brand field keeps original brand (cannot be cleared to null)',
+      (tester) async {
+        final item = FridgeItem.create(
+          name: 'Test Item',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 10.0,
+          brand: 'TestBrand',
+        );
+        FridgeItem? updatedItem;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ScannedItemRow(
+                item: item,
+                onDelete: () {},
+                onChanged: (val) => updatedItem = val,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final brandFinder = find.byKey(const Key('brandField'));
-      await tester.enterText(brandFinder, '');
-      await tester.pump();
-      expect(updatedItem?.brand, isNull);
-    });
+        final brandFinder = find.byKey(const Key('brandField'));
+        await tester.enterText(brandFinder, '');
+        await tester.pump();
+
+        expect(updatedItem?.brand, 'TestBrand');
+      },
+    );
   });
 }

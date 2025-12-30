@@ -399,6 +399,8 @@ void main() {
           'weight': '6 Stk',
           'discounts': discounts,
           'receiptId': 'receipt-abc',
+          'receiptDate': null,
+          'language': null,
           'brand': 'Alnatura',
         });
       });
@@ -418,6 +420,8 @@ void main() {
           'weight': null,
           'discounts': const {},
           'receiptId': null,
+          'receiptDate': null,
+          'language': null,
           'brand': null,
         });
       });

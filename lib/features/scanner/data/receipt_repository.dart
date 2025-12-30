@@ -24,38 +24,37 @@ class ReceiptRepository {
   ReceiptRepository({required FirebaseAiService firebaseAiService})
     : _firebaseAiService = firebaseAiService;
 
-
-  Future<List<FridgeItem>> analyzeReceipt(XFile imageFile) async {
-    try {
-      debugPrint('Repository: Starting receipt analysis from image');
-      final jsonResponse = await _firebaseAiService.analyzeImageWithGemini(
-        imageFile,
-      );
-      final items = parseScannedItemsFromJson(jsonResponse);
-      debugPrint(
-        'Repository: Successfully parsed ${items.length} items from receipt',
-      );
-      return items;
-    } catch (e) {
-      debugPrint('Repository: Error analyzing receipt from image: $e');
-      rethrow;
-    }
+  Future<List<FridgeItem>> analyzeReceipt(XFile imageFile) {
+    return _analyzeContent(
+      file: imageFile,
+      sourceType: 'image',
+      analysisFunction: _firebaseAiService.analyzeImageWithGemini,
+    );
   }
 
+  Future<List<FridgeItem>> analyzePdfReceipt(XFile pdfFile) {
+    return _analyzeContent(
+      file: pdfFile,
+      sourceType: 'PDF',
+      analysisFunction: _firebaseAiService.analyzePdfWithGemini,
+    );
+  }
 
-  Future<List<FridgeItem>> analyzePdfReceipt(XFile pdfFile) async {
+  Future<List<FridgeItem>> _analyzeContent({
+    required XFile file,
+    required String sourceType,
+    required Future<String> Function(XFile) analysisFunction,
+  }) async {
     try {
-      debugPrint('Repository: Starting receipt analysis from PDF');
-      final jsonResponse = await _firebaseAiService.analyzePdfWithGemini(
-        pdfFile,
-      );
+      debugPrint('Repository: Starting receipt analysis from $sourceType');
+      final jsonResponse = await analysisFunction(file);
       final items = parseScannedItemsFromJson(jsonResponse);
       debugPrint(
-        'Repository: Successfully parsed ${items.length} items from PDF receipt',
+        'Repository: Successfully parsed ${items.length} items from $sourceType receipt',
       );
       return items;
     } catch (e) {
-      debugPrint('Repository: Error analyzing receipt from PDF: $e');
+      debugPrint('Repository: Error analyzing receipt from $sourceType: $e');
       rethrow;
     }
   }

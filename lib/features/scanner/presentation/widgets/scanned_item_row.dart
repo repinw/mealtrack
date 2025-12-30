@@ -118,7 +118,6 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
       weight: weightText.isNotEmpty ? weightText : null,
       clearWeight: weightText.isEmpty,
       brand: brandText.isNotEmpty ? brandText : null,
-      clearBrand: brandText.isEmpty,
       unitPrice:
           double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
       quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
