@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/features/inventory/presentation/counter_pill.dart';
 
 void main() {
   group('CounterPill', () {
@@ -72,6 +72,7 @@ void main() {
       await tester.pump();
 
       expect(receivedValue, 1);
+      // Stateless: still shows original value until parent rebuilds with new prop
       expect(find.text('1'), findsOneWidget);
     });
 
@@ -93,6 +94,7 @@ void main() {
       await tester.pump();
 
       expect(receivedValue, -1);
+      // Stateless: still shows original value until parent rebuilds with new prop
       expect(find.text('2'), findsOneWidget);
     });
 
@@ -115,7 +117,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: CounterPill(
-              quantity: 10,
+              quantity: 10, // External change
               isOutOfStock: false,
               onUpdate: (_) {},
             ),

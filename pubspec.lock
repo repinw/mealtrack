@@ -418,7 +418,7 @@ packages:
     source: hosted
     version: "4.3.0"
   firebase_core_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: firebase_core_platform_interface
       sha256: cccb4f572325dc14904c02fcc7db6323ad62ba02536833dddb5c02cac7341c64
@@ -889,7 +889,7 @@ packages:
     source: hosted
     version: "3.1.6"
   plugin_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: plugin_platform_interface
       sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"

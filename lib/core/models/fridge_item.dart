@@ -17,8 +17,6 @@ class FridgeItem extends Equatable {
     this.weight,
     this.consumptionDate,
     this.receiptId,
-    this.receiptDate,
-    this.language,
     this.brand,
     this.discounts = const {},
   });
@@ -34,8 +32,6 @@ class FridgeItem extends Equatable {
     double unitPrice = 0,
     String? weight,
     String? receiptId,
-    DateTime? receiptDate,
-    String? language,
     String? brand,
     Map<String, double>? discounts,
     DateTime Function()? now,
@@ -63,8 +59,6 @@ class FridgeItem extends Equatable {
       entryDate: (now ?? DateTime.now)(),
       isConsumed: false,
       receiptId: receiptId,
-      receiptDate: receiptDate,
-      language: language,
       brand: brand,
       discounts: discounts ?? {},
     );
@@ -92,10 +86,6 @@ class FridgeItem extends Equatable {
 
   final String? receiptId;
 
-  final DateTime? receiptDate;
-
-  final String? language;
-
   final String? brand;
 
   @override
@@ -111,8 +101,6 @@ class FridgeItem extends Equatable {
     weight,
     discounts,
     receiptId,
-    receiptDate,
-    language,
     brand,
   ];
 
@@ -141,8 +129,6 @@ class FridgeItem extends Equatable {
           ) ??
           const {},
       receiptId: json['receiptId'] as String?,
-      receiptDate: DateTime.tryParse(json['receiptDate'] as String? ?? ''),
-      language: json['language'] as String?,
       brand: json['brand'] as String?,
     );
   }
@@ -161,8 +147,6 @@ class FridgeItem extends Equatable {
       'weight': weight,
       'discounts': discounts,
       'receiptId': receiptId,
-      'receiptDate': receiptDate?.toIso8601String(),
-      'language': language,
       'brand': brand,
     };
   }
@@ -173,17 +157,14 @@ class FridgeItem extends Equatable {
     DateTime? entryDate,
     bool? isConsumed,
     DateTime? consumptionDate,
-    bool clearConsumptionDate = false,
     String? storeName,
     int? quantity,
     double? unitPrice,
     String? weight,
-    bool clearWeight = false,
     Map<String, double>? discounts,
     String? receiptId,
     String? brand,
-    DateTime? receiptDate,
-    String? language,
+    bool clearConsumptionDate = false,
   }) {
     return FridgeItem(
       id: id ?? this.id,
@@ -196,11 +177,9 @@ class FridgeItem extends Equatable {
       storeName: storeName ?? this.storeName,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
-      weight: clearWeight ? null : (weight ?? this.weight),
+      weight: weight ?? this.weight,
       discounts: discounts ?? this.discounts,
       receiptId: receiptId ?? this.receiptId,
-      receiptDate: receiptDate ?? this.receiptDate,
-      language: language ?? this.language,
       brand: brand ?? this.brand,
     );
   }

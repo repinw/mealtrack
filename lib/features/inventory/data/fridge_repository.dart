@@ -12,12 +12,15 @@ FridgeRepository fridgeRepository(Ref ref) {
   );
 }
 
+/// Repository for managing fridge items.
+/// Acts as the single source of truth for inventory data.
 class FridgeRepository {
   final LocalStorageService _localStorageService;
 
   FridgeRepository({required LocalStorageService localStorageService})
     : _localStorageService = localStorageService;
 
+  /// Retrieves all fridge items from storage.
   Future<List<FridgeItem>> getItems() async {
     try {
       return await _localStorageService.loadItems();
@@ -27,6 +30,7 @@ class FridgeRepository {
     }
   }
 
+  /// Saves the provided list of items to storage.
   Future<void> saveItems(List<FridgeItem> items) async {
     try {
       await _localStorageService.saveItems(items);
@@ -36,6 +40,7 @@ class FridgeRepository {
     }
   }
 
+  /// Adds new items to the existing inventory.
   Future<void> addItems(List<FridgeItem> items) async {
     try {
       final currentItems = await getItems();
@@ -46,6 +51,7 @@ class FridgeRepository {
     }
   }
 
+  /// Updates a specific item in the inventory.
   Future<void> updateItem(FridgeItem item) async {
     try {
       final currentItems = await getItems();
@@ -64,12 +70,12 @@ class FridgeRepository {
     }
   }
 
+  /// Updates the quantity of an item and manages consumption state.
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     try {
       var quantity = item.quantity + delta;
       var isConsumed = item.isConsumed;
       var consumptionDate = item.consumptionDate;
-      var clearConsumptionDate = false;
 
       if (quantity <= 0) {
         quantity = 0;
@@ -77,7 +83,6 @@ class FridgeRepository {
       } else if (isConsumed) {
         isConsumed = false;
         consumptionDate = null;
-        clearConsumptionDate = true;
       }
 
       await updateItem(
@@ -85,7 +90,7 @@ class FridgeRepository {
           quantity: quantity,
           isConsumed: isConsumed,
           consumptionDate: consumptionDate,
-          clearConsumptionDate: clearConsumptionDate,
+          clearConsumptionDate: consumptionDate == null,
         ),
       );
     } catch (e) {
@@ -94,6 +99,7 @@ class FridgeRepository {
     }
   }
 
+  /// Deletes all items from storage.
   Future<void> deleteAllItems() async {
     try {
       await _localStorageService.deleteAllItems();
@@ -103,6 +109,7 @@ class FridgeRepository {
     }
   }
 
+  /// Deletes a single item by ID.
   Future<void> deleteItem(String id) async {
     try {
       final currentItems = await getItems();
@@ -119,6 +126,7 @@ class FridgeRepository {
     }
   }
 
+  /// Gets only available (non-consumed) items.
   Future<List<FridgeItem>> getAvailableItems() async {
     try {
       final items = await getItems();
@@ -129,6 +137,7 @@ class FridgeRepository {
     }
   }
 
+  /// Gets items grouped by receipt ID.
   Future<List<MapEntry<String, List<FridgeItem>>>> getGroupedItems() async {
     try {
       final items = await getItems();

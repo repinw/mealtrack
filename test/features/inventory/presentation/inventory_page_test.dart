@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class MockInventoryFilterNotifier extends InventoryFilter {
@@ -202,9 +202,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    // Verify the header is displayed with store name and date
     expect(find.textContaining('Test Store'), findsOneWidget);
-    expect(find.textContaining('12'), findsOneWidget);
-    expect(find.textContaining('28'), findsOneWidget);
-    expect(find.textContaining('2024'), findsOneWidget);
+    expect(find.textContaining('12'), findsOneWidget); // Month or day
+    expect(find.textContaining('28'), findsOneWidget); // Day
+    expect(find.textContaining('2024'), findsOneWidget); // Year
   });
 }

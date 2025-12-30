@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/features/inventory/presentation/action_button.dart';
 
 class CounterPill extends StatelessWidget {
   final int quantity;

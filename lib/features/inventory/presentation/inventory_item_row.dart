@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/category_icon.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/item_details.dart';
+import 'package:mealtrack/features/inventory/presentation/category_icon.dart';
+import 'package:mealtrack/features/inventory/presentation/counter_pill.dart';
+import 'package:mealtrack/features/inventory/presentation/item_details.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class InventoryItemRow extends ConsumerWidget {

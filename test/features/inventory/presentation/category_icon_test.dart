@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/category_icon.dart';
+import 'package:mealtrack/features/inventory/presentation/category_icon.dart';
 
 void main() {
   testWidgets('CategoryIcon renders specific icon and styling', (

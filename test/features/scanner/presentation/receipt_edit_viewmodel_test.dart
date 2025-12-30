@@ -1,21 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
-import 'package:mealtrack/features/scanner/presentation/viewmodel/receipt_edit_viewmodel.dart';
-
-// ignore: must_be_immutable
-class MockScannerViewModel extends ScannerViewModel {
-  final AsyncValue<List<FridgeItem>> overrideState;
-
-  MockScannerViewModel(this.overrideState);
-
-  @override
-  Future<List<FridgeItem>> build() async {
-    state = overrideState;
-    return overrideState.value ?? [];
-  }
-}
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_viewmodel.dart';
 
 void main() {
   group('ReceiptEditViewModel', () {
@@ -37,32 +23,23 @@ void main() {
       id: '2',
     );
 
-    test(
-      'initializes with empty list when home state has no data (or loading/error)',
-      () {
-        final container = ProviderContainer(
-          overrides: [
-            scannerViewModelProvider.overrideWith(
-              () => MockScannerViewModel(const AsyncValue.data([])),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
+    test('initializes with empty list when initialized with empty list', () {
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue([])],
+      );
+      addTearDown(container.dispose);
 
-        final state = container.read(receiptEditViewModelProvider);
+      final state = container.read(receiptEditViewModelProvider);
 
-        expect(state.items, isEmpty);
-        expect(state.total, 0.0);
-        expect(state.totalQuantity, 0);
-      },
-    );
+      expect(state.items, isEmpty);
+      expect(state.total, 0.0);
+      expect(state.totalQuantity, 0);
+    });
 
-    test('initializes with provided items from ScannerViewModel', () {
+    test('initializes with provided items', () {
       final container = ProviderContainer(
         overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data([item1, item2])),
-          ),
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
         ],
       );
       addTearDown(container.dispose);
@@ -76,30 +53,28 @@ void main() {
     test('calculates total correctly', () {
       final container = ProviderContainer(
         overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data([item1, item2])),
-          ),
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
         ],
       );
       addTearDown(container.dispose);
 
       final state = container.read(receiptEditViewModelProvider);
 
+      // (1.50 * 2) + (0.50 * 4) = 3.0 + 2.0 = 5.0
       expect(state.total, 5.0);
     });
 
     test('calculates totalQuantity correctly', () {
       final container = ProviderContainer(
         overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data([item1, item2])),
-          ),
+          initialScannedItemsProvider.overrideWithValue([item1, item2]),
         ],
       );
       addTearDown(container.dispose);
 
       final state = container.read(receiptEditViewModelProvider);
 
+      // 2 + 4 = 6
       expect(state.totalQuantity, 6);
     });
 
@@ -107,10 +82,10 @@ void main() {
       final itemEmptyStore = item1.copyWith(storeName: '');
       final container = ProviderContainer(
         overrides: [
-          scannerViewModelProvider.overrideWith(
-            () =>
-                MockScannerViewModel(AsyncValue.data([itemEmptyStore, item2])),
-          ),
+          initialScannedItemsProvider.overrideWithValue([
+            itemEmptyStore,
+            item2,
+          ]),
         ],
       );
       addTearDown(container.dispose);
@@ -126,11 +101,10 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(
-              AsyncValue.data([itemEmptyStore1, itemEmptyStore2]),
-            ),
-          ),
+          initialScannedItemsProvider.overrideWithValue([
+            itemEmptyStore1,
+            itemEmptyStore2,
+          ]),
         ],
       );
       addTearDown(container.dispose);
@@ -143,19 +117,17 @@ void main() {
     test('updateMerchantName updates store name for all items', () {
       final items = [item1, item2];
       final container = ProviderContainer(
-        overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data(items)),
-          ),
-        ],
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(receiptEditViewModelProvider.notifier);
+      // Removed initialization via method
 
       const newStoreName = 'Supermarket B';
       notifier.updateMerchantName(newStoreName);
 
+      // Read the state again after update
       final updatedState = container.read(receiptEditViewModelProvider);
       expect(
         updatedState.items.every((item) => item.storeName == newStoreName),
@@ -166,11 +138,7 @@ void main() {
     test('deleteItem removes item at index', () {
       final items = [item1, item2];
       final container = ProviderContainer(
-        overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data(items)),
-          ),
-        ],
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
       );
       addTearDown(container.dispose);
 
@@ -178,6 +146,7 @@ void main() {
 
       notifier.deleteItem(0);
 
+      // Read the state again after deletion
       final updatedState = container.read(receiptEditViewModelProvider);
       expect(updatedState.items.length, 1);
       expect(updatedState.items.first.name, 'Banana');
@@ -186,11 +155,7 @@ void main() {
     test('updateItem replaces item at index', () {
       final items = [item1];
       final container = ProviderContainer(
-        overrides: [
-          scannerViewModelProvider.overrideWith(
-            () => MockScannerViewModel(AsyncValue.data(items)),
-          ),
-        ],
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
       );
       addTearDown(container.dispose);
 
@@ -199,8 +164,76 @@ void main() {
       final newItem = item1.copyWith(name: 'Green Apple');
       notifier.updateItem(0, newItem);
 
+      // Read the state again after update
       final updatedState = container.read(receiptEditViewModelProvider);
       expect(updatedState.items.first.name, 'Green Apple');
     });
+
+    test('calculates total with zero quantity items correctly', () {
+      final itemZeroQty = item1.copyWith(quantity: 0, unitPrice: 10.0);
+      final container = ProviderContainer(
+        overrides: [
+          initialScannedItemsProvider.overrideWithValue([itemZeroQty, item2]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final state = container.read(receiptEditViewModelProvider);
+
+      // (0 * 10.0) + (0.50 * 4) = 0 + 2.0 = 2.0
+      expect(state.total, 2.0);
+    });
+
+    test('deleteItem updates total price', () {
+      final items = [
+        item1,
+        item2,
+      ]; // item1 total: 3.0, item2 total: 2.0. Sum: 5.0
+
+      final container = ProviderContainer(
+        overrides: [initialScannedItemsProvider.overrideWithValue(items)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+
+      notifier.deleteItem(0); // Remove item1
+
+      // Read the state again
+      final updatedState = container.read(receiptEditViewModelProvider);
+
+      // Only item2 remains: 0.50 * 4 = 2.0
+      expect(updatedState.total, 2.0);
+    });
+
+    test(
+      're-initialization via provider override is not possible at runtime but different containers allow different inits',
+      () {
+        // Since we got rid of initialize method, we can't "re-initialize" a live notifier.
+        // We can only test that different containers start with different states.
+        final container1 = ProviderContainer(
+          overrides: [
+            initialScannedItemsProvider.overrideWithValue([item1]),
+          ],
+        );
+
+        final state1 = container1.read(receiptEditViewModelProvider);
+        expect(state1.items.length, 1);
+        expect(state1.items.first.name, 'Apple');
+
+        final container2 = ProviderContainer(
+          overrides: [
+            initialScannedItemsProvider.overrideWithValue([item2]),
+          ],
+        );
+
+        final state2 = container2.read(receiptEditViewModelProvider);
+        expect(state2.items.length, 1);
+        expect(state2.items.first.name, 'Banana');
+
+        container1.dispose();
+        container2.dispose();
+      },
+    );
   });
 }

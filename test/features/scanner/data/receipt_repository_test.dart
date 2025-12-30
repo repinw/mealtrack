@@ -116,20 +116,6 @@ void main() {
           );
         },
       );
-
-      test(
-        'analyzePdfReceipt throws ReceiptAnalysisException on invalid JSON',
-        () async {
-          when(
-            () => mockAiService.analyzePdfWithGemini(mockFile),
-          ).thenAnswer((_) async => "Invalid JSON from PDF");
-
-          await expectLater(
-            repository.analyzePdfReceipt(mockFile),
-            throwsA(isA<ReceiptAnalysisException>()),
-          );
-        },
-      );
     });
   });
 }

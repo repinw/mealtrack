@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_viewmodel.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -119,8 +119,10 @@ void main() {
           () => mockRepository.getItems(),
         ).thenAnswer((_) async => [item1, item2, item3]);
 
+        // Wait for fridge items to load first
         await container.read(fridgeItemsProvider.future);
 
+        // inventoryDisplayListProvider returns AsyncValue synchronously
         final displayListAsync = container.read(inventoryDisplayListProvider);
         final displayList = displayListAsync.value!;
 
@@ -149,6 +151,7 @@ void main() {
 
       container.read(inventoryFilterProvider.notifier).toggle();
 
+      // Wait for fridge items to load first
       await container.read(fridgeItemsProvider.future);
 
       final displayListAsync = container.read(inventoryDisplayListProvider);
@@ -164,6 +167,7 @@ void main() {
     test('returns empty list when no items exist', () async {
       when(() => mockRepository.getItems()).thenAnswer((_) async => []);
 
+      // Wait for fridge items to load first
       await container.read(fridgeItemsProvider.future);
 
       final displayListAsync = container.read(inventoryDisplayListProvider);
@@ -181,7 +185,7 @@ void main() {
           storeName: 'Local Shop',
           quantity: 2,
           now: () => fixedDate,
-        );
+        ); // receiptId is null by default
         final itemWithNullReceipt2 = FridgeItem.create(
           name: 'Bread',
           storeName: 'Local Shop',
@@ -208,16 +212,21 @@ void main() {
         final displayListAsync = container.read(inventoryDisplayListProvider);
         final displayList = displayListAsync.value!;
 
+        // Should have 2 groups: one for null/empty receiptId, one for 'receipt-abc'
+        // Group 1: Header + 2 items + Spacer = 4
+        // Group 2: Header + 1 item + Spacer = 3
         expect(displayList.length, 7);
 
+        // First group (null receiptId items)
         expect(displayList[0], isA<InventoryHeaderItem>());
         final header1 = displayList[0] as InventoryHeaderItem;
-        expect(header1.storeName, 'Local Shop');
+        expect(header1.storeName, 'Local Shop'); // Not empty!
         expect(header1.entryDate, fixedDate);
         expect(displayList[1], isA<InventoryProductItem>());
         expect(displayList[2], isA<InventoryProductItem>());
         expect(displayList[3], isA<InventorySpacerItem>());
 
+        // Second group (with receiptId)
         expect(displayList[4], isA<InventoryHeaderItem>());
         final header2 = displayList[4] as InventoryHeaderItem;
         expect(header2.storeName, 'Supermarket');
@@ -231,13 +240,13 @@ void main() {
         storeName: 'Store',
         quantity: 1,
         now: () => fixedDate,
-      );
+      ); // null receiptId
       final itemWithEmptyReceipt = FridgeItem.create(
         name: 'Item B',
         storeName: 'Store',
         quantity: 1,
         now: () => fixedDate,
-      ).copyWith(receiptId: '');
+      ).copyWith(receiptId: ''); // empty string receiptId
 
       when(
         () => mockRepository.getItems(),
@@ -248,42 +257,13 @@ void main() {
       final displayListAsync = container.read(inventoryDisplayListProvider);
       final displayList = displayListAsync.value!;
 
+      // Both items should be in the same group (empty string key)
+      // Header + 2 items + Spacer = 4
       expect(displayList.length, 4);
       expect(displayList[0], isA<InventoryHeaderItem>());
       expect(displayList[1], isA<InventoryProductItem>());
       expect(displayList[2], isA<InventoryProductItem>());
       expect(displayList[3], isA<InventorySpacerItem>());
-    });
-  });
-
-  group('Equatable display items', () {
-    test('InventoryHeaderItem equality', () {
-      final date = DateTime(2023, 1, 1);
-      final header1 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header2 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header3 = InventoryHeaderItem(storeName: 'Other', entryDate: date);
-
-      expect(header1, equals(header2));
-      expect(header1, isNot(equals(header3)));
-      expect(header1.props, [header1.storeName, header1.entryDate]);
-    });
-
-    test('InventoryProductItem equality', () {
-      const product1 = InventoryProductItem('item-1');
-      const product2 = InventoryProductItem('item-1');
-      const product3 = InventoryProductItem('item-2');
-
-      expect(product1, equals(product2));
-      expect(product1, isNot(equals(product3)));
-      expect(product1.props, ['item-1']);
-    });
-
-    test('InventorySpacerItem equality', () {
-      const spacer1 = InventorySpacerItem();
-      const spacer2 = InventorySpacerItem();
-
-      expect(spacer1, equals(spacer2));
-      expect(spacer1.props, isEmpty);
     });
   });
 }

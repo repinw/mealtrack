@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
+import 'package:mealtrack/features/home/presentation/home_viewmodel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
@@ -40,22 +40,22 @@ void main() {
     return container;
   }
 
-  group('ScannerViewModel', () {
+  group('HomeViewModel', () {
     test('initial state is AsyncData([])', () async {
       final container = makeContainer();
-      container.listen(scannerViewModelProvider, (_, _) {});
+      container.listen(homeViewModelProvider, (_, _) {});
 
-      await container.read(scannerViewModelProvider.future);
+      await container.read(homeViewModelProvider.future);
 
-      final state = container.read(scannerViewModelProvider);
+      final state = container.read(homeViewModelProvider);
       expect(state, isA<AsyncData<List<FridgeItem>>>());
       expect(state.value, isEmpty);
     });
 
     test('analyzeImageFromGallery success', () async {
       final container = makeContainer();
-      final viewModel = container.read(scannerViewModelProvider.notifier);
-      container.listen(scannerViewModelProvider, (_, _) {});
+      final viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, _) {});
 
       final file = XFile('path/to/image.jpg');
       final expectedItems = [
@@ -90,7 +90,7 @@ void main() {
       ).called(1);
       verify(() => mockReceiptRepository.analyzeReceipt(file)).called(1);
 
-      final state = container.read(scannerViewModelProvider);
+      final state = container.read(homeViewModelProvider);
       expect(state, isA<AsyncData<List<FridgeItem>>>());
       expect(state.value, hasLength(1));
 
@@ -105,8 +105,8 @@ void main() {
       'analyzeImageFromGallery does nothing when image picker returns null',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         when(
           () => mockImagePicker.pickImage(
@@ -127,7 +127,7 @@ void main() {
         ).called(1);
         verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state, isA<AsyncData<List<FridgeItem>>>());
         expect(state.value, isEmpty);
       },
@@ -137,8 +137,8 @@ void main() {
       'analyzeImageFromGallery sets error state when repository throws',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = XFile('path/to/image.jpg');
         final exception = ReceiptAnalysisException(
@@ -160,8 +160,8 @@ void main() {
 
         await viewModel.analyzeImageFromGallery();
 
-        expect(container.read(scannerViewModelProvider).hasError, true);
-        expect(container.read(scannerViewModelProvider).error, exception);
+        expect(container.read(homeViewModelProvider).hasError, true);
+        expect(container.read(homeViewModelProvider).error, exception);
       },
     );
 
@@ -169,8 +169,8 @@ void main() {
       'analyzeImageFromGallery sets error state when image compression fails',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = XFile('path/to/image.jpg');
         final exception = ReceiptAnalysisException(
@@ -192,7 +192,7 @@ void main() {
 
         await viewModel.analyzeImageFromGallery();
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state.hasError, true);
         expect(state.error, exception);
         expect(
@@ -205,8 +205,8 @@ void main() {
       'analyzeImageFromGallery sets success state with empty list when repository returns empty',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = XFile('path/to/image.jpg');
 
@@ -224,7 +224,7 @@ void main() {
 
         await viewModel.analyzeImageFromGallery();
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state, isA<AsyncData<List<FridgeItem>>>());
         expect(state.value, isEmpty);
       },
@@ -232,8 +232,8 @@ void main() {
 
     test('analyzeImageFromCamera success', () async {
       final container = makeContainer();
-      final viewModel = container.read(scannerViewModelProvider.notifier);
-      container.listen(scannerViewModelProvider, (_, _) {});
+      final viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, _) {});
 
       final file = XFile('path/to/image.jpg');
       final expectedItems = [
@@ -268,7 +268,7 @@ void main() {
       ).called(1);
       verify(() => mockReceiptRepository.analyzeReceipt(file)).called(1);
 
-      final state = container.read(scannerViewModelProvider);
+      final state = container.read(homeViewModelProvider);
       expect(state, isA<AsyncData<List<FridgeItem>>>());
       expect(state.value, hasLength(1));
     });
@@ -277,8 +277,8 @@ void main() {
       'analyzeImageFromCamera does nothing when image picker returns null',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         when(
           () => mockImagePicker.pickImage(
@@ -299,7 +299,7 @@ void main() {
         ).called(1);
         verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state, isA<AsyncData<List<FridgeItem>>>());
         expect(state.value, isEmpty);
       },
@@ -309,8 +309,8 @@ void main() {
       'analyzeImageFromCamera sets error state when repository throws',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = XFile('path/to/image.jpg');
         final exception = ReceiptAnalysisException(
@@ -332,15 +332,15 @@ void main() {
 
         await viewModel.analyzeImageFromCamera();
 
-        expect(container.read(scannerViewModelProvider).hasError, true);
-        expect(container.read(scannerViewModelProvider).error, exception);
+        expect(container.read(homeViewModelProvider).hasError, true);
+        expect(container.read(homeViewModelProvider).error, exception);
       },
     );
 
     test('analyzeImageFromPDF success', () async {
       final container = makeContainer();
-      final viewModel = container.read(scannerViewModelProvider.notifier);
-      container.listen(scannerViewModelProvider, (_, _) {});
+      final viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, _) {});
 
       final file = PlatformFile(
         name: 'receipt.pdf',
@@ -379,7 +379,7 @@ void main() {
       ).called(1);
       verify(() => mockReceiptRepository.analyzePdfReceipt(any())).called(1);
 
-      final state = container.read(scannerViewModelProvider);
+      final state = container.read(homeViewModelProvider);
       expect(state, isA<AsyncData<List<FridgeItem>>>());
       expect(state.value, hasLength(1));
     });
@@ -388,8 +388,8 @@ void main() {
       'analyzeImageFromPDF does nothing when file picker returns null (cancelled)',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         when(
           () => mockFilePicker.pickFiles(
@@ -408,7 +408,7 @@ void main() {
         ).called(1);
         verifyNever(() => mockReceiptRepository.analyzePdfReceipt(any()));
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state, isA<AsyncData<List<FridgeItem>>>());
         expect(state.value, isEmpty);
       },
@@ -418,8 +418,8 @@ void main() {
       'analyzeImageFromPDF throws FormatException when file extension is not pdf',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = PlatformFile(
           name: 'receipt.jpg',
@@ -437,7 +437,7 @@ void main() {
 
         await viewModel.analyzeImageFromPDF();
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state.hasError, true);
         expect(state.error, isA<FormatException>());
         expect(
@@ -451,8 +451,8 @@ void main() {
       'analyzeImageFromPDF throws FormatException when path is null',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = PlatformFile(name: 'receipt.pdf', size: 100, path: null);
         final result = FilePickerResult([file]);
@@ -466,7 +466,7 @@ void main() {
 
         await viewModel.analyzeImageFromPDF();
 
-        final state = container.read(scannerViewModelProvider);
+        final state = container.read(homeViewModelProvider);
         expect(state.hasError, true);
         expect(state.error, isA<FormatException>());
         expect(
@@ -480,8 +480,8 @@ void main() {
       'analyzeImageFromPDF sets error state when repository throws',
       () async {
         final container = makeContainer();
-        final viewModel = container.read(scannerViewModelProvider.notifier);
-        container.listen(scannerViewModelProvider, (_, _) {});
+        final viewModel = container.read(homeViewModelProvider.notifier);
+        container.listen(homeViewModelProvider, (_, _) {});
 
         final file = PlatformFile(
           name: 'receipt.pdf',
@@ -507,8 +507,8 @@ void main() {
 
         await viewModel.analyzeImageFromPDF();
 
-        expect(container.read(scannerViewModelProvider).hasError, true);
-        expect(container.read(scannerViewModelProvider).error, exception);
+        expect(container.read(homeViewModelProvider).hasError, true);
+        expect(container.read(homeViewModelProvider).error, exception);
       },
     );
   });

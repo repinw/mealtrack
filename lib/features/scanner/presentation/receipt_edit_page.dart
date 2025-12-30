@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
-import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
-import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
-import 'package:mealtrack/features/scanner/presentation/viewmodel/receipt_edit_viewmodel.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_footer.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_header.dart';
+import 'package:mealtrack/features/scanner/presentation/scanned_item_row.dart';
+import 'package:mealtrack/features/scanner/presentation/receipt_edit_viewmodel.dart';
 
 class ReceiptEditPage extends ConsumerStatefulWidget {
-  const ReceiptEditPage({super.key});
+  final List<FridgeItem>? scannedItems;
+  const ReceiptEditPage({super.key, this.scannedItems});
 
   @override
   ConsumerState<ReceiptEditPage> createState() => _ReceiptEditPageState();
@@ -47,9 +48,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
       next,
     ) {
       if ((previous?.items.isEmpty ?? true) && next.items.isNotEmpty) {
-        // coverage:ignore-start
         _merchantController.text = next.initialStoreName;
-        // coverage:ignore-end
       }
     });
 
@@ -195,7 +194,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
               onSave: () async {
                 debugPrint("Saving ${items.length} Items");
                 await ref.read(fridgeItemsProvider.notifier).addItems(items);
-                if (context.mounted) {
+                if (mounted) {
                   Navigator.of(context).pop();
                 }
               },

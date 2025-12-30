@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/features/inventory/presentation/action_button.dart';
 
 void main() {
   group('ActionButton Tests', () {

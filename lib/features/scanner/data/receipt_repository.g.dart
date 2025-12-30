@@ -1,7 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// coverage:ignore-file
-
 part of 'receipt_repository.dart';
 
 // **************************************************************************

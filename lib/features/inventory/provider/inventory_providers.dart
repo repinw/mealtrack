@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 
@@ -101,7 +100,7 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
 
 final _loadingItem = FridgeItem(
   id: 'loading',
-  name: AppLocalizations.loading,
+  name: '',
   quantity: 0,
   storeName: '',
   entryDate: DateTime(1970),
@@ -121,11 +120,9 @@ final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
           (element) => element.id == id,
           orElse: () => _loadingItem,
         );
-        // coverage:ignore-start
       } catch (_) {
         return _loadingItem;
       }
-      // coverage:ignore-end
     }),
   );
 });
