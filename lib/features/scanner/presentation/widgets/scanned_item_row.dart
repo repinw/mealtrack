@@ -115,8 +115,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
 
     final newItem = widget.item.copyWith(
       name: _nameController.text,
-      weight: weightText.isNotEmpty ? weightText : '0',
-      brand: brandText.isNotEmpty ? brandText : widget.item.storeName,
+      weight: weightText.isNotEmpty ? weightText : null,
+      clearWeight: weightText.isEmpty,
+      brand: brandText.isNotEmpty ? brandText : null,
+      clearBrand: brandText.isEmpty,
       unitPrice:
           double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
       quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,

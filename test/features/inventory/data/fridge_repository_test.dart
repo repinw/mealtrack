@@ -17,7 +17,6 @@ void main() {
 
   group('FridgeRepository', () {
     test('updateQuantity consumes item when quantity reaches 0', () async {
-      
       final item = FridgeItem.create(
         name: 'TestItem',
         storeName: 'TestStore',
@@ -33,10 +32,8 @@ void main() {
         () => mockLocalStorageService.saveItems(any()),
       ).thenAnswer((_) async {});
 
-      
       await repository.updateQuantity(item, -1);
 
-      
       final captured = verify(
         () => mockLocalStorageService.saveItems(captureAny()),
       ).captured;
@@ -48,9 +45,8 @@ void main() {
     });
 
     test(
-      'updateQuantity unconscumes item when quantity increases from 0',
+      'updateQuantity unconsumes item when quantity increases from 0',
       () async {
-        
         final item =
             FridgeItem.create(
               name: 'TestItem',
@@ -71,10 +67,8 @@ void main() {
           () => mockLocalStorageService.saveItems(any()),
         ).thenAnswer((_) async {});
 
-        
         await repository.updateQuantity(item, 1);
 
-        
         final captured = verify(
           () => mockLocalStorageService.saveItems(captureAny()),
         ).captured;
@@ -350,7 +344,6 @@ void main() {
       expect(emptyKeyGroup.value.first.name, 'Banana');
     });
 
-   
     test('saveItems rethrows exceptions', () async {
       when(
         () => mockLocalStorageService.saveItems(any()),

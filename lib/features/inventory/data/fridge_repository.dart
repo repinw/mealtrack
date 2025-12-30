@@ -69,13 +69,15 @@ class FridgeRepository {
       var quantity = item.quantity + delta;
       var isConsumed = item.isConsumed;
       var consumptionDate = item.consumptionDate;
+      var clearConsumptionDate = false;
 
       if (quantity <= 0) {
         quantity = 0;
         isConsumed = true;
       } else if (isConsumed) {
         isConsumed = false;
-        consumptionDate = DateTime.now();
+        consumptionDate = null;
+        clearConsumptionDate = true;
       }
 
       await updateItem(
@@ -83,6 +85,7 @@ class FridgeRepository {
           quantity: quantity,
           isConsumed: isConsumed,
           consumptionDate: consumptionDate,
+          clearConsumptionDate: clearConsumptionDate,
         ),
       );
     } catch (e) {
