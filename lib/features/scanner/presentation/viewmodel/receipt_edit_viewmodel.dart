@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
@@ -6,7 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'receipt_edit_viewmodel.g.dart';
 
-/// State for the receipt edit screen
 class ReceiptEditState {
   final List<FridgeItem> items;
 

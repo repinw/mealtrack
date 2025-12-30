@@ -164,26 +164,20 @@ class FridgeItem extends Equatable {
     Map<String, double>? discounts,
     String? receiptId,
     String? brand,
-    bool clearConsumptionDate = false,
-    bool clearWeight = false,
-    bool clearBrand = false,
-    bool clearReceiptId = false,
   }) {
     return FridgeItem(
       id: id ?? this.id,
       name: name ?? this.name,
       entryDate: entryDate ?? this.entryDate,
       isConsumed: isConsumed ?? this.isConsumed,
-      consumptionDate: clearConsumptionDate
-          ? null
-          : (consumptionDate ?? this.consumptionDate),
+      consumptionDate: consumptionDate ?? this.consumptionDate,
       storeName: storeName ?? this.storeName,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
-      weight: clearWeight ? null : (weight ?? this.weight),
+      weight: weight ?? this.weight,
       discounts: discounts ?? this.discounts,
-      receiptId: clearReceiptId ? null : (receiptId ?? this.receiptId),
-      brand: clearBrand ? null : (brand ?? this.brand),
+      receiptId: receiptId ?? this.receiptId,
+      brand: brand ?? this.brand,
     );
   }
 }
