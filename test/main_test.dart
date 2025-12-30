@@ -5,17 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/app.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
-import 'package:mealtrack/features/home/presentation/home_page.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 
 class MockFirebaseAiService extends Mock implements FirebaseAiService {}
 
 void setupFirebaseCoreMocks() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Setup Firebase Core mock
   final mock = MockFirebasePlatform();
   FirebasePlatform.instance = mock;
 }
@@ -85,7 +84,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MealTrackApp), findsOneWidget);
     expect(find.byType(MaterialApp), findsOneWidget);
-    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.byType(InventoryPage), findsOneWidget);
 
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(materialApp.title, 'MealTrack');

@@ -1,3 +1,4 @@
+// coverage:ignore-file
 class StorageException implements Exception {
   final String message;
   final Object? originalException;

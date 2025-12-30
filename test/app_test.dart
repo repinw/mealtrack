@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/app.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/home/presentation/home_page.dart';
+import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class MockFridgeItems extends FridgeItems {
@@ -21,7 +21,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.byType(InventoryPage), findsOneWidget);
   });
 
   testWidgets('MealTrackApp has correct title and theme', (tester) async {

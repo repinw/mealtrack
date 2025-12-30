@@ -4,11 +4,9 @@ import 'package:mealtrack/features/scanner/data/receipt_parser.dart';
 
 void main() {
   group('parseScannedItemsFromJson', () {
-    // --- Happy Path ---
     group('Happy Path', () {
-      test('parses standard JSON correctly', () {
-        const jsonString =
-            '{"items": [{"name": "Milk", "totalPrice": 1.50, "quantity": 1}]}';
+      test('parses minified JSON correctly', () {
+        const jsonString = '{"i": [{"n": "Milk", "p": 1.50, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
 
         expect(result.length, 1);
@@ -25,30 +23,13 @@ void main() {
         expect(result.first.unitPrice, 1.0);
       });
 
-      test('parses mixed keys (minified and standard) correctly', () {
-        const jsonString = '''
-        {
-          "items": [
-            {"n": "Milk", "totalPrice": 1.50, "q": 1},
-            {"name": "Bread", "p": 2.50, "quantity": 1}
-          ]
-        }
-        ''';
-        final result = parseScannedItemsFromJson(jsonString);
-
-        expect(result.length, 2);
-        expect(result[0].name, 'Milk');
-        expect(result[0].unitPrice, 1.50);
-        expect(result[1].name, 'Bread');
-        expect(result[1].unitPrice, 2.50);
-      });
-
       test('parses keys with string types correctly', () {
         const jsonString = '''
         {
-          "items": [
+          "l": "en_US",
+          "i": [
             {"n": "Apple", "p": "6.0", "q": "3"},
-             {"name": "Orange", "totalPrice": "5.0", "quantity": "5"}
+             {"n": "Orange", "p": "5.0", "q": "5"}
           ]
         }
         ''';
@@ -56,16 +37,15 @@ void main() {
 
         expect(result.length, 2);
         expect(result[0].name, 'Apple');
-        expect(result[0].unitPrice, 2.0); // 6.0 / 3
+        expect(result[0].unitPrice, 2.0);
         expect(result[0].quantity, 3);
 
         expect(result[1].name, 'Orange');
-        expect(result[1].unitPrice, 1.0); // 5.0 / 5
+        expect(result[1].unitPrice, 1.0);
         expect(result[1].quantity, 5);
       });
     });
 
-    // --- Edge Cases ---
     group('Edge Cases', () {
       test('returns empty list for empty JSON object {}', () {
         final result = parseScannedItemsFromJson('{}');
@@ -78,16 +58,16 @@ void main() {
       });
 
       test('returns empty list for JSON with empty items list', () {
-        final result = parseScannedItemsFromJson('{"items": []}');
+        final result = parseScannedItemsFromJson('{"i": []}');
         expect(result, isEmpty);
       });
 
       test('fallbacks to quantity 1 if quantity is 0 or negative', () {
         const jsonString = '''
         {
-          "items": [
-            {"name": "Zero Qty", "quantity": 0, "totalPrice": 5.0},
-            {"name": "Neg Qty", "quantity": -5, "totalPrice": 5.0}
+          "i": [
+            {"n": "Zero Qty", "q": 0, "p": 5.0},
+            {"n": "Neg Qty", "q": -5, "p": 5.0}
           ]
         }
         ''';
@@ -96,16 +76,15 @@ void main() {
         expect(result.length, 2);
         expect(result[0].quantity, 1);
         expect(result[1].quantity, 1);
-        // Unit price check (5.0 / 1 = 5.0)
         expect(result[0].unitPrice, 5.0);
       });
 
       test('handles null or invalid discounts gracefully', () {
         const jsonString = '''
         {
-          "items": [
-            {"name": "Null Discounts", "discounts": null},
-            {"name": "Invalid Discounts", "discounts": ["invalid", {"no_name": 1}]}
+          "i": [
+            {"n": "Null Discounts", "d": null},
+            {"n": "Invalid Discounts", "d": ["invalid", {"no_name": 1}]}
           ]
         }
         ''';
@@ -139,7 +118,6 @@ void main() {
       });
 
       test('handles null price but existing quantity', () {
-        // q exists (1), p is null (0.0). unitPrice = 0.0 / 1 = 0.0
         const jsonString = '{"i": [{"n": "No Price", "p": null, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
 
@@ -217,31 +195,211 @@ void main() {
         });
 
         test('handling of thousands separators (1.200,50)', () {
-          // German format with thousands dot
-          const jsonString = '{"i": [{"n": "DE", "p": "1.200,50", "q": 1}]}';
+          const jsonString =
+              '{"l": "de_DE", "i": [{"n": "DE", "p": "1.200,50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 1200.50);
         });
 
         test('handling of thousands separators (1,200.50)', () {
-          // US format
-          const jsonString = '{"i": [{"n": "US", "p": "1,200.50", "q": 1}]}';
+          const jsonString =
+              '{"l": "en_US", "i": [{"n": "US", "p": "1,200.50", "q": 1}]}';
           final result = parseScannedItemsFromJson(jsonString);
           expect(result.first.unitPrice, 1200.50);
         });
 
-        test('handling of spaces (1 200.50)', () {
-          // Space as separator
-          const jsonString = '{"i": [{"n": "Space", "p": "1 200.50", "q": 1}]}';
-          final result = parseScannedItemsFromJson(jsonString);
-          expect(result.first.unitPrice, 1200.50);
-        });
-
-        test('handles invalid price strings ("kostenlos") gracefully', () {
+        test('throws on invalid price strings ("kostenlos")', () {
           const jsonString = '{"i": [{"n": "Free", "p": "kostenlos", "q": 1}]}';
-          final result = parseScannedItemsFromJson(jsonString);
-          expect(result.first.unitPrice, 0.0);
+          expect(
+            () => parseScannedItemsFromJson(jsonString),
+            throwsA(isA<FormatException>()),
+          );
         });
+
+        test('throws on empty string price', () {
+          const jsonString = '{"i": [{"n": "Empty", "p": "", "q": 1}]}';
+          expect(
+            () => parseScannedItemsFromJson(jsonString),
+            throwsA(isA<FormatException>()),
+          );
+        });
+      });
+
+      test('parses direct JSON array (not wrapped in object)', () {
+        const jsonString = '[{"n": "Apple", "p": 2.0, "q": 2}]';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        expect(result.first.name, 'Apple');
+        expect(result.first.unitPrice, 1.0);
+      });
+
+      test('uses fallback text when name is empty', () {
+        const jsonString = '{"i": [{"n": "", "p": 1.0, "q": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.name, contains('Parsen'));
+      });
+
+      test('uses fallback text when storeName is empty', () {
+        const jsonString = '{"i": [{"n": "Test", "s": "", "p": 1.0, "q": 1}]}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.storeName, contains('Parsen'));
+      });
+
+      test('returns empty list when JSON object has no items/i key', () {
+        const jsonString = '{"other": "data", "noItems": true}';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result, isEmpty);
+      });
+
+      test('parses discounts with minified keys (n, a)', () {
+        const jsonString = '''{
+          "i": [
+            {
+              "n": "Discounted",
+              "p": 10.0,
+              "q": 1,
+              "d": [{"n": "Sale", "a": 2.0}]
+            }
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.discounts, {'Sale': 2.0});
+      });
+
+      test('parses weight and brand fields', () {
+        const jsonString = '''{
+          "i": [
+            {"n": "Cheese", "p": 5.0, "q": 1, "w": "200g", "b": "BrandX"}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.first.weight, '200g');
+        expect(result.first.brand, 'BrandX');
+      });
+
+      test(
+        'returns empty list for unexpected JSON format (primitive value)',
+        () {
+          final result = parseScannedItemsFromJson('42');
+          expect(result, isEmpty);
+        },
+      );
+
+      test('returns empty list for unexpected JSON format (boolean)', () {
+        final result = parseScannedItemsFromJson('true');
+        expect(result, isEmpty);
+      });
+
+      test('returns empty list for unexpected JSON format (string)', () {
+        final result = parseScannedItemsFromJson('"just a string"');
+        expect(result, isEmpty);
+      });
+
+      test(
+        'throws FormatException when item is not a Map (type error in parsing)',
+        () {
+          const jsonString = '{"i": ["not a map", "another string"]}';
+          expect(
+            () => parseScannedItemsFromJson(jsonString),
+            throwsA(isA<FormatException>()),
+          );
+        },
+      );
+    });
+    group('New Schema Fields', () {
+      test('parses root storeName, receiptDate, and language correctly', () {
+        const jsonString = '''{
+          "s": "Aldi",
+          "rd": "2023-12-24",
+          "l": "de_DE",
+          "i": [
+            {"n": "Glühwein", "p": 3.99, "q": 1}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result.length, 1);
+        final item = result.first;
+        expect(item.storeName, 'Aldi');
+        expect(item.receiptDate, DateTime(2023, 12, 24));
+        expect(item.language, 'de_DE');
+        expect(item.name, 'Glühwein');
+      });
+
+      test('prioritizes item storeName over root storeName', () {
+        const jsonString = '''{
+          "s": "RootStore",
+          "i": [
+            {"n": "Item1", "p": 1.0, "q": 1, "s": "ItemStore"},
+            {"n": "Item2", "p": 1.0, "q": 1}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result[0].storeName, 'ItemStore');
+        expect(result[1].storeName, 'RootStore');
+      });
+
+      test(
+        'validates invalid date format gracefully by falling back to now',
+        () {
+          const jsonString = '''{
+          "rd": "inv-ali-d",
+          "i": [
+            {"n": "Item", "p": 1.0, "q": 1}
+          ]
+        }''';
+          final result = parseScannedItemsFromJson(jsonString);
+
+          expect(result.first.receiptDate, isNotNull);
+          expect(
+            result.first.receiptDate!
+                .difference(DateTime.now())
+                .inSeconds
+                .abs(),
+            lessThan(2),
+          );
+        },
+      );
+    });
+    group('Locale-Aware Number Parsing', () {
+      test('parses "1,234" as 1234 with en_US locale', () {
+        const jsonString = '''{
+          "l": "en_US",
+          "i": [
+            {"n": "Item", "p": "1,234", "q": 1}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+        expect(result.first.unitPrice, 1234.0);
+      });
+
+      test('parses "1,234" as 1.234 with de_DE locale', () {
+        const jsonString = '''{
+          "l": "de_DE",
+          "i": [
+            {"n": "Item", "p": "1,234", "q": 1}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+        expect(result.first.unitPrice, 1.234);
+      });
+
+      test('parses "1.234" as 1234 with de_DE locale', () {
+        const jsonString = '''{
+          "l": "de_DE",
+          "i": [
+            {"n": "Item", "p": "1.234", "q": 1}
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+        expect(result.first.unitPrice, 1234.0);
       });
     });
   });

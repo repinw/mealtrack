@@ -1,5 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
+// coverage:ignore-file
+
 part of 'receipt_edit_viewmodel.dart';
 
 // **************************************************************************
@@ -42,7 +44,7 @@ final class ReceiptEditViewModelProvider
 }
 
 String _$receiptEditViewModelHash() =>
-    r'882d79edf0038edc36b0ed4782a5c2122e372b93';
+    r'48c079e7aa9c8312da56cdff50e1e9610ce5f10c';
 
 abstract class _$ReceiptEditViewModel extends $Notifier<ReceiptEditState> {
   ReceiptEditState build();

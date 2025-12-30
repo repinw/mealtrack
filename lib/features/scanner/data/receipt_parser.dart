@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -43,9 +44,24 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 
   try {
     List<dynamic> itemsList;
+    String? rootStoreName;
+    DateTime? rootReceiptDate;
+    String? rootLanguage;
 
     var receiptId = const Uuid().v4();
     if (decodedJson is Map<String, dynamic>) {
+      rootStoreName = (decodedJson['s']) as String?;
+
+      final receiptDateStr = (decodedJson['rd']) as String?;
+      if (receiptDateStr != null) {
+        rootReceiptDate = DateTime.tryParse(receiptDateStr);
+      }
+
+      rootReceiptDate ??= DateTime.now();
+
+      rootLanguage = (decodedJson['l']) as String?;
+      rootLanguage ??= 'de_DE';
+
       if (decodedJson.containsKey('i')) {
         itemsList = decodedJson['i'] as List<dynamic>;
       } else if (decodedJson.containsKey('items')) {
@@ -63,16 +79,16 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     return itemsList.map((itemJson) {
       final map = itemJson as Map<String, dynamic>;
 
-      final discountsList = (map['d'] ?? map['discounts']) as List<dynamic>?;
+      final discountsList = (map['d']) as List<dynamic>?;
       final discounts = <String, double>{};
 
       if (discountsList != null) {
         for (final discountItem in discountsList) {
           if (discountItem is Map<String, dynamic>) {
-            // n = name, a = amount
-            final name = (discountItem['n'] ?? discountItem['name']) as String?;
-            final amount = _parseNum(
-              discountItem['a'] ?? discountItem['amount'],
+            final name = (discountItem['n']) as String?;
+            final amount = _getParsedNum(
+              discountItem['a'],
+              rootLanguage,
             )?.toDouble();
 
             if (name != null && amount != null) {
@@ -82,28 +98,24 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         }
       }
 
-      // Item-Fields (n, s, q, p...) ---
+      final name = (map['n']) as String? ?? '';
 
-      // n = name
-      final name = (map['n'] ?? map['name']) as String? ?? '';
+      final itemStore = (map['s']) as String?;
+      final store = (itemStore?.isNotEmpty == true)
+          ? itemStore!
+          : (rootStoreName ?? '');
 
-      // s = storeName
-      final store = (map['s'] ?? map['storeName']) as String? ?? '';
-
-      // q = quantity
-      final rawQty = _parseNum(map['q'] ?? map['quantity']);
+      final rawQty = _getParsedNum(map['q'], rootLanguage);
       final qty = rawQty?.toInt() ?? 1;
       final quantity = qty > 0 ? qty : 1;
 
-      // p = totalPrice
-      final rawPrice = _parseNum(map['p'] ?? map['totalPrice']);
+      final rawPrice = _getParsedNum(map['p'], rootLanguage);
       final totalPrice = (rawPrice?.toDouble() ?? 0.0).abs();
 
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
-      // w = weight, b = brand
-      final weight = (map['w'] ?? map['weight']) as String?;
-      final brand = (map['b'] ?? map['brand']) as String?;
+      final weight = (map['w']) as String?;
+      final brand = (map['b']) as String?;
 
       return FridgeItem.create(
         name: name.isEmpty ? AppLocalizations.jsonParsingError : name,
@@ -114,6 +126,8 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         brand: brand,
         discounts: discounts,
         receiptId: receiptId,
+        receiptDate: rootReceiptDate,
+        language: rootLanguage,
       );
     }).toList();
   } catch (e, stackTrace) {
@@ -123,40 +137,10 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   }
 }
 
-num? _parseNum(dynamic value) {
-  if (value == null) return null;
+num? _getParsedNum(dynamic value, String? languageCode) {
   if (value is num) return value;
   if (value is String) {
-    if (value.trim().isEmpty) return null;
-    try {
-      String s = value.trim();
-      // Handle typical formats:
-      // If valid standard number (e.g. 12.34), helper methods handle it.
-      // But we need to handle locale-specific formats.
-
-      // Check for mixed separators to guess locale
-      if (s.contains(',') && s.contains('.')) {
-        final lastComma = s.lastIndexOf(',');
-        final lastDot = s.lastIndexOf('.');
-        if (lastComma > lastDot) {
-          // German/EU format: 1.234,56 -> remove dots, replace comma with dot
-          s = s.replaceAll('.', '').replaceAll(',', '.');
-        } else {
-          // US/UK format: 1,234.56 -> remove commas
-          s = s.replaceAll(',', '');
-        }
-      } else if (s.contains(',')) {
-        // Only comma: 2,50 -> 2.50
-        // Or 1,200 (could be 1200 or 1.2). Assume decimal separator if < 3 decimals or > 3?
-        // Safer strict rule: If comma is present, and NO dots, replace with dot for parsing.
-        s = s.replaceAll(',', '.');
-      }
-      // Cleanup spaces
-      s = s.replaceAll(RegExp(r'\s+'), '');
-      return num.tryParse(s);
-    } catch (e) {
-      return null;
-    }
+    return NumberFormat.decimalPattern(languageCode).parse(value).toDouble();
   }
   return null;
 }

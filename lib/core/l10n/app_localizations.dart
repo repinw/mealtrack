@@ -32,4 +32,5 @@ class AppLocalizations {
   static const String errorOccurred = 'Ein Fehler ist aufgetreten: ';
   static const String quantityUpdateFailed =
       'Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.';
+  static const String loading = 'Lädt...';
 }

@@ -12,12 +12,17 @@ class FirebaseAiService {
 
   final FirebaseRemoteConfig remoteConfig;
   final ImageCompressor imageCompressor;
+  final dynamic Function()? modelProvider;
 
   FirebaseAiService({
     FirebaseRemoteConfig? remoteConfig,
     ImageCompressor? imageCompressor,
-  }) : remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance,
-       imageCompressor = imageCompressor ?? DefaultImageCompressor();
+    this.modelProvider,
+  }) : remoteConfig =
+           remoteConfig ??
+           FirebaseRemoteConfig.instance, // coverage:ignore-line
+       imageCompressor =
+           imageCompressor ?? ImageCompressor(); // coverage:ignore-line
 
   Future<void> initialize() async {
     await remoteConfig.setConfigSettings(
@@ -82,9 +87,11 @@ class FirebaseAiService {
       templateID = _fallbackTemplateId;
     }
     try {
-      final model = FirebaseAI.vertexAI(
-        location: 'global',
-      ).templateGenerativeModel();
+      // coverage:ignore-start
+      final model = modelProvider != null
+          ? modelProvider!()
+          : FirebaseAI.vertexAI(location: 'global').templateGenerativeModel();
+      // coverage:ignore-end
 
       final inputs = {'mimeType': mimeType, 'imageData': base64Data};
       final response = await model.generateContent(templateID, inputs: inputs);
