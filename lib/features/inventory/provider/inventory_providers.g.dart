@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'd6ce16728d684b98ca43fd72b6416d4c1b536c36';
+String _$fridgeItemsHash() => r'06a4d828665d81d17322b698390270a0fa342d06';
 
 abstract class _$FridgeItems extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();
@@ -190,3 +190,44 @@ final class GroupedFridgeItemsProvider
 
 String _$groupedFridgeItemsHash() =>
     r'8a52f63e4df18566330c6d4763a4b02cede18f14';
+
+@ProviderFor(inventoryStats)
+const inventoryStatsProvider = InventoryStatsProvider._();
+
+final class InventoryStatsProvider
+    extends $FunctionalProvider<InventoryStats, InventoryStats, InventoryStats>
+    with $Provider<InventoryStats> {
+  const InventoryStatsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inventoryStatsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryStatsHash();
+
+  @$internal
+  @override
+  $ProviderElement<InventoryStats> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  InventoryStats create(Ref ref) {
+    return inventoryStats(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(InventoryStats value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<InventoryStats>(value),
+    );
+  }
+}
+
+String _$inventoryStatsHash() => r'6f1dda25ffbd0fe1f32d4b3fee89da757850e823';

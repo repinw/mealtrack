@@ -66,30 +66,7 @@ class FridgeRepository {
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     try {
-      var quantity = item.quantity + delta;
-      var isConsumed = item.isConsumed;
-      var consumptionEvents = List<DateTime>.from(item.consumptionEvents);
-
-      if (delta < 0) {
-        consumptionEvents.add(DateTime.now());
-      } else if (delta > 0 && consumptionEvents.isNotEmpty) {
-        consumptionEvents.removeLast();
-      }
-
-      if (quantity <= 0) {
-        quantity = 0;
-        isConsumed = true;
-      } else if (isConsumed) {
-        isConsumed = false;
-      }
-
-      await updateItem(
-        item.copyWith(
-          quantity: quantity,
-          isConsumed: isConsumed,
-          consumptionEvents: consumptionEvents,
-        ),
-      );
+      await updateItem(item.adjustQuantity(delta));
     } catch (e) {
       debugPrint('Error updating quantity in repository: $e');
       rethrow;

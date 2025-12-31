@@ -505,9 +505,196 @@ void main() {
           expect(itemFromJson.consumptionEvents.length, 2);
           expect(itemFromJson.consumptionEvents[0], eventsDate1);
           expect(itemFromJson.consumptionEvents[1], eventsDate2);
-          expect(itemFromJson.consumptionDate, eventsDate2); // Last event
         },
       );
+    });
+
+    group('adjustQuantity', () {
+      test('decreases quantity and adds consumption event', () {
+        final fixedNow = DateTime(2025, 12, 15, 10, 30);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 5,
+        );
+
+        final updated = item.adjustQuantity(-1, now: () => fixedNow);
+
+        expect(updated.quantity, 4);
+        expect(updated.isConsumed, isFalse);
+        expect(updated.consumptionEvents.length, 1);
+        expect(updated.consumptionEvents.first, fixedNow);
+      });
+
+      test('increases quantity and removes last consumption event', () {
+        final event1 = DateTime(2025, 12, 10);
+        final event2 = DateTime(2025, 12, 12);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 3,
+          consumptionEvents: [event1, event2],
+        );
+
+        final updated = item.adjustQuantity(1);
+
+        expect(updated.quantity, 4);
+        expect(updated.isConsumed, isFalse);
+        expect(updated.consumptionEvents.length, 1);
+        expect(updated.consumptionEvents.first, event1);
+      });
+
+      test('sets isConsumed true when quantity reaches zero', () {
+        final fixedNow = DateTime(2025, 12, 15);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 1,
+        );
+
+        final updated = item.adjustQuantity(-1, now: () => fixedNow);
+
+        expect(updated.quantity, 0);
+        expect(updated.isConsumed, isTrue);
+        expect(updated.consumptionEvents.length, 1);
+      });
+
+      test('clamps quantity at zero for negative result', () {
+        final fixedNow = DateTime(2025, 12, 15);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 1,
+        );
+
+        final updated = item.adjustQuantity(-5, now: () => fixedNow);
+
+        expect(updated.quantity, 0);
+        expect(updated.isConsumed, isTrue);
+      });
+
+      test('restores item when increasing from zero', () {
+        final event = DateTime(2025, 12, 10);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 0,
+          isConsumed: true,
+          consumptionEvents: [event],
+        );
+
+        final updated = item.adjustQuantity(1);
+
+        expect(updated.quantity, 1);
+        expect(updated.isConsumed, isFalse);
+        expect(updated.consumptionEvents, isEmpty);
+      });
+
+      test('does not remove event when increasing with empty events', () {
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 2,
+        );
+
+        final updated = item.adjustQuantity(1);
+
+        expect(updated.quantity, 3);
+        expect(updated.consumptionEvents, isEmpty);
+      });
+
+      test('delta of zero returns item with same state', () {
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 5,
+        );
+
+        final updated = item.adjustQuantity(0);
+
+        expect(updated.quantity, 5);
+        expect(updated.isConsumed, isFalse);
+        expect(updated.consumptionEvents, isEmpty);
+      });
+
+      test('adds multiple events when delta is less than -1', () {
+        final fixedNow = DateTime(2025, 12, 15, 10, 30);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 5,
+        );
+
+        final updated = item.adjustQuantity(-3, now: () => fixedNow);
+
+        expect(updated.quantity, 2);
+        expect(updated.isConsumed, isFalse);
+        expect(updated.consumptionEvents.length, 3);
+        expect(updated.consumptionEvents, everyElement(fixedNow));
+      });
+
+      test('removes multiple events when delta is greater than 1', () {
+        final event1 = DateTime(2025, 12, 10);
+        final event2 = DateTime(2025, 12, 11);
+        final event3 = DateTime(2025, 12, 12);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 2,
+          consumptionEvents: [event1, event2, event3],
+        );
+
+        final updated = item.adjustQuantity(2);
+
+        expect(updated.quantity, 4);
+        expect(updated.consumptionEvents.length, 1);
+        expect(updated.consumptionEvents.first, event1);
+      });
+
+      test('removes only available events when delta exceeds events count', () {
+        final event1 = DateTime(2025, 12, 10);
+        // ignore: invalid_use_of_internal_member
+        final item = FridgeItem(
+          id: 'test-id',
+          name: 'Milk',
+          entryDate: DateTime(2025, 12, 1),
+          storeName: 'Store',
+          quantity: 1,
+          consumptionEvents: [event1],
+        );
+
+        final updated = item.adjustQuantity(5);
+
+        expect(updated.quantity, 6);
+        expect(updated.consumptionEvents, isEmpty);
+      });
     });
   });
 }

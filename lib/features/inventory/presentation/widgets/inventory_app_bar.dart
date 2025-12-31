@@ -16,27 +16,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final itemsAsync = ref.watch(fridgeItemsProvider);
-
-    double totalValue = 0;
-    int scanCount = 0;
-    int articleCount = 0;
-
-    if (itemsAsync.hasValue) {
-      final items = itemsAsync.value!;
-      final activeItems = items.where((i) => i.quantity > 0).toList();
-
-      totalValue = activeItems.fold(
-        0.0,
-        (sum, i) => sum + (i.unitPrice * i.quantity),
-      );
-      scanCount = activeItems
-          .map((e) => e.receiptId)
-          .where((e) => e != null && e.isNotEmpty)
-          .toSet()
-          .length;
-      articleCount = activeItems.fold(0, (sum, i) => sum + i.quantity);
-    }
+    final stats = ref.watch(inventoryStatsProvider);
 
     final currencyFormat = NumberFormat.currency(locale: 'de_DE', symbol: '€');
 
@@ -99,7 +79,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    currencyFormat.format(totalValue),
+                    currencyFormat.format(stats.totalValue),
                     style: const TextStyle(
                       fontSize: 32,
                       color: textColor,
@@ -123,7 +103,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        AppLocalizations.purchases(scanCount),
+                        AppLocalizations.purchases(stats.scanCount),
                         style: const TextStyle(color: labelColor, fontSize: 13),
                       ),
                     ],
@@ -140,7 +120,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       border: Border.all(color: Colors.white12),
                     ),
                     child: Text(
-                      AppLocalizations.items(articleCount),
+                      AppLocalizations.items(stats.articleCount),
                       style: const TextStyle(
                         color: highlightColor,
                         fontWeight: FontWeight.bold,

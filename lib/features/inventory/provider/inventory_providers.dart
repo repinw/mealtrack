@@ -39,34 +39,11 @@ class FridgeItems extends _$FridgeItems {
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
-    var newQuantity = item.quantity + delta;
-    var newIsConsumed = item.isConsumed;
-    var newConsumptionEvents = List<DateTime>.from(item.consumptionEvents);
-
-    if (delta < 0) {
-      newConsumptionEvents.add(DateTime.now());
-    } else if (delta > 0 && newConsumptionEvents.isNotEmpty) {
-      // coverage:ignore-line
-      newConsumptionEvents.removeLast(); // coverage:ignore-line
-    }
-
-    if (newQuantity <= 0) {
-      newQuantity = 0;
-      newIsConsumed = true;
-    } else if (newIsConsumed) {
-      newIsConsumed = false;
-    }
+    final updatedItem = item.adjustQuantity(delta);
 
     final updatedList = [
       for (final i in previousList)
-        if (i.id == item.id)
-          i.copyWith(
-            quantity: newQuantity,
-            isConsumed: newIsConsumed,
-            consumptionEvents: newConsumptionEvents,
-          )
-        else
-          i, // coverage:ignore-line
+        if (i.id == item.id) updatedItem else i, // coverage:ignore-line
     ];
     state = AsyncValue.data(updatedList);
 
@@ -166,3 +143,52 @@ final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
     }),
   );
 });
+
+class InventoryStats {
+  final double totalValue;
+  final int scanCount;
+  final int articleCount;
+
+  const InventoryStats({
+    required this.totalValue,
+    required this.scanCount,
+    required this.articleCount,
+  });
+
+  static const empty = InventoryStats(
+    totalValue: 0,
+    scanCount: 0,
+    articleCount: 0,
+  );
+}
+
+@riverpod
+InventoryStats inventoryStats(Ref ref) {
+  final itemsAsync = ref.watch(fridgeItemsProvider);
+
+  if (!itemsAsync.hasValue) {
+    return InventoryStats.empty;
+  }
+
+  final items = itemsAsync.value!;
+  final activeItems = items.where((i) => i.quantity > 0).toList();
+
+  final totalValue = activeItems.fold(
+    0.0,
+    (sum, i) => sum + (i.unitPrice * i.quantity),
+  );
+
+  final scanCount = activeItems
+      .map((e) => e.receiptId)
+      .where((e) => e != null && e.isNotEmpty)
+      .toSet()
+      .length;
+
+  final articleCount = activeItems.fold(0, (sum, i) => sum + i.quantity);
+
+  return InventoryStats(
+    totalValue: totalValue,
+    scanCount: scanCount,
+    articleCount: articleCount,
+  );
+}

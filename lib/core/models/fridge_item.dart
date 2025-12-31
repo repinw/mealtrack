@@ -194,6 +194,49 @@ class FridgeItem extends Equatable {
     };
   }
 
+  /// Returns a new [FridgeItem] with the quantity adjusted by [delta].
+  ///
+  /// This method encapsulates all logic for quantity changes:
+  /// - Adjusts the quantity by the given delta
+  /// - Adds a consumption event when quantity decreases (delta < 0)
+  /// - Removes the last consumption event when quantity increases (delta > 0)
+  /// - Sets isConsumed to true when quantity reaches 0
+  /// - Sets isConsumed to false when quantity increases from 0
+  ///
+  /// The [now] parameter allows injecting a custom DateTime for testing.
+  FridgeItem adjustQuantity(int delta, {DateTime Function()? now}) {
+    final currentTime = (now ?? DateTime.now)();
+
+    var newQuantity = quantity + delta;
+    var newIsConsumed = isConsumed;
+    final newConsumptionEvents = List<DateTime>.from(consumptionEvents);
+
+    if (delta < 0) {
+      newConsumptionEvents.addAll(
+        List.generate(delta.abs(), (_) => currentTime),
+      );
+    } else if (delta > 0) {
+      final eventsToRemove = delta.clamp(0, newConsumptionEvents.length);
+      newConsumptionEvents.removeRange(
+        newConsumptionEvents.length - eventsToRemove,
+        newConsumptionEvents.length,
+      );
+    }
+
+    if (newQuantity <= 0) {
+      newQuantity = 0;
+      newIsConsumed = true;
+    } else if (newIsConsumed) {
+      newIsConsumed = false;
+    }
+
+    return copyWith(
+      quantity: newQuantity,
+      isConsumed: newIsConsumed,
+      consumptionEvents: newConsumptionEvents,
+    );
+  }
+
   FridgeItem copyWith({
     String? id,
     String? name,
