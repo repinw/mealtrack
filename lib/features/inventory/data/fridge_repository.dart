@@ -68,24 +68,26 @@ class FridgeRepository {
     try {
       var quantity = item.quantity + delta;
       var isConsumed = item.isConsumed;
-      var consumptionDate = item.consumptionDate;
-      var clearConsumptionDate = false;
+      var consumptionEvents = List<DateTime>.from(item.consumptionEvents);
+
+      if (delta < 0) {
+        consumptionEvents.add(DateTime.now());
+      } else if (delta > 0 && consumptionEvents.isNotEmpty) {
+        consumptionEvents.removeLast();
+      }
 
       if (quantity <= 0) {
         quantity = 0;
         isConsumed = true;
       } else if (isConsumed) {
         isConsumed = false;
-        consumptionDate = null;
-        clearConsumptionDate = true;
       }
 
       await updateItem(
         item.copyWith(
           quantity: quantity,
           isConsumed: isConsumed,
-          consumptionDate: consumptionDate,
-          clearConsumptionDate: clearConsumptionDate,
+          consumptionEvents: consumptionEvents,
         ),
       );
     } catch (e) {

@@ -13,9 +13,10 @@ class FridgeItem extends Equatable {
     this.isConsumed = false,
     required this.storeName,
     required this.quantity,
+    this.initialQuantity = 1,
     this.unitPrice = 0.0,
     this.weight,
-    this.consumptionDate,
+    this.consumptionEvents = const [],
     this.receiptId,
     this.receiptDate,
     this.language,
@@ -67,6 +68,8 @@ class FridgeItem extends Equatable {
       language: language,
       brand: brand,
       discounts: discounts ?? {},
+      initialQuantity: quantity,
+      consumptionEvents: const [],
     );
   }
 
@@ -78,7 +81,10 @@ class FridgeItem extends Equatable {
 
   final bool isConsumed;
 
-  final DateTime? consumptionDate;
+  final List<DateTime> consumptionEvents;
+
+  DateTime? get consumptionDate =>
+      consumptionEvents.isNotEmpty ? consumptionEvents.last : null;
 
   final String storeName;
 
@@ -98,13 +104,15 @@ class FridgeItem extends Equatable {
 
   final String? brand;
 
+  final int initialQuantity;
+
   @override
   List<Object?> get props => [
     id,
     name,
     entryDate,
     isConsumed,
-    consumptionDate,
+    consumptionEvents,
     storeName,
     quantity,
     unitPrice,
@@ -114,6 +122,7 @@ class FridgeItem extends Equatable {
     receiptDate,
     language,
     brand,
+    initialQuantity,
   ];
 
   @override
@@ -121,6 +130,20 @@ class FridgeItem extends Equatable {
 
   /// Creates a [FridgeItem] from a JSON map.
   factory FridgeItem.fromJson(Map<String, dynamic> json) {
+    // Handle legacy consumptionDate if consumptionEvents is missing
+    var events =
+        (json['consumptionEvents'] as List<dynamic>?)
+            ?.map((e) => DateTime.parse(e as String))
+            .toList() ??
+        [];
+
+    if (events.isEmpty && json['consumptionDate'] != null) {
+      final legacyDate = DateTime.tryParse(json['consumptionDate'] as String);
+      if (legacyDate != null) {
+        events = [legacyDate];
+      }
+    }
+
     return FridgeItem(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -128,9 +151,7 @@ class FridgeItem extends Equatable {
           DateTime.tryParse(json['entryDate'] as String? ?? '') ??
           DateTime.now(),
       isConsumed: json['isConsumed'] as bool? ?? false,
-      consumptionDate: DateTime.tryParse(
-        json['consumptionDate'] as String? ?? '',
-      ),
+      consumptionEvents: events,
       storeName: json['storeName'] as String,
       quantity: json['quantity'] as int,
       unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
@@ -144,6 +165,8 @@ class FridgeItem extends Equatable {
       receiptDate: DateTime.tryParse(json['receiptDate'] as String? ?? ''),
       language: json['language'] as String?,
       brand: json['brand'] as String?,
+      initialQuantity:
+          json['initialQuantity'] as int? ?? json['quantity'] as int,
     );
   }
 
@@ -154,7 +177,10 @@ class FridgeItem extends Equatable {
       'name': name,
       'entryDate': entryDate.toIso8601String(),
       'isConsumed': isConsumed,
-      'consumptionDate': consumptionDate?.toIso8601String(),
+      'consumptionEvents': consumptionEvents
+          .map((e) => e.toIso8601String())
+          .toList(),
+      'consumptionDate': consumptionDate?.toIso8601String(), // Legacy support
       'storeName': storeName,
       'quantity': quantity,
       'unitPrice': unitPrice,
@@ -164,6 +190,7 @@ class FridgeItem extends Equatable {
       'receiptDate': receiptDate?.toIso8601String(),
       'language': language,
       'brand': brand,
+      'initialQuantity': initialQuantity,
     };
   }
 
@@ -172,8 +199,7 @@ class FridgeItem extends Equatable {
     String? name,
     DateTime? entryDate,
     bool? isConsumed,
-    DateTime? consumptionDate,
-    bool clearConsumptionDate = false,
+    List<DateTime>? consumptionEvents,
     String? storeName,
     int? quantity,
     double? unitPrice,
@@ -184,15 +210,14 @@ class FridgeItem extends Equatable {
     String? brand,
     DateTime? receiptDate,
     String? language,
+    int? initialQuantity,
   }) {
     return FridgeItem(
       id: id ?? this.id,
       name: name ?? this.name,
       entryDate: entryDate ?? this.entryDate,
       isConsumed: isConsumed ?? this.isConsumed,
-      consumptionDate: clearConsumptionDate
-          ? null
-          : (consumptionDate ?? this.consumptionDate),
+      consumptionEvents: consumptionEvents ?? this.consumptionEvents,
       storeName: storeName ?? this.storeName,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
@@ -202,6 +227,7 @@ class FridgeItem extends Equatable {
       receiptDate: receiptDate ?? this.receiptDate,
       language: language ?? this.language,
       brand: brand ?? this.brand,
+      initialQuantity: initialQuantity ?? this.initialQuantity,
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/theme/app_theme.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
@@ -58,17 +60,18 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
     final total = viewModel.total;
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        backgroundColor: AppTheme.primaryColor,
+        elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          "Scan überprüfen",
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.verifyScan,
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
       ),
       body: Column(
@@ -93,14 +96,14 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "POSITIONEN",
+                        AppLocalizations.positions,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        "${viewModel.totalQuantity} Artikel",
+                        AppLocalizations.articles(viewModel.totalQuantity),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -116,7 +119,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                         const SizedBox(
                           width: ScannedItemRow.colQtyWidth,
                           child: Text(
-                            "ANZ",
+                            AppLocalizations.amountAbbr,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9,
@@ -127,7 +130,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                         ),
                         Expanded(
                           child: const Text(
-                            "MARKE / BESCHREIBUNG",
+                            AppLocalizations.brandDescription,
                             style: TextStyle(
                               fontSize: 9,
                               color: Colors.grey,
@@ -139,7 +142,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                         const SizedBox(
                           width: ScannedItemRow.colWeightWidth,
                           child: Text(
-                            "GEWICHT",
+                            AppLocalizations.weight,
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontSize: 9,
@@ -154,7 +157,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           child: Padding(
                             padding: EdgeInsets.only(right: 28.0),
                             child: Text(
-                              "PREIS",
+                              AppLocalizations.price,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 fontSize: 9,

@@ -61,7 +61,7 @@ abstract class _$FridgeItems extends $AsyncNotifier<List<FridgeItem>> {
 const inventoryFilterProvider = InventoryFilterProvider._();
 
 final class InventoryFilterProvider
-    extends $NotifierProvider<InventoryFilter, bool> {
+    extends $NotifierProvider<InventoryFilter, InventoryFilterType> {
   const InventoryFilterProvider._()
     : super(
         from: null,
@@ -81,28 +81,28 @@ final class InventoryFilterProvider
   InventoryFilter create() => InventoryFilter();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
+  Override overrideWithValue(InventoryFilterType value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
+      providerOverride: $SyncValueProvider<InventoryFilterType>(value),
     );
   }
 }
 
-String _$inventoryFilterHash() => r'6afd6e62ed9069d0a680e84bb8d0aad745f3bbbd';
+String _$inventoryFilterHash() => r'90a568eeb7bfad6f5d78679887e7c6ba6003b0bc';
 
-abstract class _$InventoryFilter extends $Notifier<bool> {
-  bool build();
+abstract class _$InventoryFilter extends $Notifier<InventoryFilterType> {
+  InventoryFilterType build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<bool, bool>;
+    final ref = this.ref as $Ref<InventoryFilterType, InventoryFilterType>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
+              AnyNotifier<InventoryFilterType, InventoryFilterType>,
+              InventoryFilterType,
               Object?,
               Object?
             >;

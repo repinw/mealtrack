@@ -15,7 +15,6 @@ void main() {
     const unitPrice = 0.50;
     const weight = '100g';
 
-    // Testet den Standardkonstruktor
     test('can be instantiated with default values', () {
       // ignore: invalid_use_of_internal_member
       final item = FridgeItem(
@@ -40,12 +39,11 @@ void main() {
       expect(item.discounts, isEmpty);
     });
 
-    // Testet die .create() Factory
     group('FridgeItem.create factory', () {
       test('creates an instance with generated values', () {
         final item = FridgeItem.create(name: 'Milch', storeName: 'Lidl');
 
-        // Überprüft, ob die ID ein gültiges UUID v4 Format hat.
+        expect(item.id, isNotNull);
         expect(
           Uuid.isValidUUID(
             fromString: item.id,
@@ -54,7 +52,6 @@ void main() {
           isTrue,
         );
         expect(item.name, 'Milch');
-        // Überprüft, ob das Datum sehr nah am aktuellen Datum liegt.
         expect(
           item.entryDate.difference(DateTime.now()).inSeconds.abs(),
           lessThan(2),
@@ -84,15 +81,11 @@ void main() {
       });
 
       test('uses provided uuid and now function', () {
-        // Arrange: Erstelle Mocks für Uuid und die now-Funktion
         final mockUuid = MockUuid();
         final specificDate = DateTime(2025, 10, 20, 10, 0, 0);
         DateTime mockNow() => specificDate;
-
-        // Definiere das Verhalten des Uuid-Mocks
         when(() => mockUuid.v4()).thenReturn('mocked-uuid');
 
-        // Act: Erstelle das Item mit den Mocks
         final item = FridgeItem.create(
           name: 'Test Item',
           storeName: 'Test Store',
@@ -100,20 +93,16 @@ void main() {
           now: mockNow,
         );
 
-        // Assert: Überprüfe, ob die gemockten Werte verwendet wurden
         expect(item.id, 'mocked-uuid');
         expect(item.entryDate, specificDate);
         expect(item.storeName, 'Test Store');
       });
 
       test('throws ArgumentError if name is empty or whitespace', () {
-        // Test mit einem leeren String
         expect(
           () => FridgeItem.create(name: '', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
         );
-
-        // Test mit einem String, der nur Leerzeichen enthält
         expect(
           () => FridgeItem.create(name: '   ', storeName: 'S'),
           throwsA(isA<ArgumentError>()),
@@ -155,7 +144,6 @@ void main() {
       });
     });
 
-    // Testet die Gleichheit basierend auf Equatable
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
         final discounts = {'Rabatt': 1.0};
@@ -238,7 +226,7 @@ void main() {
           name: 'a',
           entryDate: date,
           isConsumed: true,
-          consumptionDate: date,
+          consumptionEvents: [date],
           storeName: 'S',
           quantity: 1,
         );
@@ -248,7 +236,7 @@ void main() {
           name: 'a',
           entryDate: date,
           isConsumed: true,
-          consumptionDate: date,
+          consumptionEvents: [date],
           storeName: 'S',
           quantity: 1,
         );
@@ -256,7 +244,6 @@ void main() {
       });
     });
 
-    // Testet die toString() Methode (via Equatable's stringify)
     group('toString', () {
       test('returns a string with all properties', () {
         // ignore: invalid_use_of_internal_member
@@ -280,23 +267,19 @@ void main() {
 
     group('copyWith', () {
       test('creates a copy with updated values', () {
-        // Arrange
         final item = FridgeItem.create(name: 'Käse', storeName: 'Aldi');
         final newDate = DateTime(2025, 12, 24);
 
-        // Act
         final updatedItem = item.copyWith(
           name: 'Käse (alt)',
           isConsumed: true,
-          consumptionDate: newDate,
+          consumptionEvents: [newDate],
         );
 
-        // Assert
         expect(updatedItem.id, item.id);
         expect(updatedItem.name, 'Käse (alt)');
         expect(updatedItem.isConsumed, isTrue);
         expect(updatedItem.consumptionDate, newDate);
-        // Unchanged properties
         expect(updatedItem.storeName, item.storeName);
         expect(updatedItem.quantity, item.quantity);
       });
@@ -311,7 +294,6 @@ void main() {
       });
 
       test('copies values correctly when other properties are updated', () {
-        // Arrange
         final consumptionDate = DateTime(2025, 11, 30);
         // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
@@ -321,21 +303,17 @@ void main() {
           storeName: 'Rewe',
           quantity: 4,
           isConsumed: true,
-          consumptionDate: consumptionDate,
+          consumptionEvents: [consumptionDate],
         );
 
-        // Act
         final updatedItem = item.copyWith(
           storeName: 'Rewe Center',
           quantity: 2,
         );
 
-        // Assert: Check that the properties in question were copied correctly.
         expect(updatedItem.name, 'Joghurt');
         expect(updatedItem.isConsumed, isTrue);
         expect(updatedItem.consumptionDate, consumptionDate);
-
-        // Assert: Check that the other properties were updated correctly.
         expect(updatedItem.storeName, 'Rewe Center');
         expect(updatedItem.quantity, 2);
       });
@@ -365,7 +343,7 @@ void main() {
         name: 'Bio Eier 6er',
         entryDate: entryDate,
         isConsumed: true,
-        consumptionDate: consumptionDate,
+        consumptionEvents: [consumptionDate],
         storeName: 'Alnatura',
         quantity: 1,
         unitPrice: 3.49,
@@ -392,6 +370,7 @@ void main() {
           'name': 'Bio Eier 6er',
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': true,
+          'consumptionEvents': [consumptionDate.toIso8601String()],
           'consumptionDate': consumptionDate.toIso8601String(),
           'storeName': 'Alnatura',
           'quantity': 1,
@@ -402,6 +381,7 @@ void main() {
           'receiptDate': null,
           'language': null,
           'brand': 'Alnatura',
+          'initialQuantity': 1,
         });
       });
 
@@ -413,6 +393,7 @@ void main() {
           'name': 'Wasser',
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': false,
+          'consumptionEvents': [],
           'consumptionDate': null,
           'storeName': 'Supermarkt',
           'quantity': 6,
@@ -423,6 +404,7 @@ void main() {
           'receiptDate': null,
           'language': null,
           'brand': null,
+          'initialQuantity': 1,
         });
       });
 
@@ -479,6 +461,53 @@ void main() {
           lessThan(2),
         );
       });
+
+      test('fromJson handles legacy consumptionDate field', () {
+        final legacyDate = DateTime(2025, 12, 5, 14, 30);
+        final json = {
+          'id': 'test-uuid-legacy',
+          'name': 'Legacy Item',
+          'entryDate': entryDate.toIso8601String(),
+          'storeName': 'Store',
+          'quantity': 1,
+          'consumptionDate': legacyDate.toIso8601String(),
+        };
+
+        final itemFromJson = FridgeItem.fromJson(json);
+
+        expect(itemFromJson.consumptionEvents.length, 1);
+        expect(itemFromJson.consumptionEvents.first, legacyDate);
+        expect(itemFromJson.consumptionDate, legacyDate);
+      });
+
+      test(
+        'fromJson prefers consumptionEvents over legacy consumptionDate',
+        () {
+          final legacyDate = DateTime(2025, 12, 5, 14, 30);
+          final eventsDate1 = DateTime(2025, 12, 6, 10, 0);
+          final eventsDate2 = DateTime(2025, 12, 7, 12, 0);
+          final json = {
+            'id': 'test-uuid-both',
+            'name': 'Both Fields Item',
+            'entryDate': entryDate.toIso8601String(),
+            'storeName': 'Store',
+            'quantity': 1,
+            'consumptionEvents': [
+              eventsDate1.toIso8601String(),
+              eventsDate2.toIso8601String(),
+            ],
+            'consumptionDate': legacyDate.toIso8601String(),
+          };
+
+          final itemFromJson = FridgeItem.fromJson(json);
+
+          // Should use consumptionEvents, not legacy field
+          expect(itemFromJson.consumptionEvents.length, 2);
+          expect(itemFromJson.consumptionEvents[0], eventsDate1);
+          expect(itemFromJson.consumptionEvents[1], eventsDate2);
+          expect(itemFromJson.consumptionDate, eventsDate2); // Last event
+        },
+      );
     });
   });
 }

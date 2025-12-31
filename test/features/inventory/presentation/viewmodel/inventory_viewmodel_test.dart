@@ -4,6 +4,7 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -147,18 +148,28 @@ void main() {
         () => mockRepository.getItems(),
       ).thenAnswer((_) async => [item1, item2, item3]);
 
-      container.read(inventoryFilterProvider.notifier).toggle();
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.available);
 
       await container.read(fridgeItemsProvider.future);
 
       final displayListAsync = container.read(inventoryDisplayListProvider);
       final displayList = displayListAsync.value!;
 
-      expect(displayList.length, 2);
-      expect(displayList[0], isA<InventoryProductItem>());
-      expect((displayList[0] as InventoryProductItem).itemId, item1.id);
+      expect(displayList.length, 6);
+
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      expect((displayList[0] as InventoryHeaderItem).storeName, 'Store A');
       expect(displayList[1], isA<InventoryProductItem>());
-      expect((displayList[1] as InventoryProductItem).itemId, item3.id);
+      expect((displayList[1] as InventoryProductItem).itemId, item1.id);
+      expect(displayList[2], isA<InventorySpacerItem>());
+
+      expect(displayList[3], isA<InventoryHeaderItem>());
+      expect((displayList[3] as InventoryHeaderItem).storeName, 'Store B');
+      expect(displayList[4], isA<InventoryProductItem>());
+      expect((displayList[4] as InventoryProductItem).itemId, item3.id);
+      expect(displayList[5], isA<InventorySpacerItem>());
     });
 
     test('returns empty list when no items exist', () async {
@@ -259,13 +270,37 @@ void main() {
   group('Equatable display items', () {
     test('InventoryHeaderItem equality', () {
       final date = DateTime(2023, 1, 1);
-      final header1 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header2 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header3 = InventoryHeaderItem(storeName: 'Other', entryDate: date);
+      final header1 = InventoryHeaderItem(
+        storeName: 'Store',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
+      final header2 = InventoryHeaderItem(
+        storeName: 'Store',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
+      final header3 = InventoryHeaderItem(
+        storeName: 'Other',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
 
       expect(header1, equals(header2));
       expect(header1, isNot(equals(header3)));
-      expect(header1.props, [header1.storeName, header1.entryDate]);
+      expect(header1.props, [
+        header1.storeName,
+        header1.entryDate,
+        header1.itemCount,
+        header1.receiptId,
+        header1.isFullyConsumed,
+      ]);
     });
 
     test('InventoryProductItem equality', () {

@@ -104,4 +104,4 @@ final class InventoryDisplayListProvider
 }
 
 String _$inventoryDisplayListHash() =>
-    r'2007a69c242dcd7209e410ae6f90de357d4c0665';
+    r'5d7471fda7cad3a84cc95fe34bc4a81330ecf405';

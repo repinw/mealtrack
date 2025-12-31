@@ -56,7 +56,7 @@ void main() {
             ).copyWith(
               quantity: 0,
               isConsumed: true,
-              consumptionDate: DateTime.now(),
+              consumptionEvents: [DateTime.now()],
             );
         final items = [item];
 

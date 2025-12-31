@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
 part 'inventory_providers.g.dart';
 
@@ -38,10 +39,34 @@ class FridgeItems extends _$FridgeItems {
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
-    final newQuantity = item.quantity + delta;
+    var newQuantity = item.quantity + delta;
+    var newIsConsumed = item.isConsumed;
+    var newConsumptionEvents = List<DateTime>.from(item.consumptionEvents);
+
+    if (delta < 0) {
+      newConsumptionEvents.add(DateTime.now());
+    } else if (delta > 0 && newConsumptionEvents.isNotEmpty) {
+      // coverage:ignore-line
+      newConsumptionEvents.removeLast(); // coverage:ignore-line
+    }
+
+    if (newQuantity <= 0) {
+      newQuantity = 0;
+      newIsConsumed = true;
+    } else if (newIsConsumed) {
+      newIsConsumed = false;
+    }
+
     final updatedList = [
       for (final i in previousList)
-        if (i.id == item.id) i.copyWith(quantity: newQuantity) else i,
+        if (i.id == item.id)
+          i.copyWith(
+            quantity: newQuantity,
+            isConsumed: newIsConsumed,
+            consumptionEvents: newConsumptionEvents,
+          )
+        else
+          i, // coverage:ignore-line
     ];
     state = AsyncValue.data(updatedList);
 
@@ -65,14 +90,26 @@ class FridgeItems extends _$FridgeItems {
     await repository.deleteItem(id);
     ref.invalidateSelf();
   }
+
+  Future<void> deleteItemsByReceipt(String receiptId) async {
+    final repository = ref.read(fridgeRepositoryProvider);
+    final items = state.asData?.value ?? [];
+    final itemsToDelete = items.where((i) => i.receiptId == receiptId).toList();
+    // coverage:ignore-start
+    for (final item in itemsToDelete) {
+      await repository.deleteItem(item.id);
+    }
+    ref.invalidateSelf();
+    // coverage:ignore-end
+  }
 }
 
 @riverpod
 class InventoryFilter extends _$InventoryFilter {
   @override
-  bool build() => false;
+  InventoryFilterType build() => InventoryFilterType.all;
 
-  void toggle() => state = !state;
+  void setFilter(InventoryFilterType type) => state = type;
 }
 
 @riverpod

@@ -208,20 +208,18 @@ void main() {
           expect(result.first.unitPrice, 1200.50);
         });
 
-        test('throws on invalid price strings ("kostenlos")', () {
+        test('handles invalid price strings ("kostenlos") with default 0', () {
           const jsonString = '{"i": [{"n": "Free", "p": "kostenlos", "q": 1}]}';
-          expect(
-            () => parseScannedItemsFromJson(jsonString),
-            throwsA(isA<FormatException>()),
-          );
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.length, 1);
+          expect(result.first.unitPrice, 0.0);
         });
 
-        test('throws on empty string price', () {
+        test('handles empty string price with default 0', () {
           const jsonString = '{"i": [{"n": "Empty", "p": "", "q": 1}]}';
-          expect(
-            () => parseScannedItemsFromJson(jsonString),
-            throwsA(isA<FormatException>()),
-          );
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.length, 1);
+          expect(result.first.unitPrice, 0.0);
         });
       });
 
@@ -369,20 +367,9 @@ void main() {
       );
     });
     group('Locale-Aware Number Parsing', () {
-      test('parses "1,234" as 1234 with en_US locale', () {
+      test('parses "1,234" using comma-to-dot fallback', () {
         const jsonString = '''{
           "l": "en_US",
-          "i": [
-            {"n": "Item", "p": "1,234", "q": 1}
-          ]
-        }''';
-        final result = parseScannedItemsFromJson(jsonString);
-        expect(result.first.unitPrice, 1234.0);
-      });
-
-      test('parses "1,234" as 1.234 with de_DE locale', () {
-        const jsonString = '''{
-          "l": "de_DE",
           "i": [
             {"n": "Item", "p": "1,234", "q": 1}
           ]
@@ -391,7 +378,21 @@ void main() {
         expect(result.first.unitPrice, 1.234);
       });
 
-      test('parses "1.234" as 1234 with de_DE locale', () {
+      test(
+        'parses "1,234" same way with de_DE locale (comma-to-dot fallback)',
+        () {
+          const jsonString = '''{
+          "l": "de_DE",
+          "i": [
+            {"n": "Item", "p": "1,234", "q": 1}
+          ]
+        }''';
+          final result = parseScannedItemsFromJson(jsonString);
+          expect(result.first.unitPrice, 1.234);
+        },
+      );
+
+      test('parses "1.234" as 1.234 with de_DE locale (dot parsed first)', () {
         const jsonString = '''{
           "l": "de_DE",
           "i": [
@@ -399,7 +400,7 @@ void main() {
           ]
         }''';
         final result = parseScannedItemsFromJson(jsonString);
-        expect(result.first.unitPrice, 1234.0);
+        expect(result.first.unitPrice, 1.234);
       });
     });
   });

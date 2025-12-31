@@ -1,5 +1,25 @@
 class AppLocalizations {
   static const String noAvailableProducts = 'Keine Produkte erkannt';
+  static const String addReceipt = 'Kassenbon hinzufügen';
+  static const String selectOption = 'Option wählen';
+  static String purchases(int count) => '$count Einkäufe';
+  static String items(int count) => '$count Teile';
+  static const String archive = 'Archivieren';
+  static String entries(int count) => '$count Einträge';
+
+  static const String filterAll = 'Alle';
+  static const String filterAvailable = 'Vorrat';
+  static const String filterEmpty = 'Verbraucht';
+
+  static const String verifyScan = 'SCAN ÜBERPRÜFEN';
+  static const String positions = 'POSITIONEN';
+  static String articles(int count) => '$count Artikel';
+  static const String amountAbbr = 'ANZ';
+  static const String brandDescription = 'MARKE / BESCHREIBUNG';
+  static const String weight = 'GEWICHT';
+  static const String price = 'PREIS';
+  static const String save = 'Speichern';
+  static const String total = 'GESAMT';
 
   static const String noAvailableItems = 'Keine verfügbaren Artikel';
   static const String noItemsFound = 'Keine Artikel gefunden';

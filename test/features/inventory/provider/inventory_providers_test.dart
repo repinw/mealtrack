@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLocalStorageService extends Mock implements LocalStorageService {}
@@ -112,19 +113,72 @@ void main() {
 
       verifyNever(() => mockStorageService.saveItems(any()));
     });
+
+    test(
+      'deleteItemsByReceipt deletes all items with matching receiptId',
+      () async {
+        final itemWithReceipt1 = FridgeItem.create(
+          name: 'Item A',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-1',
+        );
+        final itemWithReceipt2 = FridgeItem.create(
+          name: 'Item B',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-1',
+        );
+        final itemWithDifferentReceipt = FridgeItem.create(
+          name: 'Item C',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-2',
+        );
+
+        when(() => mockStorageService.loadItems()).thenAnswer(
+          (_) async => [
+            itemWithReceipt1,
+            itemWithReceipt2,
+            itemWithDifferentReceipt,
+          ],
+        );
+        when(
+          () => mockStorageService.saveItems(any()),
+        ).thenAnswer((_) async {});
+
+        await container.read(fridgeItemsProvider.future);
+
+        await container
+            .read(fridgeItemsProvider.notifier)
+            .deleteItemsByReceipt('receipt-1');
+
+        verify(() => mockStorageService.saveItems(any())).called(2);
+      },
+    );
   });
 
   group('InventoryFilter', () {
     test('initial state is false', () {
       final filter = container.read(inventoryFilterProvider);
-      expect(filter, false);
+      expect(filter, InventoryFilterType.all);
     });
 
     test('toggle switches state', () {
-      container.read(inventoryFilterProvider.notifier).toggle();
-      expect(container.read(inventoryFilterProvider), true);
-      container.read(inventoryFilterProvider.notifier).toggle();
-      expect(container.read(inventoryFilterProvider), false);
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.available);
+      expect(
+        container.read(inventoryFilterProvider),
+        InventoryFilterType.available,
+      );
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.all);
+      expect(container.read(inventoryFilterProvider), InventoryFilterType.all);
     });
   });
 
@@ -285,7 +339,7 @@ void main() {
         return [item];
       });
 
-          container.read(fridgeItemsProvider);
+      container.read(fridgeItemsProvider);
 
       container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
 
