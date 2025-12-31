@@ -11,8 +11,11 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   final String title;
 
+  static const double _bottomHeight = 80.0;
+
   @override
-  Size get preferredSize => const Size.fromHeight(140);
+  Size get preferredSize =>
+      const Size.fromHeight(kToolbarHeight + _bottomHeight);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +30,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     const highlightColor = AppTheme.accentColor;
 
     return AppBar(
-      toolbarHeight: 140,
+      toolbarHeight: kToolbarHeight,
       backgroundColor: backgroundColor,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -58,7 +61,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
       ],
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(_bottomHeight),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
           child: Row(

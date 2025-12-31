@@ -148,7 +148,8 @@ num? _getParsedNum(dynamic value, String? languageCode) {
 
     try {
       return NumberFormat.decimalPattern(languageCode).parse(value).toDouble();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Failed to parse "$value" with locale "$languageCode": $e');
       return null;
     }
   }
