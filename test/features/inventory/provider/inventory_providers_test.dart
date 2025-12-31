@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/core/provider/local_storage_service.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLocalStorageService extends Mock implements LocalStorageService {}
@@ -112,19 +113,72 @@ void main() {
 
       verifyNever(() => mockStorageService.saveItems(any()));
     });
+
+    test(
+      'deleteItemsByReceipt deletes all items with matching receiptId',
+      () async {
+        final itemWithReceipt1 = FridgeItem.create(
+          name: 'Item A',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-1',
+        );
+        final itemWithReceipt2 = FridgeItem.create(
+          name: 'Item B',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-1',
+        );
+        final itemWithDifferentReceipt = FridgeItem.create(
+          name: 'Item C',
+          storeName: 'Store',
+          quantity: 1,
+          now: () => fixedDate,
+          receiptId: 'receipt-2',
+        );
+
+        when(() => mockStorageService.loadItems()).thenAnswer(
+          (_) async => [
+            itemWithReceipt1,
+            itemWithReceipt2,
+            itemWithDifferentReceipt,
+          ],
+        );
+        when(
+          () => mockStorageService.saveItems(any()),
+        ).thenAnswer((_) async {});
+
+        await container.read(fridgeItemsProvider.future);
+
+        await container
+            .read(fridgeItemsProvider.notifier)
+            .deleteItemsByReceipt('receipt-1');
+
+        verify(() => mockStorageService.saveItems(any())).called(2);
+      },
+    );
   });
 
   group('InventoryFilter', () {
     test('initial state is false', () {
       final filter = container.read(inventoryFilterProvider);
-      expect(filter, false);
+      expect(filter, InventoryFilterType.all);
     });
 
     test('toggle switches state', () {
-      container.read(inventoryFilterProvider.notifier).toggle();
-      expect(container.read(inventoryFilterProvider), true);
-      container.read(inventoryFilterProvider.notifier).toggle();
-      expect(container.read(inventoryFilterProvider), false);
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.available);
+      expect(
+        container.read(inventoryFilterProvider),
+        InventoryFilterType.available,
+      );
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.all);
+      expect(container.read(inventoryFilterProvider), InventoryFilterType.all);
     });
   });
 
@@ -285,7 +339,7 @@ void main() {
         return [item];
       });
 
-          container.read(fridgeItemsProvider);
+      container.read(fridgeItemsProvider);
 
       container.read(fridgeItemsProvider.notifier).updateQuantity(item, -1);
 
@@ -346,6 +400,185 @@ void main() {
             .updateQuantity(item, -1),
         throwsException,
       );
+    });
+  });
+
+  group('inventoryStatsProvider', () {
+    test('happy path: computes totalValue and articleCount correctly', () async {
+      final item1 = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 2,
+        unitPrice: 1.50,
+        receiptId: 'receipt-1',
+      );
+      final item2 = FridgeItem.create(
+        name: 'Banana',
+        storeName: 'Store',
+        quantity: 3,
+        unitPrice: 0.80,
+        receiptId: 'receipt-2',
+      );
+      final item3 = FridgeItem.create(
+        name: 'Milk',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 2.00,
+        receiptId: 'receipt-3',
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1, item2, item3]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      // totalValue = (2 * 1.50) + (3 * 0.80) + (1 * 2.00) = 3.00 + 2.40 + 2.00 = 7.40
+      expect(stats.totalValue, closeTo(7.40, 0.001));
+      // articleCount = 2 + 3 + 1 = 6
+      expect(stats.articleCount, 6);
+      // scanCount = 3 unique receiptIds
+      expect(stats.scanCount, 3);
+    });
+
+    test('scanCount is 1 when multiple items have same receiptId', () async {
+      final item1 = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 1.00,
+        receiptId: 'same-receipt',
+      );
+      final item2 = FridgeItem.create(
+        name: 'Banana',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 2.00,
+        receiptId: 'same-receipt',
+      );
+      final item3 = FridgeItem.create(
+        name: 'Milk',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 3.00,
+        receiptId: 'same-receipt',
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1, item2, item3]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      expect(stats.scanCount, 1);
+      expect(stats.articleCount, 3);
+      expect(stats.totalValue, closeTo(6.00, 0.001));
+    });
+
+    test('returns empty stats for empty list', () async {
+      when(() => mockStorageService.loadItems()).thenAnswer((_) async => []);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      expect(stats.totalValue, 0);
+      expect(stats.scanCount, 0);
+      expect(stats.articleCount, 0);
+    });
+
+    test('items with quantity 0 (consumed) are excluded from stats', () async {
+      final activeItem = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 2,
+        unitPrice: 1.50,
+        receiptId: 'receipt-1',
+      );
+      final consumedItem = FridgeItem.create(
+        name: 'Banana',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 5.00,
+        receiptId: 'receipt-2',
+      ).copyWith(quantity: 0, isConsumed: true); // consumed via copyWith
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [activeItem, consumedItem]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      // Only active item counts: 2 * 1.50 = 3.00
+      expect(stats.totalValue, closeTo(3.00, 0.001));
+      // Only active item quantity counts
+      expect(stats.articleCount, 2);
+      // Only active item's receipt counts
+      expect(stats.scanCount, 1);
+    });
+
+    test('returns empty stats when items are still loading', () {
+      when(() => mockStorageService.loadItems()).thenAnswer((_) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        return [];
+      });
+
+      // Don't await - items are still loading
+      container.read(fridgeItemsProvider);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      expect(stats.totalValue, 0);
+      expect(stats.scanCount, 0);
+      expect(stats.articleCount, 0);
+    });
+
+    test('handles items with null or empty receiptId', () async {
+      final itemWithReceipt = FridgeItem.create(
+        name: 'Apple',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 1.00,
+        receiptId: 'receipt-1',
+      );
+      final itemWithEmptyReceipt = FridgeItem.create(
+        name: 'Banana',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 2.00,
+        receiptId: '',
+      );
+      final itemWithNullReceipt = FridgeItem.create(
+        name: 'Milk',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 3.00,
+        // receiptId is null
+      );
+
+      when(() => mockStorageService.loadItems()).thenAnswer(
+        (_) async => [
+          itemWithReceipt,
+          itemWithEmptyReceipt,
+          itemWithNullReceipt,
+        ],
+      );
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      // Only 1 valid receipt counts
+      expect(stats.scanCount, 1);
+      // All items count for articleCount and totalValue
+      expect(stats.articleCount, 3);
+      expect(stats.totalValue, closeTo(6.00, 0.001));
     });
   });
 }

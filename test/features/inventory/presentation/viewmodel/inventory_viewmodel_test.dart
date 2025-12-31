@@ -4,6 +4,7 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -147,19 +148,99 @@ void main() {
         () => mockRepository.getItems(),
       ).thenAnswer((_) async => [item1, item2, item3]);
 
-      container.read(inventoryFilterProvider.notifier).toggle();
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.available);
 
       await container.read(fridgeItemsProvider.future);
 
       final displayListAsync = container.read(inventoryDisplayListProvider);
       final displayList = displayListAsync.value!;
 
-      expect(displayList.length, 2);
-      expect(displayList[0], isA<InventoryProductItem>());
-      expect((displayList[0] as InventoryProductItem).itemId, item1.id);
+      expect(displayList.length, 6);
+
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      expect((displayList[0] as InventoryHeaderItem).storeName, 'Store A');
       expect(displayList[1], isA<InventoryProductItem>());
-      expect((displayList[1] as InventoryProductItem).itemId, item3.id);
+      expect((displayList[1] as InventoryProductItem).itemId, item1.id);
+      expect(displayList[2], isA<InventorySpacerItem>());
+
+      expect(displayList[3], isA<InventoryHeaderItem>());
+      expect((displayList[3] as InventoryHeaderItem).storeName, 'Store B');
+      expect(displayList[4], isA<InventoryProductItem>());
+      expect((displayList[4] as InventoryProductItem).itemId, item3.id);
+      expect(displayList[5], isA<InventorySpacerItem>());
     });
+
+    test('returns only empty items when filter is empty', () async {
+      when(
+        () => mockRepository.getItems(),
+      ).thenAnswer((_) async => [item1, item2, item3]);
+
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.empty);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
+
+      expect(displayList.length, 3);
+
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      expect((displayList[0] as InventoryHeaderItem).storeName, 'Store A');
+      expect(displayList[1], isA<InventoryProductItem>());
+      expect(
+        (displayList[1] as InventoryProductItem).itemId,
+        item2.id,
+      ); // item2 is the empty one
+      expect(displayList[2], isA<InventorySpacerItem>());
+
+      // Store B header should NOT be present because item3 is available (quantity 2) and we filter for empty
+    });
+
+    test(
+      'does not generate header if all items in group are filtered out',
+      () async {
+        // Setup:
+        // Group A: item1 (available), item2 (empty)
+        // Group B: item3 (available)
+
+        // Scenario 1: Filter Available
+        // Group A should show header + item1. item2 hidden.
+        // Group B should show header + item3.
+
+        // Scenario 2: Filter Empty
+        // Group A should show header + item2. item1 hidden.
+        // Group B should show NOTHING (header hidden too because item3 is hidden).
+
+        when(
+          () => mockRepository.getItems(),
+        ).thenAnswer((_) async => [item1, item2, item3]);
+
+        // Set to Empty filter
+        container
+            .read(inventoryFilterProvider.notifier)
+            .setFilter(InventoryFilterType.empty);
+
+        await container.read(fridgeItemsProvider.future);
+
+        final displayListAsync = container.read(inventoryDisplayListProvider);
+        final displayList = displayListAsync.value!;
+
+        // We expect only Group A (Store A) to be present with item2.
+        // Group B (Store B) has only item3 which is NOT empty, so it should be completely gone.
+
+        final storeNames = displayList
+            .whereType<InventoryHeaderItem>()
+            .map((e) => e.storeName)
+            .toList();
+
+        expect(storeNames, contains('Store A'));
+        expect(storeNames, isNot(contains('Store B')));
+      },
+    );
 
     test('returns empty list when no items exist', () async {
       when(() => mockRepository.getItems()).thenAnswer((_) async => []);
@@ -259,13 +340,37 @@ void main() {
   group('Equatable display items', () {
     test('InventoryHeaderItem equality', () {
       final date = DateTime(2023, 1, 1);
-      final header1 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header2 = InventoryHeaderItem(storeName: 'Store', entryDate: date);
-      final header3 = InventoryHeaderItem(storeName: 'Other', entryDate: date);
+      final header1 = InventoryHeaderItem(
+        storeName: 'Store',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
+      final header2 = InventoryHeaderItem(
+        storeName: 'Store',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
+      final header3 = InventoryHeaderItem(
+        storeName: 'Other',
+        entryDate: date,
+        itemCount: 1,
+        receiptId: '1',
+        isFullyConsumed: false,
+      );
 
       expect(header1, equals(header2));
       expect(header1, isNot(equals(header3)));
-      expect(header1.props, [header1.storeName, header1.entryDate]);
+      expect(header1.props, [
+        header1.storeName,
+        header1.entryDate,
+        header1.itemCount,
+        header1.receiptId,
+        header1.isFullyConsumed,
+      ]);
     });
 
     test('InventoryProductItem equality', () {

@@ -140,7 +140,18 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 num? _getParsedNum(dynamic value, String? languageCode) {
   if (value is num) return value;
   if (value is String) {
-    return NumberFormat.decimalPattern(languageCode).parse(value).toDouble();
+    final dotParsed = double.tryParse(value);
+    if (dotParsed != null) return dotParsed;
+
+    final commaToDot = double.tryParse(value.replaceAll(',', '.'));
+    if (commaToDot != null) return commaToDot;
+
+    try {
+      return NumberFormat.decimalPattern(languageCode).parse(value).toDouble();
+    } catch (e) {
+      debugPrint('Failed to parse "$value" with locale "$languageCode": $e');
+      return null;
+    }
   }
   return null;
 }

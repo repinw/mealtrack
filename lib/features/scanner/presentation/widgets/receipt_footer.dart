@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealtrack/core/l10n/app_localizations.dart';
 
 class ReceiptFooter extends StatelessWidget {
   final double total;
@@ -29,8 +30,8 @@ class ReceiptFooter extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "GESAMT",
+                Text(
+                  AppLocalizations.total,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -51,24 +52,12 @@ class ReceiptFooter extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: onSave,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                shadowColor: Colors.indigo.withValues(alpha: 0.3),
-              ),
+              style: ElevatedButton.styleFrom(),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Speichern",
+                    AppLocalizations.save,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(width: 8),

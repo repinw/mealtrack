@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 part 'inventory_viewmodel.g.dart';
@@ -27,10 +29,26 @@ sealed class InventoryDisplayItem extends Equatable {
 class InventoryHeaderItem extends InventoryDisplayItem {
   final String storeName;
   final DateTime entryDate;
-  const InventoryHeaderItem({required this.storeName, required this.entryDate});
+  final int itemCount;
+  final String receiptId;
+  final bool isFullyConsumed;
+
+  const InventoryHeaderItem({
+    required this.storeName,
+    required this.entryDate,
+    required this.itemCount,
+    required this.receiptId,
+    required this.isFullyConsumed,
+  });
 
   @override
-  List<Object?> get props => [storeName, entryDate];
+  List<Object?> get props => [
+    storeName,
+    entryDate,
+    itemCount,
+    receiptId,
+    isFullyConsumed,
+  ];
 }
 
 class InventoryProductItem extends InventoryDisplayItem {
@@ -50,57 +68,55 @@ class InventorySpacerItem extends InventoryDisplayItem {
 
 @riverpod
 AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
-  final showOnlyAvailable = ref.watch(inventoryFilterProvider);
-
+  final filterType = ref.watch(inventoryFilterProvider);
   final fridgeState = ref.watch(fridgeItemsProvider);
 
   return fridgeState.whenData((items) {
-    final structure = items.map(
-      (item) => (
-        id: item.id,
-        receiptId: item.receiptId ?? '',
-        storeName: item.storeName,
-        entryDate: item.entryDate,
-        hasQuantity: item.quantity > 0,
-      ),
-    );
-
-    if (showOnlyAvailable) {
-      return structure
-          .where((s) => s.hasQuantity)
-          .map<InventoryDisplayItem>((s) => InventoryProductItem(s.id))
-          .toList();
+    if (items.isEmpty && filterType == InventoryFilterType.all) {
+      return [];
     }
 
-    final groupedMap =
-        <
-          String,
-          List<
-            ({
-              String id,
-              String receiptId,
-              String storeName,
-              DateTime entryDate,
-              bool hasQuantity,
-            })
-          >
-        >{};
-    for (final item in structure) {
-      groupedMap.putIfAbsent(item.receiptId, () => []).add(item);
+    final allGroups = <String, List<FridgeItem>>{};
+    for (final item in items) {
+      final key = item.receiptId ?? '';
+      allGroups.putIfAbsent(key, () => []).add(item);
     }
 
     final displayList = <InventoryDisplayItem>[];
-    for (final group in groupedMap.entries) {
-      if (group.value.isEmpty) continue;
+    final sortedKeys = allGroups.keys.toList();
 
-      final first = group.value.first;
+    for (final key in sortedKeys) {
+      final fullGroup = allGroups[key]!;
+
+      final isFullyConsumed = fullGroup.every((item) => item.quantity == 0);
+
+      final displayItems = fullGroup.where((item) {
+        switch (filterType) {
+          case InventoryFilterType.all:
+            return true;
+          case InventoryFilterType.available:
+            return item.quantity > 0;
+          case InventoryFilterType.empty:
+            return item.quantity == 0;
+        }
+      }).toList();
+
+      if (displayItems.isEmpty) continue;
+
+      final first = fullGroup.first;
+
       displayList.add(
         InventoryHeaderItem(
           storeName: first.storeName,
           entryDate: first.entryDate,
+          itemCount: displayItems.length,
+          receiptId: key,
+          isFullyConsumed: isFullyConsumed,
         ),
       );
-      displayList.addAll(group.value.map((s) => InventoryProductItem(s.id)));
+      displayList.addAll(
+        displayItems.map((item) => InventoryProductItem(item.id)),
+      );
       displayList.add(const InventorySpacerItem());
     }
 

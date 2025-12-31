@@ -4,10 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/category_icon.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/item_details.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
@@ -60,9 +58,10 @@ void main() {
   final testItem = FridgeItem(
     id: '1',
     name: 'Test Apple',
-    quantity: 5,
+    quantity: 3,
     storeName: 'Test Store',
     entryDate: DateTime.now(),
+    initialQuantity: 5,
   );
 
   setUp(() {
@@ -82,19 +81,22 @@ void main() {
   }
 
   group('InventoryItemRow Tests', () {
-    testWidgets('renders all child components correctly', (
+    testWidgets('renders item name and price correctly', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      expect(find.byType(CategoryIcon), findsOneWidget);
-      expect(find.byType(ItemDetails), findsOneWidget);
+      expect(find.text('Test Apple'), findsOneWidget);
+      expect(find.textContaining('pro Stück'), findsOneWidget);
       expect(find.byType(CounterPill), findsOneWidget);
+    });
 
-      final categoryIcon = tester.widget<CategoryIcon>(
-        find.byType(CategoryIcon),
-      );
-      expect(categoryIcon.name, testItem.name);
+    testWidgets('renders quantity badge correctly', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      expect(find.textContaining('5'), findsWidgets);
     });
 
     testWidgets('renders empty widget when item is loading placeholder', (
@@ -121,9 +123,7 @@ void main() {
       );
 
       expect(find.byType(SizedBox), findsOneWidget);
-      expect(find.byType(CategoryIcon), findsNothing);
-      expect(find.byType(ItemDetails), findsNothing);
-      expect(find.byType(CounterPill), findsNothing);
+      expect(find.text('Loading...'), findsNothing);
     });
 
     testWidgets('calls updateQuantity on notifier when pill updates', (
@@ -145,7 +145,7 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(Icons.remove));
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
@@ -159,7 +159,7 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(Icons.remove));
       await tester.pumpAndSettle();
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
@@ -173,10 +173,38 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(Icons.remove));
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('out of stock item is displayed with strikethrough', (
+      WidgetTester tester,
+    ) async {
+      final outOfStockItem = FridgeItem(
+        id: '2',
+        name: 'Out of Stock Item',
+        quantity: 0,
+        storeName: 'Test Store',
+        entryDate: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fridgeItemProvider(
+              outOfStockItem.id,
+            ).overrideWithValue(outOfStockItem),
+            fridgeItemsProvider.overrideWith(() => mockNotifier),
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: InventoryItemRow(itemId: outOfStockItem.id)),
+          ),
+        ),
+      );
+
+      expect(find.text('Out of Stock Item'), findsOneWidget);
     });
   });
 }

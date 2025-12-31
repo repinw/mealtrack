@@ -1,61 +1,92 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
+import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 
 class MockInventoryFilterNotifier extends InventoryFilter {
-  final bool initialValue;
-  MockInventoryFilterNotifier({this.initialValue = false});
+  final InventoryFilterType initialValue;
+  MockInventoryFilterNotifier({this.initialValue = InventoryFilterType.all});
 
   @override
-  bool build() => initialValue;
+  InventoryFilterType build() => initialValue;
 
   @override
-  void toggle() {
-    state = !state;
+  void setFilter(InventoryFilterType type) {
+    state = type;
   }
 }
 
 class MockFridgeItemsNotifier extends FridgeItems {
   @override
+  Future<List<FridgeItem>> build() async {
+    return [];
+  }
+
+  @override
   Future<void> deleteAll() async {}
 
   @override
-  Future<void> addItems(List items) async {}
+  Future<void> addItems(List<FridgeItem> items) async {}
 
   @override
   Future<void> reload() async {}
 
   @override
-  Future<void> updateItem(item) async {}
+  Future<void> updateItem(FridgeItem item) async {}
 
   @override
-  Future<void> updateQuantity(item, int delta) async {}
+  Future<void> updateQuantity(FridgeItem item, int delta) async {}
 
   @override
   Future<void> deleteItem(String id) async {}
 }
 
+class MockScannerViewModel extends ScannerViewModel {
+  @override
+  Future<List<FridgeItem>> build() async => [];
+}
+
 void main() {
-  testWidgets('InventoryPage renders title', (WidgetTester tester) async {
+  testWidgets('InventoryPage renders app bar content', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => const AsyncValue.loading(),
           ),
+
+          scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
+        child: MaterialApp(
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('de', 'DE')],
+          home: const InventoryPage(title: 'Test Inventory'),
+        ),
       ),
     );
 
-    expect(find.text('Test Inventory'), findsOneWidget);
+    expect(find.text('VORRATSWERT'), findsOneWidget);
+    expect(find.text('Test Inventory'), findsNothing);
   });
 
   testWidgets('InventoryPage shows loading indicator when loading', (
@@ -67,15 +98,26 @@ void main() {
           inventoryDisplayListProvider.overrideWith(
             (ref) => const AsyncValue.loading(),
           ),
+          scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
+        child: MaterialApp(
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('de', 'DE')],
+          home: const InventoryPage(title: 'Test Inventory'),
+        ),
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsAtLeastNWidgets(1));
   });
 
   testWidgets('InventoryPage shows error message when error occurs', (
@@ -90,11 +132,22 @@ void main() {
             (ref) =>
                 AsyncValue.error(Exception(errorMessage), StackTrace.current),
           ),
+          scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
           inventoryFilterProvider.overrideWith(
             () => MockInventoryFilterNotifier(),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
+        child: MaterialApp(
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('de', 'DE')],
+          home: const InventoryPage(title: 'Test Inventory'),
+        ),
       ),
     );
 
@@ -112,12 +165,24 @@ void main() {
             inventoryDisplayListProvider.overrideWith(
               (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
             ),
+
+            scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
             inventoryFilterProvider.overrideWith(
-              () => MockInventoryFilterNotifier(initialValue: false),
+              () => MockInventoryFilterNotifier(
+                initialValue: InventoryFilterType.all,
+              ),
             ),
+            fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
           ],
-          child: const MaterialApp(
-            home: InventoryPage(title: 'Test Inventory'),
+          child: MaterialApp(
+            theme: AppTheme.theme,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('de', 'DE')],
+            home: const InventoryPage(title: 'Test Inventory'),
           ),
         ),
       );
@@ -136,12 +201,24 @@ void main() {
             inventoryDisplayListProvider.overrideWith(
               (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
             ),
+
+            scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
             inventoryFilterProvider.overrideWith(
-              () => MockInventoryFilterNotifier(initialValue: true),
+              () => MockInventoryFilterNotifier(
+                initialValue: InventoryFilterType.available,
+              ),
             ),
+            fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
           ],
-          child: const MaterialApp(
-            home: InventoryPage(title: 'Test Inventory'),
+          child: MaterialApp(
+            theme: AppTheme.theme,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('de', 'DE')],
+            home: const InventoryPage(title: 'Test Inventory'),
           ),
         ),
       );
@@ -151,7 +228,7 @@ void main() {
     },
   );
 
-  testWidgets('InventoryPage toggles filter when switch is tapped', (
+  testWidgets('InventoryPage updates filter when new type is selected', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -160,21 +237,33 @@ void main() {
           inventoryDisplayListProvider.overrideWith(
             (ref) => const AsyncValue.data(<InventoryDisplayItem>[]),
           ),
+
+          scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
           inventoryFilterProvider.overrideWith(
-            () => MockInventoryFilterNotifier(initialValue: false),
+            () => MockInventoryFilterNotifier(
+              initialValue: InventoryFilterType.all,
+            ),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
+        child: MaterialApp(
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('de', 'DE')],
+          home: const InventoryPage(title: 'Test Inventory'),
+        ),
       ),
     );
 
-    final switchFinder = find.byType(Switch);
-    expect(tester.widget<Switch>(switchFinder).value, isFalse);
-
-    await tester.tap(switchFinder);
     await tester.pumpAndSettle();
+    expect(find.text(AppLocalizations.filterAll), findsOneWidget);
 
-    expect(tester.widget<Switch>(switchFinder).value, isTrue);
+    await tester.tap(find.text(AppLocalizations.filterAvailable));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('InventoryList header displays store name and date', (
@@ -184,6 +273,9 @@ void main() {
     final headerItem = InventoryHeaderItem(
       storeName: 'Test Store',
       entryDate: testDate,
+      itemCount: 1,
+      receiptId: 'test_receipt_id',
+      isFullyConsumed: false,
     );
 
     await tester.pumpWidget(
@@ -192,11 +284,25 @@ void main() {
           inventoryDisplayListProvider.overrideWith(
             (ref) => AsyncValue.data(<InventoryDisplayItem>[headerItem]),
           ),
+
+          scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
           inventoryFilterProvider.overrideWith(
-            () => MockInventoryFilterNotifier(initialValue: false),
+            () => MockInventoryFilterNotifier(
+              initialValue: InventoryFilterType.all,
+            ),
           ),
+          fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         ],
-        child: const MaterialApp(home: InventoryPage(title: 'Test Inventory')),
+        child: MaterialApp(
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('de', 'DE')],
+          home: const InventoryPage(title: 'Test Inventory'),
+        ),
       ),
     );
 

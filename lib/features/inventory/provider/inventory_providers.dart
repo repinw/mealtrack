@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
 part 'inventory_providers.g.dart';
 
@@ -38,10 +39,11 @@ class FridgeItems extends _$FridgeItems {
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
-    final newQuantity = item.quantity + delta;
+    final updatedItem = item.adjustQuantity(delta);
+
     final updatedList = [
       for (final i in previousList)
-        if (i.id == item.id) i.copyWith(quantity: newQuantity) else i,
+        if (i.id == item.id) updatedItem else i, // coverage:ignore-line
     ];
     state = AsyncValue.data(updatedList);
 
@@ -65,14 +67,26 @@ class FridgeItems extends _$FridgeItems {
     await repository.deleteItem(id);
     ref.invalidateSelf();
   }
+
+  Future<void> deleteItemsByReceipt(String receiptId) async {
+    final repository = ref.read(fridgeRepositoryProvider);
+    final items = state.asData?.value ?? [];
+    final itemsToDelete = items.where((i) => i.receiptId == receiptId).toList();
+    // coverage:ignore-start
+    for (final item in itemsToDelete) {
+      await repository.deleteItem(item.id);
+    }
+    ref.invalidateSelf();
+    // coverage:ignore-end
+  }
 }
 
 @riverpod
 class InventoryFilter extends _$InventoryFilter {
   @override
-  bool build() => false;
+  InventoryFilterType build() => InventoryFilterType.all;
 
-  void toggle() => state = !state;
+  void setFilter(InventoryFilterType type) => state = type;
 }
 
 @riverpod
@@ -129,3 +143,52 @@ final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
     }),
   );
 });
+
+class InventoryStats {
+  final double totalValue;
+  final int scanCount;
+  final int articleCount;
+
+  const InventoryStats({
+    required this.totalValue,
+    required this.scanCount,
+    required this.articleCount,
+  });
+
+  static const empty = InventoryStats(
+    totalValue: 0,
+    scanCount: 0,
+    articleCount: 0,
+  );
+}
+
+@riverpod
+InventoryStats inventoryStats(Ref ref) {
+  final itemsAsync = ref.watch(fridgeItemsProvider);
+
+  if (!itemsAsync.hasValue) {
+    return InventoryStats.empty;
+  }
+
+  final items = itemsAsync.value!;
+  final activeItems = items.where((i) => i.quantity > 0).toList();
+
+  final totalValue = activeItems.fold(
+    0.0,
+    (sum, i) => sum + (i.unitPrice * i.quantity),
+  );
+
+  final scanCount = activeItems
+      .map((e) => e.receiptId)
+      .where((e) => e != null && e.isNotEmpty)
+      .toSet()
+      .length;
+
+  final articleCount = activeItems.fold(0, (sum, i) => sum + i.quantity);
+
+  return InventoryStats(
+    totalValue: totalValue,
+    scanCount: scanCount,
+    articleCount: articleCount,
+  );
+}

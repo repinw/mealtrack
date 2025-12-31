@@ -4,12 +4,14 @@ import 'package:mealtrack/features/inventory/presentation/widgets/action_button.
 class CounterPill extends StatelessWidget {
   final int quantity;
   final bool isOutOfStock;
+  final bool canIncrease;
   final ValueChanged<int> onUpdate;
 
   const CounterPill({
     super.key,
     required this.quantity,
     required this.isOutOfStock,
+    this.canIncrease = true,
     required this.onUpdate,
   });
 
@@ -40,7 +42,10 @@ class CounterPill extends StatelessWidget {
               ),
             ),
           ),
-          ActionButton(icon: Icons.add, onTap: () => onUpdate(1)),
+          ActionButton(
+            icon: Icons.add,
+            onTap: canIncrease ? () => onUpdate(1) : null,
+          ),
         ],
       ),
     );
