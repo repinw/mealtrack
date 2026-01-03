@@ -37,6 +37,14 @@ class FirestoreService {
     await _inventoryCollection.doc(item.id).set(item.toJson());
   }
 
+  Future<void> addItemsBatch(List<FridgeItem> items) async {
+    final batch = _firestore.batch();
+    for (final item in items) {
+      batch.set(_inventoryCollection.doc(item.id), item.toJson());
+    }
+    await batch.commit();
+  }
+
   Future<void> updateItem(FridgeItem item) async {
     await _inventoryCollection.doc(item.id).update(item.toJson());
   }
@@ -54,21 +62,19 @@ class FirestoreService {
     await batch.commit();
   }
 
+  /// Upserts all provided items using merge semantics to avoid race conditions.
+  ///
+  /// Note: This method does NOT delete orphaned documents that are not in [items].
+  /// If deletion is required, use [deleteItem] explicitly or implement soft deletes.
   Future<void> replaceAllItems(List<FridgeItem> items) async {
     final batch = _firestore.batch();
-    final snapshot = await _inventoryCollection.get();
-    final newIds = items.map((item) => item.id).toSet();
-
-    for (var doc in snapshot.docs) {
-      if (!newIds.contains(doc.id)) {
-        batch.delete(doc.reference);
-      }
-    }
-
     for (var item in items) {
-      batch.set(_inventoryCollection.doc(item.id), item.toJson());
+      batch.set(
+        _inventoryCollection.doc(item.id),
+        item.toJson(),
+        SetOptions(merge: true),
+      );
     }
-
     await batch.commit();
   }
 }

@@ -77,7 +77,7 @@ void main() {
       verify(() => mockFirestoreService.replaceAllItems(items)).called(1);
     });
 
-    test('addItems adds each item', () async {
+    test('addItems uses batch to add items', () async {
       final newItem = FridgeItem.create(
         name: 'Banana',
         storeName: 'Store',
@@ -85,11 +85,13 @@ void main() {
       );
       final items = [newItem];
 
-      when(() => mockFirestoreService.addItem(any())).thenAnswer((_) async {});
+      when(
+        () => mockFirestoreService.addItemsBatch(any()),
+      ).thenAnswer((_) async {});
 
       await repository.addItems(items);
 
-      verify(() => mockFirestoreService.addItem(newItem)).called(1);
+      verify(() => mockFirestoreService.addItemsBatch(items)).called(1);
     });
 
     test('updateItem calls updateItem on service', () async {
@@ -193,7 +195,7 @@ void main() {
         quantity: 1,
       );
       when(
-        () => mockFirestoreService.addItem(any()),
+        () => mockFirestoreService.addItemsBatch(any()),
       ).thenThrow(Exception('Add error'));
 
       expect(() => repository.addItems([item]), throwsException);

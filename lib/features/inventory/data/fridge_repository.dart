@@ -38,9 +38,7 @@ class FridgeRepository {
 
   Future<void> addItems(List<FridgeItem> items) async {
     try {
-      for (final item in items) {
-        await _firestoreService.addItem(item);
-      }
+      await _firestoreService.addItemsBatch(items);
     } catch (e) {
       debugPrint('Error adding items in repository: $e');
       rethrow;
