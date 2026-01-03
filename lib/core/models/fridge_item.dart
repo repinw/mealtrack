@@ -22,6 +22,8 @@ class FridgeItem extends Equatable {
     this.language,
     this.brand,
     this.discounts = const {},
+    this.isDeposit = false,
+    this.isDiscount = false,
   });
 
   /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
@@ -40,6 +42,8 @@ class FridgeItem extends Equatable {
     String? brand,
     Map<String, double>? discounts,
     DateTime Function()? now,
+    bool isDeposit = false,
+    bool isDiscount = false,
   }) {
     if (name.trim().isEmpty) {
       throw ArgumentError.value(name, 'name', 'must not be empty');
@@ -49,9 +53,6 @@ class FridgeItem extends Equatable {
     }
     if (quantity <= 0) {
       throw ArgumentError.value(quantity, 'quantity', 'must be greater than 0');
-    }
-    if (unitPrice < 0) {
-      throw ArgumentError.value(unitPrice, 'unitPrice', 'must not be negative');
     }
 
     return FridgeItem(
@@ -70,6 +71,8 @@ class FridgeItem extends Equatable {
       discounts: discounts ?? {},
       initialQuantity: quantity,
       consumptionEvents: const [],
+      isDeposit: isDeposit,
+      isDiscount: isDiscount,
     );
   }
 
@@ -106,6 +109,21 @@ class FridgeItem extends Equatable {
 
   final int initialQuantity;
 
+  final bool isDeposit;
+
+  final bool isDiscount;
+
+  double get effectiveUnitPrice {
+    if (discounts.isEmpty) return unitPrice;
+    final totalDiscount = discounts.values.fold(
+      0.0,
+      (sum, amount) => sum + amount,
+    );
+    return unitPrice + totalDiscount;
+  }
+
+  double get totalPrice => quantity * effectiveUnitPrice;
+
   @override
   List<Object?> get props => [
     id,
@@ -123,6 +141,8 @@ class FridgeItem extends Equatable {
     language,
     brand,
     initialQuantity,
+    isDeposit,
+    isDiscount,
   ];
 
   @override
@@ -167,6 +187,8 @@ class FridgeItem extends Equatable {
       brand: json['brand'] as String?,
       initialQuantity:
           json['initialQuantity'] as int? ?? json['quantity'] as int,
+      isDeposit: json['isDeposit'] as bool? ?? false,
+      isDiscount: json['isDiscount'] as bool? ?? false,
     );
   }
 
@@ -191,6 +213,8 @@ class FridgeItem extends Equatable {
       'language': language,
       'brand': brand,
       'initialQuantity': initialQuantity,
+      'isDeposit': isDeposit,
+      'isDiscount': isDiscount,
     };
   }
 
@@ -254,6 +278,8 @@ class FridgeItem extends Equatable {
     DateTime? receiptDate,
     String? language,
     int? initialQuantity,
+    bool? isDeposit,
+    bool? isDiscount,
   }) {
     return FridgeItem(
       id: id ?? this.id,
@@ -271,6 +297,8 @@ class FridgeItem extends Equatable {
       language: language ?? this.language,
       brand: brand ?? this.brand,
       initialQuantity: initialQuantity ?? this.initialQuantity,
+      isDeposit: isDeposit ?? this.isDeposit,
+      isDiscount: isDiscount ?? this.isDiscount,
     );
   }
 }

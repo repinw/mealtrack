@@ -15,6 +15,8 @@ import 'package:uuid/uuid.dart';
 // b = brand
 // d = discounts
 // a = amount (in discount)
+// if = isFood (isDeposit = !isFood)
+// id = isDiscount
 
 List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
@@ -110,12 +112,14 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final quantity = qty > 0 ? qty : 1;
 
       final rawPrice = _getParsedNum(map['p'], rootLanguage);
-      final totalPrice = (rawPrice?.toDouble() ?? 0.0).abs();
+      final totalPrice = (rawPrice?.toDouble() ?? 0.0);
 
       final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
       final weight = (map['w']) as String?;
       final brand = (map['b']) as String?;
+
+      final isFood = (map['if']) as bool? ?? true;
 
       return FridgeItem.create(
         name: name.isEmpty ? AppLocalizations.jsonParsingError : name,
@@ -128,6 +132,8 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         receiptId: receiptId,
         receiptDate: rootReceiptDate,
         language: rootLanguage,
+        isDeposit: !isFood,
+        isDiscount: (map['id']) as bool? ?? false,
       );
     }).toList();
   } catch (e, stackTrace) {

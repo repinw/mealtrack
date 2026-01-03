@@ -75,7 +75,7 @@ class InventoryItemRow extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.unitPrice.toStringAsFixed(2)}€ pro Stück',
+                  '${item.totalPrice.toStringAsFixed(2)}€',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ],

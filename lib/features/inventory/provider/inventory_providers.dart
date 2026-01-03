@@ -173,10 +173,7 @@ InventoryStats inventoryStats(Ref ref) {
   final items = itemsAsync.value!;
   final activeItems = items.where((i) => i.quantity > 0).toList();
 
-  final totalValue = activeItems.fold(
-    0.0,
-    (sum, i) => sum + (i.unitPrice * i.quantity),
-  );
+  final totalValue = activeItems.fold(0.0, (sum, i) => sum + i.totalPrice);
 
   final scanCount = activeItems
       .map((e) => e.receiptId)
