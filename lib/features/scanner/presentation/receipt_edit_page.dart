@@ -197,7 +197,32 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
               total: total,
               onSave: () async {
                 debugPrint("Saving ${items.length} Items");
-                await ref.read(fridgeItemsProvider.notifier).addItems(items);
+                final itemsToSave = <FridgeItem>[];
+                FridgeItem? lastNormalItem;
+
+                for (final item in items) {
+                  if (!item.isDeposit) {
+                    itemsToSave.add(item);
+                    lastNormalItem = item;
+                  } else if (item.isDiscount && lastNormalItem != null) {
+                    final updatedDiscounts = Map<String, double>.from(
+                      lastNormalItem.discounts,
+                    );
+                    updatedDiscounts[item.name] = item.unitPrice;
+
+                    final updatedItem = lastNormalItem.copyWith(
+                      discounts: updatedDiscounts,
+                    );
+
+                    itemsToSave.removeLast();
+                    itemsToSave.add(updatedItem);
+                    lastNormalItem = updatedItem;
+                  }
+                }
+
+                await ref
+                    .read(fridgeItemsProvider.notifier)
+                    .addItems(itemsToSave);
                 if (context.mounted) {
                   Navigator.of(context).pop();
                 }

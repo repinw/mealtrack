@@ -34,7 +34,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
     _priceController = TextEditingController(
-      text: (widget.item.unitPrice).toStringAsFixed(2),
+      text: (widget.item.unitPrice * widget.item.quantity).toStringAsFixed(2),
     );
     _qtyController = TextEditingController(
       text: widget.item.quantity.toString(),
@@ -50,10 +50,13 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         _nameController.text = widget.item.name;
       }
 
-      final priceText = widget.item.unitPrice.toStringAsFixed(2);
-      if (_priceController.text != priceText &&
-          double.tryParse(_priceController.text.replaceAll(',', '.')) !=
-              widget.item.unitPrice) {
+      final total = widget.item.unitPrice * widget.item.quantity;
+      final priceText = total.toStringAsFixed(2);
+      final currentPriceVal = double.tryParse(
+        _priceController.text.replaceAll(',', '.'),
+      );
+
+      if (_priceController.text != priceText && currentPriceVal != total) {
         _priceController.text = priceText;
       }
       if (_qtyController.text != widget.item.quantity.toString()) {
@@ -113,14 +116,18 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final weightText = _weightController.text;
     final brandText = _brandController.text;
 
+    final quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
+    final totalPrice =
+        double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
+    final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
+
     final newItem = widget.item.copyWith(
       name: _nameController.text,
       weight: weightText.isNotEmpty ? weightText : null,
       clearWeight: weightText.isEmpty,
       brand: brandText.isNotEmpty ? brandText : null,
-      unitPrice:
-          double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
-      quantity: int.tryParse(_qtyController.text) ?? widget.item.quantity,
+      unitPrice: unitPrice,
+      quantity: quantity,
     );
 
     widget.onChanged(newItem);
@@ -154,10 +161,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 controller: _qtyController,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
-                  color: Colors.indigo,
+                  color: widget.item.isDeposit ? Colors.grey : Colors.indigo,
                 ),
                 decoration: const InputDecoration(
                   isDense: true,
@@ -192,9 +199,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                     key: const Key('nameField'),
                     controller: _nameController,
                     maxLines: 1,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
+                      color: widget.item.isDeposit ? Colors.grey : Colors.black,
                     ),
                     decoration: const InputDecoration(
                       isDense: true,
@@ -216,9 +224,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 key: const Key('weightField'),
                 controller: _weightController,
                 textAlign: TextAlign.right,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: widget.item.isDeposit ? Colors.grey : Colors.black,
                 ),
                 decoration: const InputDecoration(
                   isDense: true,
@@ -256,9 +265,12 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                         decimal: true,
                       ),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
+                        color: widget.item.isDeposit
+                            ? Colors.grey
+                            : Colors.black,
                       ),
                       decoration: const InputDecoration(
                         isDense: true,

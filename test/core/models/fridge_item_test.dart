@@ -37,6 +37,8 @@ void main() {
       expect(item.isConsumed, isFalse);
       expect(item.consumptionDate, isNull);
       expect(item.discounts, isEmpty);
+      expect(item.isDeposit, isFalse);
+      expect(item.isDiscount, isFalse);
     });
 
     group('FridgeItem.create factory', () {
@@ -61,6 +63,8 @@ void main() {
         expect(item.isConsumed, isFalse);
         expect(item.consumptionDate, isNull);
         expect(item.discounts, isEmpty);
+        expect(item.isDeposit, isFalse);
+        expect(item.isDiscount, isFalse);
       });
 
       test('creates an instance with all optional values', () {
@@ -320,15 +324,13 @@ void main() {
     });
 
     group('Bug Fixes & Edge Cases', () {
-      test('throws ArgumentError if unitPrice is negative', () {
-        expect(
-          () => FridgeItem.create(
-            name: 'Brot',
-            storeName: 'Bäcker',
-            unitPrice: -2.50,
-          ),
-          throwsA(isA<ArgumentError>()),
+      test('allows negative unitPrice', () {
+        final item = FridgeItem.create(
+          name: 'Brot',
+          storeName: 'Bäcker',
+          unitPrice: -2.50,
         );
+        expect(item.unitPrice, -2.50);
       });
     });
 
@@ -382,6 +384,8 @@ void main() {
           'language': null,
           'brand': 'Alnatura',
           'initialQuantity': 1,
+          'isDeposit': false,
+          'isDiscount': false,
         });
       });
 
@@ -405,6 +409,8 @@ void main() {
           'language': null,
           'brand': null,
           'initialQuantity': 1,
+          'isDeposit': false,
+          'isDiscount': false,
         });
       });
 
@@ -694,6 +700,52 @@ void main() {
 
         expect(updated.quantity, 6);
         expect(updated.consumptionEvents, isEmpty);
+      });
+    });
+
+    group('Price Calculations', () {
+      test('effectiveUnitPrice returns unitPrice when no discounts', () {
+        final item = FridgeItem.create(
+          name: 'Item',
+          storeName: 'Store',
+          unitPrice: 10.0,
+        );
+        expect(item.effectiveUnitPrice, 10.0);
+        expect(item.totalPrice, 10.0);
+      });
+
+      test('effectiveUnitPrice subtracts discounts', () {
+        final item = FridgeItem.create(
+          name: 'Item',
+          storeName: 'Store',
+          unitPrice: 10.0,
+          discounts: {'Discount': -2.0},
+        );
+        expect(item.effectiveUnitPrice, 8.0);
+      });
+
+      test('totalPrice reflects quantity and discounts', () {
+        final item = FridgeItem.create(
+          name: 'Item',
+          storeName: 'Store',
+          unitPrice: 10.0,
+          quantity: 3,
+          discounts: {'Discount': -2.0},
+        );
+        expect(item.effectiveUnitPrice, 8.0);
+        expect(item.totalPrice, 24.0);
+      });
+
+      test('handles multiple discounts', () {
+        final item = FridgeItem.create(
+          name: 'Item',
+          storeName: 'Store',
+          unitPrice: 10.0,
+          quantity: 2,
+          discounts: {'D1': -1.0, 'D2': -0.5},
+        );
+        expect(item.effectiveUnitPrice, 8.5);
+        expect(item.totalPrice, 17.0);
       });
     });
   });

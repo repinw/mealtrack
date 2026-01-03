@@ -441,6 +441,37 @@ void main() {
       expect(stats.articleCount, 6);
       // scanCount = 3 unique receiptIds
       expect(stats.scanCount, 3);
+      expect(stats.scanCount, 3);
+    });
+
+    test('considers discounts in totalValue calculation', () async {
+      final item1 = FridgeItem.create(
+        name: 'Item 1',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 10.0,
+        discounts: {'Discount': -2.0},
+      );
+      final item2 = FridgeItem.create(
+        name: 'Item 2',
+        storeName: 'Store',
+        quantity: 2,
+        unitPrice: 5.0,
+        discounts: {'Discount': -1.0},
+      );
+
+      when(
+        () => mockStorageService.loadItems(),
+      ).thenAnswer((_) async => [item1, item2]);
+
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      // Item 1: (10.0 - 2.0) * 1 = 8.0
+      // Item 2: (5.0 - 1.0) * 2 = 8.0
+      // Total: 16.0
+      expect(stats.totalValue, closeTo(16.0, 0.001));
     });
 
     test('scanCount is 1 when multiple items have same receiptId', () async {

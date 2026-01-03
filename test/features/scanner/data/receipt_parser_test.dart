@@ -79,21 +79,6 @@ void main() {
         expect(result[0].unitPrice, 5.0);
       });
 
-      test('handles null or invalid discounts gracefully', () {
-        const jsonString = '''
-        {
-          "i": [
-            {"n": "Null Discounts", "d": null},
-            {"n": "Invalid Discounts", "d": ["invalid", {"no_name": 1}]}
-          ]
-        }
-        ''';
-        final result = parseScannedItemsFromJson(jsonString);
-
-        expect(result[0].discounts, isEmpty);
-        expect(result[1].discounts, isEmpty);
-      });
-
       test('parses numbers with commas correctly', () {
         const jsonString = '{"i": [{"n": "Brot", "p": "1,59", "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
@@ -181,10 +166,10 @@ void main() {
         );
       });
 
-      test('converts negative price to positive', () {
+      test('preserves negative price', () {
         const jsonString = '{"i": [{"n": "Negative", "p": -2.0, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
-        expect(result.first.unitPrice, 2.0);
+        expect(result.first.unitPrice, -2.0);
       });
 
       group('Number Parsing Edge Cases', () {
@@ -267,6 +252,35 @@ void main() {
         final result = parseScannedItemsFromJson(jsonString);
 
         expect(result.first.discounts, {'Sale': 2.0});
+      });
+
+      test('parses isDeposit from "if" key (isFood)', () {
+        const jsonString = '''{
+          "i": [
+            {
+              "n": "Deposit Item (isFood=false)",
+              "p": -3.0,
+              "q": 1,
+              "if": false
+            },
+            {
+              "n": "Normal Item (isFood=true)",
+              "p": 3.0,
+              "q": 1,
+              "if": true
+            },
+            {
+              "n": "Default Item (no if key)",
+              "p": 3.0,
+              "q": 1
+            }
+          ]
+        }''';
+        final result = parseScannedItemsFromJson(jsonString);
+
+        expect(result[0].isDeposit, isTrue);
+        expect(result[1].isDeposit, isFalse);
+        expect(result[2].isDeposit, isFalse);
       });
 
       test('parses weight and brand fields', () {

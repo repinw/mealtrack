@@ -87,7 +87,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text('Test Apple'), findsOneWidget);
-      expect(find.textContaining('pro Stück'), findsOneWidget);
+      expect(find.textContaining('0.00€'), findsOneWidget);
+      expect(find.textContaining('pro Stück'), findsNothing);
       expect(find.byType(CounterPill), findsOneWidget);
     });
 
