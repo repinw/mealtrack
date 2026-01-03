@@ -251,7 +251,7 @@ void main() {
         const templateId = 'valid_template_id';
 
         final mockResponse = MockGenerateContentResponse();
-        when(() => mockResponse.text).thenReturn(null); 
+        when(() => mockResponse.text).thenReturn(null);
 
         service = FirebaseAiService(
           imageCompressor: mockImageCompressor,
@@ -322,6 +322,8 @@ void main() {
           imageCompressor: mockImageCompressor,
           remoteConfig: mockRemoteConfig,
         );
+
+        reset(mockImageCompressor);
 
         when(
           () => mockImageCompressor.compressWithFile(

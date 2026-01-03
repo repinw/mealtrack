@@ -139,3 +139,110 @@ final class FirebaseAiServiceProvider
 }
 
 String _$firebaseAiServiceHash() => r'73b132728dd2e16fdd3c577c4aaed9d27c233587';
+
+@ProviderFor(firebaseAuth)
+const firebaseAuthProvider = FirebaseAuthProvider._();
+
+final class FirebaseAuthProvider
+    extends $FunctionalProvider<FirebaseAuth, FirebaseAuth, FirebaseAuth>
+    with $Provider<FirebaseAuth> {
+  const FirebaseAuthProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'firebaseAuthProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$firebaseAuthHash();
+
+  @$internal
+  @override
+  $ProviderElement<FirebaseAuth> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  FirebaseAuth create(Ref ref) {
+    return firebaseAuth(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FirebaseAuth value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FirebaseAuth>(value),
+    );
+  }
+}
+
+String _$firebaseAuthHash() => r'912368c3df3f72e4295bf7a8cda93b9c5749d923';
+
+@ProviderFor(appInitialization)
+const appInitializationProvider = AppInitializationProvider._();
+
+final class AppInitializationProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const AppInitializationProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appInitializationProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appInitializationHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    return appInitialization(ref);
+  }
+}
+
+String _$appInitializationHash() => r'd83fe9e43fe74edcea02a414d268b03537fb2489';
+
+@ProviderFor(authenticatedUser)
+const authenticatedUserProvider = AuthenticatedUserProvider._();
+
+final class AuthenticatedUserProvider
+    extends $FunctionalProvider<AsyncValue<User>, User, FutureOr<User>>
+    with $FutureModifier<User>, $FutureProvider<User> {
+  const AuthenticatedUserProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'authenticatedUserProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$authenticatedUserHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<User> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<User> create(Ref ref) {
+    return authenticatedUser(ref);
+  }
+}
+
+String _$authenticatedUserHash() => r'51512752e7f32d200b09e23f7a182b7f0f48a798';

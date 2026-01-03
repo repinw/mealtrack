@@ -70,6 +70,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         firebaseAiServiceProvider.overrideWithValue(mockFirebaseAiService),
+        appInitializationProvider.overrideWith(
+          (ref) async {},
+        ), // Skip startup logic
       ],
     );
     addTearDown(container.dispose);

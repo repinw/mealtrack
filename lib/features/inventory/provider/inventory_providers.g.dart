@@ -230,4 +230,4 @@ final class InventoryStatsProvider
   }
 }
 
-String _$inventoryStatsHash() => r'6f1dda25ffbd0fe1f32d4b3fee89da757850e823';
+String _$inventoryStatsHash() => r'314bf143a4d50f6fcd8beba5403f4ea90d34b364';

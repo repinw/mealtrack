@@ -1,8 +1,8 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/app.dart';
-import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/firebase_options.dart';
 
 Future<void> main() async {
@@ -10,12 +10,12 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: AndroidDebugProvider(),
+    providerApple: AppleDebugProvider(),
+  );
+
   final container = ProviderContainer();
-  try {
-    await container.read(firebaseAiServiceProvider).initialize();
-  } catch (e) {
-    debugPrint('Failed to initialize FirebaseAiService: $e');
-  }
 
   runApp(
     UncontrolledProviderScope(

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/local_storage_service.dart';
+import 'package:mealtrack/core/provider/firestore_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'fridge_repository.g.dart';
@@ -8,19 +8,19 @@ part 'fridge_repository.g.dart';
 @riverpod
 FridgeRepository fridgeRepository(Ref ref) {
   return FridgeRepository(
-    localStorageService: ref.watch(localStorageServiceProvider),
+    firestoreService: ref.watch(firestoreServiceProvider),
   );
 }
 
 class FridgeRepository {
-  final LocalStorageService _localStorageService;
+  final FirestoreService _firestoreService;
 
-  FridgeRepository({required LocalStorageService localStorageService})
-    : _localStorageService = localStorageService;
+  FridgeRepository({required FirestoreService firestoreService})
+    : _firestoreService = firestoreService;
 
   Future<List<FridgeItem>> getItems() async {
     try {
-      return await _localStorageService.loadItems();
+      return await _firestoreService.getItems();
     } catch (e) {
       debugPrint('Error loading items from repository: $e');
       rethrow;
@@ -29,7 +29,7 @@ class FridgeRepository {
 
   Future<void> saveItems(List<FridgeItem> items) async {
     try {
-      await _localStorageService.saveItems(items);
+      await _firestoreService.replaceAllItems(items);
     } catch (e) {
       debugPrint('Error saving items in repository: $e');
       rethrow;
@@ -38,8 +38,9 @@ class FridgeRepository {
 
   Future<void> addItems(List<FridgeItem> items) async {
     try {
-      final currentItems = await getItems();
-      await saveItems([...currentItems, ...items]);
+      for (final item in items) {
+        await _firestoreService.addItem(item);
+      }
     } catch (e) {
       debugPrint('Error adding items in repository: $e');
       rethrow;
@@ -48,16 +49,7 @@ class FridgeRepository {
 
   Future<void> updateItem(FridgeItem item) async {
     try {
-      final currentItems = await getItems();
-      final index = currentItems.indexWhere((i) => i.id == item.id);
-
-      if (index != -1) {
-        final updatedItems = List<FridgeItem>.from(currentItems);
-        updatedItems[index] = item;
-        await saveItems(updatedItems);
-      } else {
-        debugPrint('Item with id ${item.id} not found for update');
-      }
+      await _firestoreService.updateItem(item);
     } catch (e) {
       debugPrint('Error updating item in repository: $e');
       rethrow;
@@ -66,7 +58,7 @@ class FridgeRepository {
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     try {
-      await updateItem(item.adjustQuantity(delta));
+      await _firestoreService.updateItem(item.adjustQuantity(delta));
     } catch (e) {
       debugPrint('Error updating quantity in repository: $e');
       rethrow;
@@ -75,7 +67,7 @@ class FridgeRepository {
 
   Future<void> deleteAllItems() async {
     try {
-      await _localStorageService.deleteAllItems();
+      await _firestoreService.deleteAllItems();
     } catch (e) {
       debugPrint('Error deleting all items in repository: $e');
       rethrow;
@@ -84,14 +76,7 @@ class FridgeRepository {
 
   Future<void> deleteItem(String id) async {
     try {
-      final currentItems = await getItems();
-      final updatedItems = currentItems.where((item) => item.id != id).toList();
-
-      if (currentItems.length != updatedItems.length) {
-        await saveItems(updatedItems);
-      } else {
-        debugPrint('Item with id $id not found for deletion');
-      }
+      await _firestoreService.deleteItem(id);
     } catch (e) {
       debugPrint('Error deleting item in repository: $e');
       rethrow;
