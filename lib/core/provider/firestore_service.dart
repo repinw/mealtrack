@@ -81,12 +81,20 @@ class FirestoreService {
 
     if (snapshot.docs.isEmpty) return;
 
-    final batch = _firestore.batch();
-    for (var doc in snapshot.docs) {
-      batch.set(newCollection.doc(doc.id), doc.data());
-      batch.delete(doc.reference);
-    }
+    final docs = snapshot.docs;
+    const int batchSize = 200;
 
-    await batch.commit();
+    for (var i = 0; i < docs.length; i += batchSize) {
+      final batch = _firestore.batch();
+      final end = (i + batchSize < docs.length) ? i + batchSize : docs.length;
+      final chunk = docs.sublist(i, end);
+
+      for (var doc in chunk) {
+        batch.set(newCollection.doc(doc.id), doc.data());
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    }
   }
 }
