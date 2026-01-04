@@ -6,6 +6,7 @@ import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/core/provider/app_providers.dart';
 
 class MockFridgeItems extends FridgeItems {
   @override
@@ -16,7 +17,10 @@ void main() {
   testWidgets('MealTrackApp builds and displays HomePage', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [fridgeItemsProvider.overrideWith(() => MockFridgeItems())],
+        overrides: [
+          fridgeItemsProvider.overrideWith(() => MockFridgeItems()),
+          appInitializationProvider.overrideWith((ref) async {}),
+        ],
         child: const MealTrackApp(),
       ),
     );
@@ -28,7 +32,10 @@ void main() {
   testWidgets('MealTrackApp has correct title and theme', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [fridgeItemsProvider.overrideWith(() => MockFridgeItems())],
+        overrides: [
+          fridgeItemsProvider.overrideWith(() => MockFridgeItems()),
+          appInitializationProvider.overrideWith((ref) async {}),
+        ],
         child: const MealTrackApp(),
       ),
     );

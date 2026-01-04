@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/local_storage_service.dart';
+import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_app_bar.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockLocalStorageService extends Mock implements LocalStorageService {}
+class MockFridgeRepository extends Mock implements FridgeRepository {}
 
 class MockFridgeItemsNotifier extends FridgeItems {
   final List<FridgeItem> mockItems;
+  bool deleteAllCalled = false;
 
   MockFridgeItemsNotifier([this.mockItems = const []]);
 
@@ -18,7 +19,9 @@ class MockFridgeItemsNotifier extends FridgeItems {
   Future<List<FridgeItem>> build() async => mockItems;
 
   @override
-  Future<void> deleteAll() async {}
+  Future<void> deleteAll() async {
+    deleteAllCalled = true;
+  }
 
   @override
   Future<void> addItems(List<FridgeItem> items) async {}
@@ -34,19 +37,22 @@ class MockFridgeItemsNotifier extends FridgeItems {
 
   @override
   Future<void> deleteItem(String id) async {}
+
+  @override
+  Future<void> deleteItemsByReceipt(String receiptId) async {}
 }
 
 void main() {
-  late MockLocalStorageService mockStorageService;
+  late MockFridgeRepository mockRepository;
 
   setUp(() {
-    mockStorageService = MockLocalStorageService();
+    mockRepository = MockFridgeRepository();
   });
 
   Widget buildTestWidget({List<FridgeItem>? items}) {
     return ProviderScope(
       overrides: [
-        localStorageServiceProvider.overrideWithValue(mockStorageService),
+        fridgeRepositoryProvider.overrideWithValue(mockRepository),
         fridgeItemsProvider.overrideWith(
           () => MockFridgeItemsNotifier(items ?? []),
         ),
@@ -62,8 +68,6 @@ void main() {
 
   group('InventoryAppBar', () {
     testWidgets('displays the title in uppercase', (tester) async {
-      when(() => mockStorageService.loadItems()).thenAnswer((_) async => []);
-
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -71,8 +75,6 @@ void main() {
     });
 
     testWidgets('displays VORRATSWERT label', (tester) async {
-      when(() => mockStorageService.loadItems()).thenAnswer((_) async => []);
-
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -88,7 +90,6 @@ void main() {
           unitPrice: 5.0,
         ),
       ];
-      when(() => mockStorageService.loadItems()).thenAnswer((_) async => items);
 
       await tester.pumpWidget(buildTestWidget(items: items));
       await tester.pumpAndSettle();
@@ -97,8 +98,6 @@ void main() {
     });
 
     testWidgets('displays debug delete button in debug mode', (tester) async {
-      when(() => mockStorageService.loadItems()).thenAnswer((_) async => []);
-
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -114,10 +113,6 @@ void main() {
         quantity: 1,
         unitPrice: 1.0,
       );
-      when(
-        () => mockStorageService.loadItems(),
-      ).thenAnswer((_) async => [item]);
-      when(() => mockStorageService.deleteAllItems()).thenAnswer((_) async {});
 
       await tester.pumpWidget(buildTestWidget(items: [item]));
       await tester.pumpAndSettle();
@@ -143,7 +138,6 @@ void main() {
           unitPrice: 1.0,
         ).copyWith(receiptId: 'receipt-1'),
       ];
-      when(() => mockStorageService.loadItems()).thenAnswer((_) async => items);
 
       await tester.pumpWidget(buildTestWidget(items: items));
       await tester.pumpAndSettle();

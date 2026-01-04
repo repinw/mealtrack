@@ -53,4 +53,9 @@ class AppLocalizations {
   static const String quantityUpdateFailed =
       'Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.';
   static const String loading = 'Lädt...';
+
+  static const String initializingApp = 'App wird initialisiert...';
+  static String errorInitializing(Object error) =>
+      'Fehler beim Initialisieren der App: $error';
+  static const String retry = 'Erneut versuchen';
 }

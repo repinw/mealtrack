@@ -52,3 +52,7 @@ coverage/lcov.info
 windows/flutter/generated_plugin_registrant.h
 .gitignore
 linux/flutter/generated_plugin_registrant.h
+
+# Firebase configuration files (contain API keys)
+**/google-services.json
+**/GoogleService-Info.plist
