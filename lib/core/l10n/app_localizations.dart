@@ -58,4 +58,6 @@ class AppLocalizations {
   static String errorInitializing(Object error) =>
       'Fehler beim Initialisieren der App: $error';
   static const String retry = 'Erneut versuchen';
+
+  static String? profile = 'Profil';
 }
