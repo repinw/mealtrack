@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'firestore_service.g.dart';
 
+// coverage:ignore-start
 @Riverpod(keepAlive: true)
 FirestoreService firestoreService(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
@@ -16,6 +18,7 @@ FirestoreService firestoreService(Ref ref) {
 
   return FirestoreService(FirebaseFirestore.instance, user.uid);
 }
+// coverage:ignore-end
 
 class FirestoreService {
   final FirebaseFirestore _firestore;
@@ -24,7 +27,10 @@ class FirestoreService {
   FirestoreService(this._firestore, this._userId);
 
   CollectionReference<Map<String, dynamic>> get _inventoryCollection {
-    return _firestore.collection('users').doc(_userId).collection('inventory');
+    return _firestore
+        .collection(usersCollection)
+        .doc(_userId)
+        .collection(inventoryCollection);
   }
 
   Future<List<FridgeItem>> getItems() async {
