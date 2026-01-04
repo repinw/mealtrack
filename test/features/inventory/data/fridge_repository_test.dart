@@ -64,19 +64,6 @@ void main() {
       expect(() => repository.getItems(), throwsException);
     });
 
-    test('saveItems calls replaceAllItems', () async {
-      final items = [
-        FridgeItem.create(name: 'Apple', storeName: 'Store', quantity: 5),
-      ];
-      when(
-        () => mockFirestoreService.replaceAllItems(any()),
-      ).thenAnswer((_) async {});
-
-      await repository.saveItems(items);
-
-      verify(() => mockFirestoreService.replaceAllItems(items)).called(1);
-    });
-
     test('addItems uses batch to add items', () async {
       final newItem = FridgeItem.create(
         name: 'Banana',
@@ -178,14 +165,6 @@ void main() {
       final result = await repository.getGroupedItems();
 
       expect(result.length, 2);
-    });
-
-    test('saveItems rethrows exceptions', () async {
-      when(
-        () => mockFirestoreService.replaceAllItems(any()),
-      ).thenThrow(Exception('Save error'));
-
-      expect(() => repository.saveItems([]), throwsException);
     });
 
     test('addItems rethrows exceptions', () async {

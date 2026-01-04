@@ -29,6 +29,11 @@ FirebaseAuth firebaseAuth(Ref ref) {
 }
 
 @riverpod
+Stream<User?> authStateChanges(Ref ref) {
+  return ref.watch(firebaseAuthProvider).authStateChanges();
+}
+
+@riverpod
 Future<void> appInitialization(Ref ref) async {
   final auth = ref.watch(firebaseAuthProvider);
   if (auth.currentUser == null) {

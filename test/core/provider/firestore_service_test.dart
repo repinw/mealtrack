@@ -12,17 +12,12 @@ void main() {
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
     mockAuth = MockFirebaseAuth();
-    firestoreService = FirestoreService(fakeFirestore, mockAuth);
+    firestoreService = FirestoreService(fakeFirestore, 'test_user_id');
   });
 
   group('FirestoreService', () {
-    test('throws exception when user is not authenticated', () {
-      expect(() => firestoreService.getItems(), throwsException);
-    });
-
     test('addItem adds item to firestore', () async {
       await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
       final item = FridgeItem(
         id: '1',
         name: 'Apple',
@@ -35,7 +30,7 @@ void main() {
 
       final snapshot = await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .get();
@@ -44,9 +39,46 @@ void main() {
       expect(snapshot.data()!['name'], 'Apple');
     });
 
+    test('addItemsBatch adds multiple items using batch', () async {
+      await mockAuth.signInAnonymously();
+      final item1 = FridgeItem(
+        id: '1',
+        name: 'Apple',
+        quantity: 1,
+        entryDate: DateTime(2023, 1, 1),
+        storeName: 'Test Store',
+      );
+      final item2 = FridgeItem(
+        id: '2',
+        name: 'Banana',
+        quantity: 2,
+        entryDate: DateTime(2023, 1, 2),
+        storeName: 'Test Store',
+      );
+
+      await firestoreService.addItemsBatch([item1, item2]);
+
+      final snapshot1 = await fakeFirestore
+          .collection('users')
+          .doc('test_user_id')
+          .collection('inventory')
+          .doc('1')
+          .get();
+      final snapshot2 = await fakeFirestore
+          .collection('users')
+          .doc('test_user_id')
+          .collection('inventory')
+          .doc('2')
+          .get();
+
+      expect(snapshot1.exists, isTrue);
+      expect(snapshot1.data()!['name'], 'Apple');
+      expect(snapshot2.exists, isTrue);
+      expect(snapshot2.data()!['name'], 'Banana');
+    });
+
     test('getItems returns list of items', () async {
       await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
       final item1 = FridgeItem(
         id: '1',
         name: 'Apple',
@@ -64,13 +96,13 @@ void main() {
 
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .set(item1.toJson());
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('2')
           .set(item2.toJson());
@@ -84,7 +116,6 @@ void main() {
 
     test('updateItem updates existing item', () async {
       await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
       final item = FridgeItem(
         id: '1',
         name: 'Apple',
@@ -95,7 +126,7 @@ void main() {
 
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .set(item.toJson());
@@ -106,7 +137,7 @@ void main() {
 
       final snapshot = await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .get();
@@ -117,7 +148,6 @@ void main() {
 
     test('deleteItem removes item', () async {
       await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
       final item = FridgeItem(
         id: '1',
         name: 'Apple',
@@ -128,7 +158,7 @@ void main() {
 
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .set(item.toJson());
@@ -137,7 +167,7 @@ void main() {
 
       final snapshot = await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .get();
@@ -147,7 +177,6 @@ void main() {
 
     test('deleteAllItems removes all items', () async {
       await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
       final item1 = FridgeItem(
         id: '1',
         name: 'Apple',
@@ -165,13 +194,13 @@ void main() {
 
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('1')
           .set(item1.toJson());
       await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .doc('2')
           .set(item2.toJson());
@@ -180,58 +209,11 @@ void main() {
 
       final snapshot = await fakeFirestore
           .collection('users')
-          .doc(user.uid)
+          .doc('test_user_id')
           .collection('inventory')
           .get();
 
       expect(snapshot.docs.isEmpty, isTrue);
-    });
-
-    test('replaceAllItems replaces all items', () async {
-      await mockAuth.signInAnonymously();
-      final user = mockAuth.currentUser!;
-      final oldItem = FridgeItem(
-        id: '1',
-        name: 'Old Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
-
-      await fakeFirestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('inventory')
-          .doc('1')
-          .set(oldItem.toJson());
-
-      final newItem1 = FridgeItem(
-        id: '2',
-        name: 'New Banana',
-        quantity: 2,
-        entryDate: DateTime(2023, 1, 2),
-        storeName: 'Test Store',
-      );
-      final newItem2 = FridgeItem(
-        id: '3',
-        name: 'New Orange',
-        quantity: 3,
-        entryDate: DateTime(2023, 1, 3),
-        storeName: 'Test Store',
-      );
-
-      await firestoreService.replaceAllItems([newItem1, newItem2]);
-
-      final snapshot = await fakeFirestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('inventory')
-          .get();
-
-      expect(snapshot.docs.length, 2);
-      expect(snapshot.docs.any((d) => d.id == '1'), isFalse);
-      expect(snapshot.docs.any((d) => d.id == '2'), isTrue);
-      expect(snapshot.docs.any((d) => d.id == '3'), isTrue);
     });
   });
 }

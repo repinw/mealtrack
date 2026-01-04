@@ -27,15 +27,6 @@ class FridgeRepository {
     }
   }
 
-  Future<void> saveItems(List<FridgeItem> items) async {
-    try {
-      await _firestoreService.replaceAllItems(items);
-    } catch (e) {
-      debugPrint('Error saving items in repository: $e');
-      rethrow;
-    }
-  }
-
   Future<void> addItems(List<FridgeItem> items) async {
     try {
       await _firestoreService.addItemsBatch(items);

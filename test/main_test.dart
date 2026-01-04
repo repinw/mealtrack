@@ -6,8 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/app.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:mealtrack/core/provider/firestore_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 
 class MockFirebaseAiService extends Mock implements FirebaseAiService {}
@@ -60,7 +61,6 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
     mockFirebaseAiService = MockFirebaseAiService();
   });
 
@@ -70,6 +70,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         firebaseAiServiceProvider.overrideWithValue(mockFirebaseAiService),
+        firestoreServiceProvider.overrideWith(
+          (ref) => FirestoreService(FakeFirebaseFirestore(), 'test_user'),
+        ),
         appInitializationProvider.overrideWith(
           (ref) async {},
         ), // Skip startup logic

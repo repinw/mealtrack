@@ -1,28 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'firestore_service.g.dart';
 
 @Riverpod(keepAlive: true)
 FirestoreService firestoreService(Ref ref) {
-  return FirestoreService(FirebaseFirestore.instance, FirebaseAuth.instance);
+  final authState = ref.watch(authStateChangesProvider);
+  final user = authState.value;
+
+  if (user == null) {
+    throw Exception('User not authenticated');
+  }
+
+  return FirestoreService(FirebaseFirestore.instance, user.uid);
 }
 
 class FirestoreService {
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final String _userId;
 
-  FirestoreService(this._firestore, this._auth);
-
-  String get _userId {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('User not authenticated');
-    }
-    return user.uid;
-  }
+  FirestoreService(this._firestore, this._userId);
 
   CollectionReference<Map<String, dynamic>> get _inventoryCollection {
     return _firestore.collection('users').doc(_userId).collection('inventory');
@@ -58,22 +57,6 @@ class FirestoreService {
     final snapshot = await _inventoryCollection.get();
     for (var doc in snapshot.docs) {
       batch.delete(doc.reference);
-    }
-    await batch.commit();
-  }
-
-  /// Upserts all provided items using merge semantics to avoid race conditions.
-  ///
-  /// Note: This method does NOT delete orphaned documents that are not in [items].
-  /// If deletion is required, use [deleteItem] explicitly or implement soft deletes.
-  Future<void> replaceAllItems(List<FridgeItem> items) async {
-    final batch = _firestore.batch();
-    for (var item in items) {
-      batch.set(
-        _inventoryCollection.doc(item.id),
-        item.toJson(),
-        SetOptions(merge: true),
-      );
     }
     await batch.commit();
   }
