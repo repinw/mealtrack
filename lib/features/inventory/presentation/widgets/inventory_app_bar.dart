@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/settings/profile_page.dart';
-import 'package:mealtrack/features/settings/profile_page.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 
 class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const InventoryAppBar({super.key, required this.title});
@@ -67,7 +66,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfilePage()),
+              MaterialPageRoute(builder: (context) => SettingsPage()),
             );
           },
         ),

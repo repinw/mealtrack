@@ -1,6 +1,4 @@
-import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/app.dart';
@@ -11,47 +9,9 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firestore_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 
+import 'helpers/test_helpers.dart';
+
 class MockFirebaseAiService extends Mock implements FirebaseAiService {}
-
-void setupFirebaseCoreMocks() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  final mock = MockFirebasePlatform();
-  FirebasePlatform.instance = mock;
-}
-
-class MockFirebasePlatform extends Fake
-    with MockPlatformInterfaceMixin
-    implements FirebasePlatform {
-  @override
-  FirebaseAppPlatform app([String name = defaultFirebaseAppName]) {
-    return MockFirebaseApp();
-  }
-
-  @override
-  Future<FirebaseAppPlatform> initializeApp({
-    String? name,
-    FirebaseOptions? options,
-  }) async {
-    return MockFirebaseApp();
-  }
-
-  @override
-  List<FirebaseAppPlatform> get apps => [MockFirebaseApp()];
-}
-
-class MockFirebaseApp extends Fake implements FirebaseAppPlatform {
-  @override
-  String get name => defaultFirebaseAppName;
-
-  @override
-  FirebaseOptions get options => const FirebaseOptions(
-    apiKey: 'test-api-key',
-    appId: 'test-app-id',
-    messagingSenderId: 'test-sender-id',
-    projectId: 'test-project-id',
-  );
-}
 
 void main() {
   late MockFirebaseAiService mockFirebaseAiService;

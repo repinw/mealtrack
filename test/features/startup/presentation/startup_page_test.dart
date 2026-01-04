@@ -8,46 +8,8 @@ import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/startup/presentation/startup_page.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firestore_service.dart';
-import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-
-class MockFirebasePlatform extends Fake
-    with MockPlatformInterfaceMixin
-    implements FirebasePlatform {
-  @override
-  FirebaseAppPlatform app([String name = defaultFirebaseAppName]) {
-    return MockFirebaseApp();
-  }
-
-  @override
-  Future<FirebaseAppPlatform> initializeApp({
-    String? name,
-    FirebaseOptions? options,
-  }) async {
-    return MockFirebaseApp();
-  }
-
-  @override
-  List<FirebaseAppPlatform> get apps => [MockFirebaseApp()];
-}
-
-class MockFirebaseApp extends Fake implements FirebaseAppPlatform {
-  @override
-  String get name => defaultFirebaseAppName;
-  @override
-  FirebaseOptions get options => const FirebaseOptions(
-    apiKey: 'test',
-    appId: 'test',
-    messagingSenderId: 'test',
-    projectId: 'test',
-  );
-}
-
-void setupFirebaseCoreMocks() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  FirebasePlatform.instance = MockFirebasePlatform();
-}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -104,7 +66,6 @@ void main() {
     expect(find.byIcon(Icons.error_outline), findsOneWidget);
     expect(find.textContaining('Test error'), findsOneWidget);
     expect(find.text('Erneut versuchen'), findsOneWidget);
-
   });
 
   testWidgets('Scenario 3: Success state renders InventoryPage', (

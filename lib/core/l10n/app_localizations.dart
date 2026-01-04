@@ -59,5 +59,21 @@ class AppLocalizations {
       'Fehler beim Initialisieren der App: $error';
   static const String retry = 'Erneut versuchen';
 
-  static String? profile = 'Profil';
+  static String profile = 'Profil';
+
+  static const String settings = 'Einstellungen';
+  static const String settingsDescription =
+      'Verwalte Vorlieben und Accountdaten';
+  static const String account = 'Konto';
+  static const String accountDescription = 'Verwalte deinen Anmeldestatus';
+  static const String guest = 'Gast';
+  static const String loggedIn = 'Angemeldet';
+  static const String login = 'Einloggen';
+  static const String signIn = 'Anmelden';
+  static const String loginDialogTitle = 'Einloggen';
+  static const String loginDialogContent =
+      'Möchtest du dein aktuelles Gast-Konto mit einem Account verknüpfen oder dich mit einem bestehenden Konto einloggen?';
+  static const String existingAccount = 'Bestehendes Konto';
+  static const String linkAccount = 'Konto verknüpfen';
+  static const String unknown = 'Unbekannt';
 }

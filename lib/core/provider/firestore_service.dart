@@ -66,4 +66,27 @@ class FirestoreService {
     }
     await batch.commit();
   }
+
+  Future<void> migrateGuestData(String oldUserId, String newUserId) async {
+    final oldCollection = _firestore
+        .collection(usersCollection)
+        .doc(oldUserId)
+        .collection(inventoryCollection);
+    final newCollection = _firestore
+        .collection(usersCollection)
+        .doc(newUserId)
+        .collection(inventoryCollection);
+
+    final snapshot = await oldCollection.get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    final batch = _firestore.batch();
+    for (var doc in snapshot.docs) {
+      batch.set(newCollection.doc(doc.id), doc.data());
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+  }
 }
