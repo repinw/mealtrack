@@ -35,20 +35,6 @@ Stream<User?> authStateChanges(Ref ref) {
 
 @riverpod
 Future<void> appInitialization(Ref ref) async {
-  final auth = ref.watch(firebaseAuthProvider);
-  if (auth.currentUser == null) {
-    debugPrint('Startup: Signing in anonymously...');
-    try {
-      await auth.signInAnonymously();
-      debugPrint('Startup: Signed in successfully as ${auth.currentUser?.uid}');
-    } catch (e) {
-      debugPrint('Startup: Sign in failed: $e');
-      rethrow;
-    }
-  } else {
-    debugPrint('Startup: Already signed in as ${auth.currentUser?.uid}');
-  }
-
   try {
     debugPrint('Startup: Initializing AI Service...');
     await ref.read(firebaseAiServiceProvider).initialize();
@@ -62,7 +48,7 @@ Future<void> appInitialization(Ref ref) async {
 Future<User> authenticatedUser(Ref ref) async {
   final auth = ref.watch(firebaseAuthProvider);
   if (auth.currentUser == null) {
-    await auth.signInAnonymously();
+    throw Exception('User not authenticated');
   }
   return auth.currentUser!;
 }

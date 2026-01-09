@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
+import 'package:mealtrack/features/auth/presentation/settings_page.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
 class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -59,6 +60,15 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
               }
             },
           ),
+        IconButton(
+          icon: const Icon(Icons.settings),
+          tooltip: AppLocalizations.settings,
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          },
+        ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(_bottomHeight),
