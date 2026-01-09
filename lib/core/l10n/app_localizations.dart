@@ -58,4 +58,25 @@ class AppLocalizations {
   static String errorInitializing(Object error) =>
       'Fehler beim Initialisieren der App: $error';
   static const String retry = 'Erneut versuchen';
+
+  // Auth
+  static const String login = 'Anmelden';
+  static const String register = 'Registrieren';
+  static const String continueAsGuest = 'Als Gast fortfahren';
+  static const String email = 'E-Mail';
+  static const String password = 'Passwort';
+  static const String signInWithGoogle = 'Mit Google anmelden';
+  static const String createAccount = 'Konto erstellen';
+  static const String settings = 'Einstellungen';
+  static const String accountStatus = 'Kontostatus';
+  static const String guestAccount = 'Gastkonto';
+  static const String registeredAccount = 'Registriertes Konto';
+  static const String upgradeAccount = 'Konto aufwerten';
+  static const String linkWithGoogle = 'Mit Google verknüpfen';
+  static const String logout = 'Abmelden';
+  static const String accountConflict = 'Konto-Konflikt';
+  static const String switchAccount = 'Konto wechseln';
+  static const String cancel = 'Abbrechen';
+  static const String accountConflictMessage =
+      'Dieses Konto ist bereits mit einem anderen Benutzer verknüpft. Möchten Sie das Konto wechseln? Sie verlieren dabei die aktuellen Gastdaten.';
 }
