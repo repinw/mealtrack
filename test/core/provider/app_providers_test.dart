@@ -2,6 +2,7 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mocktail/mocktail.dart';
 

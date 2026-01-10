@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/app_providers.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'firestore_service.g.dart';
 
-// coverage:ignore-start
 @Riverpod(keepAlive: true)
 FirestoreService firestoreService(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
@@ -18,7 +17,6 @@ FirestoreService firestoreService(Ref ref) {
 
   return FirestoreService(FirebaseFirestore.instance, user.uid);
 }
-// coverage:ignore-end
 
 class FirestoreService {
   final FirebaseFirestore _firestore;

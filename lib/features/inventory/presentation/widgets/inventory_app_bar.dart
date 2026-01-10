@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 
 class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const InventoryAppBar({super.key, required this.title});
@@ -59,6 +60,15 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
               }
             },
           ),
+        IconButton(
+          icon: const Icon(Icons.settings, color: Colors.blue),
+          tooltip: AppLocalizations.settings,
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          },
+        ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(_bottomHeight),
@@ -73,7 +83,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'VORRATSWERT',
+                    AppLocalizations.stockValue,
                     style: TextStyle(
                       fontSize: 12,
                       color: labelColor,

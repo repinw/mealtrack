@@ -58,4 +58,70 @@ class AppLocalizations {
   static String errorInitializing(Object error) =>
       'Fehler beim Initialisieren der App: $error';
   static const String retry = 'Erneut versuchen';
+
+  // Account & Guest Mode
+  static const String guestMode = 'Gast-Modus';
+  static const String guestModeDescription =
+      'Sie nutzen die App derzeit als Gast. Verknüpfen Sie Ihr Konto mit einer E-Mail oder Google, um Ihre Daten zu sichern und auf mehreren Geräten zu synchronisieren.';
+  static const String linkAccount = 'Konto verknüpfen';
+  static const String createNewAccount = 'Neues Konto erstellen';
+  static const String useExistingAccount = 'Bestehendes Konto nutzen';
+  static const String linkAccountSuccess = 'Konto erfolgreich verknüpft!';
+
+  static const String warning = 'Achtung';
+  static const String linkAccountExistingWarning =
+      'Wenn Sie sich mit einem bestehenden Konto anmelden möchten, '
+      'werden alle Daten Ihres aktuellen Gast-Kontos gelöscht.\n\n'
+      'Sie werden zur Startseite weitergeleitet, wo Sie sich einloggen können.';
+  static const String proceed = 'Fortfahren';
+  static const String cancel = 'Abbrechen';
+  static const String delete = 'Löschen';
+
+  static const String userAccount = 'Benutzerkonto';
+  static const String name = 'Name';
+  static const String email = 'E-Mail';
+  static const String id = 'ID';
+  static const String notAvailable = 'Nicht verfügbar';
+  static const String logout = 'Abmelden';
+
+  static const String deleteAccount = 'Account löschen';
+  static const String deleteAccountQuestion = 'Account löschen?';
+  static const String deleteAccountWarning =
+      'Diese Aktion kann nicht rückgängig gemacht werden. '
+      'Alle Ihre Daten werden unwiderruflich gelöscht.\n\n'
+      'Möchten Sie Ihren Account wirklich löschen?';
+  static const String deleteAccountError = 'Fehler beim Löschen: ';
+
+  // Guest Name Page
+  static const String howShouldWeCallYou = 'Wie möchtest du genannt werden?';
+  static const String yourName = 'Dein Name';
+  static const String next = 'Weiter';
+  static const String errorLabel = 'Fehler: ';
+
+  // Welcome Page
+  static const String welcomeTitle = 'Willkommen bei MealTrack!';
+  static const String welcomeSubtitle =
+      'Behalte den Überblick über deine Lebensmittel';
+  static const String loginBtn = 'Einloggen';
+  static const String continueGuestBtn = 'Als Gast fortsetzen';
+
+  // MySignInScreen
+  static const String existingAccountFound = 'Bestehendes Konto gefunden';
+  static const String existingAccountFoundDescription =
+      'Dieses Konto ist bereits registriert. Wenn Sie fortfahren, gehen alle Daten Ihres aktuellen Gast-Kontos verloren.\n\nMöchten Sie sich trotzdem mit dem bestehenden Konto anmelden?';
+  static const String signedInWithExistingAccount =
+      'Sie wurden mit Ihrem bestehenden Konto angemeldet.';
+  static const String signInErrorPrefix = 'Fehler bei der Anmeldung: ';
+  static const String signInSubtitle =
+      'Bitte melden Sie sich an, um fortzufahren.';
+  static const String signUpSubtitle =
+      'Bitte erstellen Sie ein Konto, um fortzufahren';
+  static const String signInAction = 'anmelden';
+  static const String signUpAction = 'registrieren';
+  static String tosDisclaimer(String action) =>
+      'Durch $action stimmen Sie unseren Nutzungsbedingungen zu.';
+
+  // Inventory & Settings
+  static const String settings = 'Einstellungen';
+  static const String stockValue = 'VORRATSWERT';
 }
