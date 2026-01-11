@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
@@ -68,7 +67,7 @@ void main() {
       await tester.tap(find.text('Verbraucht'));
       await tester.pumpAndSettle();
 
-      expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.empty);
+      expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.consumed);
     });
 
     testWidgets('tapping All tab calls setFilter with all', (tester) async {

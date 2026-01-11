@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_options_bottom_sheet.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockImagePicker extends Mock implements ImagePicker {}
 
@@ -38,6 +38,9 @@ void main() {
         filePickerProvider.overrideWithValue(mockFilePicker),
       ],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('de'),
         home: Scaffold(
           body: Builder(
             builder: (context) => ElevatedButton(
@@ -56,10 +59,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      expect(find.text(L10n.selectOption), findsOneWidget);
-      expect(find.text(L10n.imageFromCamera), findsOneWidget);
-      expect(find.text(L10n.imageFromGallery), findsOneWidget);
-      expect(find.text(L10n.imageFromPdf), findsOneWidget);
+      expect(find.text('Option wählen'), findsOneWidget);
+      expect(find.text('Bild aufnehmen'), findsOneWidget);
+      expect(find.text('Bild aus Galerie'), findsOneWidget);
+      expect(find.text('Aus PDF'), findsOneWidget);
     });
 
     testWidgets('tapping camera calls analyzeImageFromCamera', (tester) async {
@@ -75,7 +78,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromCamera));
+      await tester.tap(find.text('Bild aufnehmen'));
       await tester.pumpAndSettle();
 
       verify(
@@ -102,7 +105,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromGallery));
+      await tester.tap(find.text('Bild aus Galerie'));
       await tester.pumpAndSettle();
 
       verify(
@@ -126,7 +129,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromPdf));
+      await tester.tap(find.text('Aus PDF'));
       await tester.pumpAndSettle();
 
       verify(
@@ -160,7 +163,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromCamera));
+      await tester.tap(find.text('Bild aufnehmen'));
       await tester.pumpAndSettle();
 
       expect(find.byType(ReceiptEditPage), findsOneWidget);
@@ -183,10 +186,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromCamera));
+      await tester.tap(find.text('Bild aufnehmen'));
       await tester.pumpAndSettle();
 
-      expect(find.text(L10n.noAvailableProducts), findsOneWidget);
+      expect(find.text('Keine Produkte erkannt'), findsOneWidget);
     });
 
     testWidgets('shows snackbar when image picker returns null', (
@@ -204,10 +207,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(L10n.imageFromCamera));
+      await tester.tap(find.text('Bild aufnehmen'));
       await tester.pumpAndSettle();
 
-      expect(find.text(L10n.noAvailableProducts), findsOneWidget);
+      expect(find.text('Keine Produkte erkannt'), findsOneWidget);
     });
 
     group('error handling', () {
@@ -229,11 +232,11 @@ void main() {
         await tester.tap(find.text('Show Sheet'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(L10n.imageFromCamera));
+        await tester.tap(find.text('Bild aufnehmen'));
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining(L10n.errorOccurred),
+          find.textContaining('Ein Fehler ist aufgetreten: '),
           findsOneWidget,
         );
       });
@@ -261,11 +264,13 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(L10n.imageFromCamera));
+          await tester.tap(find.text('Bild aufnehmen'));
           await tester.pumpAndSettle();
 
           expect(
-            find.text(L10n.receiptReadErrorFormat),
+            find.text(
+              'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).',
+            ),
             findsOneWidget,
           );
         },
@@ -294,11 +299,13 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(L10n.imageFromCamera));
+          await tester.tap(find.text('Bild aufnehmen'));
           await tester.pumpAndSettle();
 
           expect(
-            find.text(L10n.receiptReadErrorFormat),
+            find.text(
+              'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).',
+            ),
             findsOneWidget,
           );
         },
@@ -328,7 +335,7 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(L10n.imageFromCamera));
+          await tester.tap(find.text('Bild aufnehmen'));
           await tester.pumpAndSettle();
 
           expect(find.text(customMessage), findsOneWidget);
@@ -354,11 +361,13 @@ void main() {
         await tester.tap(find.text('Show Sheet'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(L10n.imageFromCamera));
+        await tester.tap(find.text('Bild aufnehmen'));
         await tester.pumpAndSettle();
 
         expect(
-          find.text(L10n.receiptReadErrorFormat),
+          find.text(
+            'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).',
+          ),
           findsOneWidget,
         );
       });

@@ -35,9 +35,9 @@ class InventoryTabs extends ConsumerWidget {
           _buildTab(
             context,
             ref,
-            InventoryFilterType.empty,
+            InventoryFilterType.consumed,
             l10n.filterEmpty,
-            currentFilter == InventoryFilterType.empty,
+            currentFilter == InventoryFilterType.consumed,
           ),
         ],
       ),

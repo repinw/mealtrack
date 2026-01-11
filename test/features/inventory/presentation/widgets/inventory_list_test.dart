@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
@@ -9,6 +9,7 @@ import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_vi
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class MockInventoryFilter extends InventoryFilter {
   final InventoryFilterType initialValue;
@@ -44,15 +45,26 @@ class MockFridgeItems extends FridgeItems {
 }
 
 void main() {
+  Widget createWidgetUnderTest({List<Override> overrides = const []}) {
+    return ProviderScope(
+      overrides: overrides,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('de'),
+        home: const Scaffold(body: InventoryList()),
+      ),
+    );
+  }
+
   testWidgets('InventoryList shows loading indicator', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => const AsyncValue.loading(),
           ),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryList())),
       ),
     );
 
@@ -61,13 +73,12 @@ void main() {
 
   testWidgets('InventoryList shows error message', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => AsyncValue.error('Failed', StackTrace.empty),
           ),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryList())),
       ),
     );
 
@@ -78,7 +89,7 @@ void main() {
     'InventoryList shows no available items message when empty and filtering available',
     (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        createWidgetUnderTest(
           overrides: [
             inventoryDisplayListProvider.overrideWith(
               (ref) => const AsyncValue.data([]),
@@ -87,15 +98,8 @@ void main() {
               () => MockInventoryFilter(InventoryFilterType.available),
             ),
           ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('de'),
-            home: const Scaffold(body: InventoryList()),
-          ),
         ),
       );
-
       expect(find.text('Keine verfügbaren Artikel'), findsOneWidget);
     },
   );
@@ -104,7 +108,7 @@ void main() {
     'InventoryList shows no items found message when empty and not filtering',
     (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        createWidgetUnderTest(
           overrides: [
             inventoryDisplayListProvider.overrideWith(
               (ref) => const AsyncValue.data([]),
@@ -113,15 +117,8 @@ void main() {
               () => MockInventoryFilter(InventoryFilterType.all),
             ),
           ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('de'),
-            home: const Scaffold(body: InventoryList()),
-          ),
         ),
       );
-
       expect(find.text('Keine Artikel gefunden'), findsOneWidget);
     },
   );
@@ -142,7 +139,7 @@ void main() {
     ];
 
     await tester.pumpWidget(
-      ProviderScope(
+      createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => AsyncValue.data(items),
@@ -152,12 +149,6 @@ void main() {
           ),
           fridgeItemsProvider.overrideWith(() => MockFridgeItems([item1])),
         ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('de'),
-          home: const Scaffold(body: InventoryList()),
-        ),
       ),
     );
 
@@ -185,7 +176,7 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        ProviderScope(
+        createWidgetUnderTest(
           overrides: [
             inventoryDisplayListProvider.overrideWith(
               (ref) => AsyncValue.data(items),
@@ -195,12 +186,6 @@ void main() {
             ),
             fridgeItemsProvider.overrideWith(() => mockFridgeItems),
           ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('de'),
-            home: const Scaffold(body: InventoryList()),
-          ),
         ),
       );
 
@@ -230,7 +215,7 @@ void main() {
     ];
 
     await tester.pumpWidget(
-      ProviderScope(
+      createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => AsyncValue.data(items),
@@ -240,12 +225,6 @@ void main() {
           ),
           fridgeItemsProvider.overrideWith(() => mockFridgeItems),
         ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('de'),
-          home: const Scaffold(body: InventoryList()),
-        ),
       ),
     );
 
@@ -275,7 +254,7 @@ void main() {
     ];
 
     await tester.pumpWidget(
-      ProviderScope(
+      createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
             (ref) => AsyncValue.data(items),
@@ -285,13 +264,12 @@ void main() {
           ),
           fridgeItemsProvider.overrideWith(() => MockFridgeItems([item1])),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryList())),
       ),
     );
 
     await tester.pumpAndSettle();
 
-    expect(find.text(L10n.archive), findsNothing);
+    expect(find.text('Archivieren'), findsNothing);
     expect(find.byIcon(Icons.archive_outlined), findsNothing);
   });
 }

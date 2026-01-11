@@ -64,9 +64,21 @@ void main() {
     // Allow localizations to load
     await tester.pumpAndSettle();
 
-    expect(find.text('Wie möchtest du genannt werden?'), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(GuestNamePage)),
+        )!.howShouldWeCallYou,
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text('Weiter'), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('GuestNamePage calls signInAnonymously and navigates', (
@@ -78,7 +90,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pump(); // Start async
 
     verify(() => mockAuth.signInAnonymously()).called(1);
@@ -104,7 +120,11 @@ void main() {
     expect(find.text('Old Name'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'New Name');
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pump();
 
     verifyNever(() => mockAuth.signInAnonymously());
@@ -117,7 +137,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Don't enter any text, just tap the button
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pump();
 
     // signInAnonymously should NOT be called
@@ -132,7 +156,11 @@ void main() {
 
     // Enter only whitespace
     await tester.enterText(find.byType(TextField), '   ');
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pump();
 
     // signInAnonymously should NOT be called
@@ -153,12 +181,23 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Verify error snackbar is shown
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.textContaining('Fehler: '), findsOneWidget);
+    expect(
+      find.textContaining(
+        AppLocalizations.of(
+          tester.element(find.byType(GuestNamePage)),
+        )!.errorLabel,
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('A network error occurred.'), findsOneWidget);
   });
 
@@ -166,7 +205,6 @@ void main() {
     tester,
   ) async {
     when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {
-      print('Mock updateDisplayName called');
       throw FirebaseAuthException(
         code: 'unknown',
         message: 'Failed to update display name.',
@@ -181,12 +219,23 @@ void main() {
     clearInteractions(mockObserver);
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text('Weiter'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Verify error snackbar is shown
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.textContaining('Fehler: '), findsOneWidget);
+    expect(
+      find.textContaining(
+        AppLocalizations.of(
+          tester.element(find.byType(GuestNamePage)),
+        )!.errorLabel,
+      ),
+      findsOneWidget,
+    );
     expect(
       find.textContaining('Failed to update display name.'),
       findsOneWidget,

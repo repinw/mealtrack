@@ -3,6 +3,7 @@ import 'package:mealtrack/features/inventory/presentation/widgets/action_button.
 
 class CounterPill extends StatelessWidget {
   final int quantity;
+  final int initialQuantity;
   final bool isOutOfStock;
   final bool canIncrease;
   final ValueChanged<int> onUpdate;
@@ -10,6 +11,7 @@ class CounterPill extends StatelessWidget {
   const CounterPill({
     super.key,
     required this.quantity,
+    required this.initialQuantity,
     required this.isOutOfStock,
     this.canIncrease = true,
     required this.onUpdate,
@@ -17,9 +19,13 @@ class CounterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badgeColor = isOutOfStock
+        ? Colors.grey.shade200
+        : const Color(0xFFE0F2F1);
+    final badgeTextColor = isOutOfStock ? Colors.grey : Colors.teal;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: badgeColor,
         borderRadius: BorderRadius.circular(24),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -27,24 +33,26 @@ class CounterPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ActionButton(
-            icon: Icons.remove,
-            onTap: isOutOfStock ? null : () => onUpdate(-1),
+            icon: Icons.add,
+            onTap: canIncrease ? () => onUpdate(1) : null,
           ),
+
           SizedBox(
-            width: 32,
-            child: Text(
-              '$quantity',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: isOutOfStock ? Colors.grey : Colors.black87,
+            width: 40,
+            child: Center(
+              child: Text(
+                '$quantity / $initialQuantity',
+                style: TextStyle(
+                  color: badgeTextColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
           ActionButton(
-            icon: Icons.add,
-            onTap: canIncrease ? () => onUpdate(1) : null,
+            icon: Icons.remove,
+            onTap: isOutOfStock ? null : () => onUpdate(-1),
           ),
         ],
       ),

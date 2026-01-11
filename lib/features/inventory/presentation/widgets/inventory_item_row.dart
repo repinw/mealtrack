@@ -43,10 +43,6 @@ class InventoryItemRow extends ConsumerWidget {
     }
 
     final isOutOfStock = item.quantity == 0;
-    final badgeColor = isOutOfStock
-        ? Colors.grey.shade200
-        : const Color(0xFFE0F2F1);
-    final badgeTextColor = isOutOfStock ? Colors.grey : Colors.teal;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -57,45 +53,49 @@ class InventoryItemRow extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Name and Price
+          // Name Brand and Price
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name,
+                  item.brand ?? '',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: isOutOfStock
-                        ? Colors.grey.shade400
-                        : const Color(0xFF2D3142),
-                    decoration: isOutOfStock
-                        ? TextDecoration.lineThrough
-                        : null,
+                    fontSize: 11,
+                    letterSpacing: 1,
+                    color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${item.totalPrice.toStringAsFixed(2)}€',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Text(
+                      item.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
+                        color: isOutOfStock
+                            ? Colors.grey.shade400
+                            : const Color(0xFF2D3142),
+                        decoration: isOutOfStock
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+
+                    const Spacer(),
+                    Text(
+                      '${item.totalPrice.toStringAsFixed(2)}€ / Stk',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: badgeColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '${item.quantity} / ${item.initialQuantity}',
-              style: TextStyle(
-                color: badgeTextColor,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
             ),
           ),
 
@@ -103,6 +103,7 @@ class InventoryItemRow extends ConsumerWidget {
 
           CounterPill(
             quantity: item.quantity,
+            initialQuantity: item.initialQuantity,
             isOutOfStock: isOutOfStock,
             canIncrease: item.quantity < item.initialQuantity,
             onUpdate: (delta) =>
