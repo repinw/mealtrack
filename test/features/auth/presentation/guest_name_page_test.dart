@@ -166,7 +166,6 @@ void main() {
     tester,
   ) async {
     when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {
-      print('Mock updateDisplayName called');
       throw FirebaseAuthException(
         code: 'unknown',
         message: 'Failed to update display name.',

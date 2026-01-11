@@ -42,7 +42,7 @@ class FridgeItems extends _$FridgeItems {
 
     final updatedList = [
       for (final i in previousList)
-        if (i.id == item.id) updatedItem else i, // coverage:ignore-line
+        if (i.id == item.id) updatedItem else i,
     ];
     state = AsyncValue.data(updatedList);
 
