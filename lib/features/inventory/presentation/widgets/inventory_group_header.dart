@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 
@@ -73,7 +73,7 @@ class _ArchiveButton extends ConsumerWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                AppLocalizations.archive,
+                L10n.archive,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -102,7 +102,7 @@ class _ItemCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        AppLocalizations.entries(itemCount),
+        L10n.entries(itemCount),
         style: const TextStyle(fontSize: 10, color: Colors.black54),
       ),
     );

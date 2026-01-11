@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
@@ -56,10 +56,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      expect(find.text(AppLocalizations.selectOption), findsOneWidget);
-      expect(find.text(AppLocalizations.imageFromCamera), findsOneWidget);
-      expect(find.text(AppLocalizations.imageFromGallery), findsOneWidget);
-      expect(find.text(AppLocalizations.imageFromPdf), findsOneWidget);
+      expect(find.text(L10n.selectOption), findsOneWidget);
+      expect(find.text(L10n.imageFromCamera), findsOneWidget);
+      expect(find.text(L10n.imageFromGallery), findsOneWidget);
+      expect(find.text(L10n.imageFromPdf), findsOneWidget);
     });
 
     testWidgets('tapping camera calls analyzeImageFromCamera', (tester) async {
@@ -75,7 +75,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromCamera));
+      await tester.tap(find.text(L10n.imageFromCamera));
       await tester.pumpAndSettle();
 
       verify(
@@ -102,7 +102,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromGallery));
+      await tester.tap(find.text(L10n.imageFromGallery));
       await tester.pumpAndSettle();
 
       verify(
@@ -126,7 +126,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromPdf));
+      await tester.tap(find.text(L10n.imageFromPdf));
       await tester.pumpAndSettle();
 
       verify(
@@ -160,7 +160,7 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromCamera));
+      await tester.tap(find.text(L10n.imageFromCamera));
       await tester.pumpAndSettle();
 
       expect(find.byType(ReceiptEditPage), findsOneWidget);
@@ -183,10 +183,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromCamera));
+      await tester.tap(find.text(L10n.imageFromCamera));
       await tester.pumpAndSettle();
 
-      expect(find.text(AppLocalizations.noAvailableProducts), findsOneWidget);
+      expect(find.text(L10n.noAvailableProducts), findsOneWidget);
     });
 
     testWidgets('shows snackbar when image picker returns null', (
@@ -204,10 +204,10 @@ void main() {
       await tester.tap(find.text('Show Sheet'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(AppLocalizations.imageFromCamera));
+      await tester.tap(find.text(L10n.imageFromCamera));
       await tester.pumpAndSettle();
 
-      expect(find.text(AppLocalizations.noAvailableProducts), findsOneWidget);
+      expect(find.text(L10n.noAvailableProducts), findsOneWidget);
     });
 
     group('error handling', () {
@@ -229,11 +229,11 @@ void main() {
         await tester.tap(find.text('Show Sheet'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(AppLocalizations.imageFromCamera));
+        await tester.tap(find.text(L10n.imageFromCamera));
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining(AppLocalizations.errorOccurred),
+          find.textContaining(L10n.errorOccurred),
           findsOneWidget,
         );
       });
@@ -261,11 +261,11 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(AppLocalizations.imageFromCamera));
+          await tester.tap(find.text(L10n.imageFromCamera));
           await tester.pumpAndSettle();
 
           expect(
-            find.text(AppLocalizations.receiptReadErrorFormat),
+            find.text(L10n.receiptReadErrorFormat),
             findsOneWidget,
           );
         },
@@ -294,11 +294,11 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(AppLocalizations.imageFromCamera));
+          await tester.tap(find.text(L10n.imageFromCamera));
           await tester.pumpAndSettle();
 
           expect(
-            find.text(AppLocalizations.receiptReadErrorFormat),
+            find.text(L10n.receiptReadErrorFormat),
             findsOneWidget,
           );
         },
@@ -328,7 +328,7 @@ void main() {
           await tester.tap(find.text('Show Sheet'));
           await tester.pumpAndSettle();
 
-          await tester.tap(find.text(AppLocalizations.imageFromCamera));
+          await tester.tap(find.text(L10n.imageFromCamera));
           await tester.pumpAndSettle();
 
           expect(find.text(customMessage), findsOneWidget);
@@ -354,11 +354,11 @@ void main() {
         await tester.tap(find.text('Show Sheet'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(AppLocalizations.imageFromCamera));
+        await tester.tap(find.text(L10n.imageFromCamera));
         await tester.pumpAndSettle();
 
         expect(
-          find.text(AppLocalizations.receiptReadErrorFormat),
+          find.text(L10n.receiptReadErrorFormat),
           findsOneWidget,
         );
       });

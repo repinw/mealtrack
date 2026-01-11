@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 class GuestModeCard extends StatelessWidget {
   const GuestModeCard({super.key, required this.onLinkAccount});
@@ -24,7 +24,7 @@ class GuestModeCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppLocalizations.guestMode,
+                    L10n.guestMode,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -34,7 +34,7 @@ class GuestModeCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.guestModeDescription,
+              L10n.guestModeDescription,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
@@ -45,7 +45,7 @@ class GuestModeCard extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: onLinkAccount,
                 icon: const Icon(Icons.link),
-                label: const Text(AppLocalizations.linkAccount),
+                label: const Text(L10n.linkAccount),
               ),
             ),
           ],

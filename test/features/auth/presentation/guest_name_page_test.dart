@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
@@ -48,9 +48,9 @@ void main() {
       ),
     );
 
-    expect(find.text(AppLocalizations.howShouldWeCallYou), findsOneWidget);
+    expect(find.text(L10n.howShouldWeCallYou), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text(AppLocalizations.next), findsOneWidget);
+    expect(find.text(L10n.next), findsOneWidget);
   });
 
   testWidgets('GuestNamePage calls signInAnonymously and navigates', (
@@ -67,7 +67,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text(AppLocalizations.next));
+    await tester.tap(find.text(L10n.next));
     await tester.pump(); // Start async
 
     verify(() => mockAuth.signInAnonymously()).called(1);
@@ -96,11 +96,73 @@ void main() {
     expect(find.text('Old Name'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'New Name');
-    await tester.tap(find.text(AppLocalizations.next));
+    await tester.tap(find.text(L10n.next));
     await tester.pump();
 
     verifyNever(() => mockAuth.signInAnonymously());
     verify(() => mockUser.updateDisplayName('New Name')).called(1);
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
+  });
+
+  testWidgets('does nothing when name is empty', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+        child: const MaterialApp(home: GuestNamePage()),
+      ),
+    );
+
+    // Don't enter any text, just tap the button
+    await tester.tap(find.text(L10n.next));
+    await tester.pump();
+
+    // signInAnonymously should NOT be called
+    verifyNever(() => mockAuth.signInAnonymously());
+  });
+
+  testWidgets('does nothing when name contains only whitespace', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+        child: const MaterialApp(home: GuestNamePage()),
+      ),
+    );
+
+    // Enter only whitespace
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.tap(find.text(L10n.next));
+    await tester.pump();
+
+    // signInAnonymously should NOT be called
+    verifyNever(() => mockAuth.signInAnonymously());
+  });
+
+  testWidgets('shows error snackbar when signInAnonymously fails', (
+    tester,
+  ) async {
+    when(() => mockAuth.signInAnonymously()).thenThrow(
+      FirebaseAuthException(
+        code: 'network-request-failed',
+        message: 'A network error occurred.',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+        child: const MaterialApp(home: GuestNamePage()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'Test Guest');
+    await tester.tap(find.text(L10n.next));
+    await tester.pumpAndSettle();
+
+    // Verify error snackbar is shown
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.textContaining(L10n.errorLabel), findsOneWidget);
+    expect(find.textContaining('A network error occurred.'), findsOneWidget);
   });
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_bottom_bar.dart';
@@ -30,7 +30,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(AppLocalizations.addReceipt), findsOneWidget);
+      expect(find.text(L10n.addReceipt), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 

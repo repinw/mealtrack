@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 class LinkAccountBottomSheet extends StatelessWidget {
   const LinkAccountBottomSheet({
@@ -21,7 +21,7 @@ class LinkAccountBottomSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              AppLocalizations.linkAccount,
+              L10n.linkAccount,
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -32,7 +32,7 @@ class LinkAccountBottomSheet extends StatelessWidget {
                 onNewAccount();
               },
               icon: const Icon(Icons.person_add),
-              label: const Text(AppLocalizations.createNewAccount),
+              label: const Text(L10n.createNewAccount),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
@@ -41,7 +41,7 @@ class LinkAccountBottomSheet extends StatelessWidget {
                 onUseExistingAccount();
               },
               icon: const Icon(Icons.login),
-              label: const Text(AppLocalizations.useExistingAccount),
+              label: const Text(L10n.useExistingAccount),
             ),
             const SizedBox(height: 8),
           ],

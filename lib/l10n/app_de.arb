@@ -1,0 +1,136 @@
+{
+  "@@locale": "de",
+  
+  "noAvailableProducts": "Keine Produkte erkannt",
+  "addReceipt": "Kassenbon hinzufügen",
+  "selectOption": "Option wählen",
+  "purchases": "{count} Einkäufe",
+  "@purchases": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "items": "{count} Teile",
+  "@items": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "archive": "Archivieren",
+  "entries": "{count} Einträge",
+  "@entries": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  
+  "filterAll": "Alle",
+  "filterAvailable": "Vorrat",
+  "filterEmpty": "Verbraucht",
+  
+  "verifyScan": "SCAN ÜBERPRÜFEN",
+  "positions": "POSITIONEN",
+  "articles": "{count} Artikel",
+  "@articles": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "amountAbbr": "ANZ",
+  "brandDescription": "MARKE / BESCHREIBUNG",
+  "weight": "GEWICHT",
+  "price": "PREIS",
+  "save": "Speichern",
+  "total": "GESAMT",
+  
+  "noAvailableItems": "Keine verfügbaren Artikel",
+  "noItemsFound": "Keine Artikel gefunden",
+  "debugHiveReset": "Debug: Hive Reset",
+  "debugDataDeleted": "Debug: Alle Daten gelöscht",
+  
+  "imageUploading": "Bild wird hochgeladen und analysiert...",
+  "noTextFromAi": "Kein Text von der KI erhalten.",
+  "aiResult": "KI Ergebnis: ",
+  "aiRequestError": "Fehler bei der KI-Anfrage: ",
+  
+  "emptyJsonString": "Leerer JSON-String empfangen.",
+  "sanitizedJsonEmpty": "Bereinigter JSON-String ist leer.",
+  "unexpectedJsonFormat": "Unerwartetes JSON-Format empfangen: ",
+  "jsonParsingError": "Fehler beim Parsen des JSON: ",
+  "unknownStorename": "Unbekannter Laden",
+  "unknownArticle": "Unbekannter Artikel",
+  
+  "defaultStoreName": "Ladenname",
+  "pleaseSelectPdf": "Bitte wähle eine PDF-Datei.",
+  
+  "digitalFridge": "Digitaler Kühlschrank",
+  "imageFromGallery": "Bild aus Galerie",
+  "imageFromCamera": "Bild aufnehmen",
+  "imageFromPdf": "Aus PDF",
+  "receiptReadErrorFormat": "Der Kassenbon konnte nicht gelesen werden (Format-Fehler).",
+  "errorOccurred": "Ein Fehler ist aufgetreten: ",
+  "quantityUpdateFailed": "Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+  "loading": "Lädt...",
+  
+  "initializingApp": "App wird initialisiert...",
+  "errorInitializing": "Fehler beim Initialisieren der App: {error}",
+  "@errorInitializing": {
+    "placeholders": {
+      "error": {"type": "Object"}
+    }
+  },
+  "retry": "Erneut versuchen",
+  
+  "guestMode": "Gast-Modus",
+  "guestModeDescription": "Sie nutzen die App derzeit als Gast. Verknüpfen Sie Ihr Konto mit einer E-Mail oder Google, um Ihre Daten zu sichern und auf mehreren Geräten zu synchronisieren.",
+  "linkAccount": "Konto verknüpfen",
+  "createNewAccount": "Neues Konto erstellen",
+  "useExistingAccount": "Bestehendes Konto nutzen",
+  "linkAccountSuccess": "Konto erfolgreich verknüpft!",
+  
+  "warning": "Achtung",
+  "linkAccountExistingWarning": "Wenn Sie sich mit einem bestehenden Konto anmelden möchten, werden alle Daten Ihres aktuellen Gast-Kontos gelöscht.\n\nSie werden zur Startseite weitergeleitet, wo Sie sich einloggen können.",
+  "proceed": "Fortfahren",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  
+  "userAccount": "Benutzerkonto",
+  "name": "Name",
+  "email": "E-Mail",
+  "id": "ID",
+  "notAvailable": "Nicht verfügbar",
+  "logout": "Abmelden",
+  
+  "deleteAccount": "Account löschen",
+  "deleteAccountQuestion": "Account löschen?",
+  "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.\n\nMöchten Sie Ihren Account wirklich löschen?",
+  "deleteAccountError": "Fehler beim Löschen: ",
+  
+  "howShouldWeCallYou": "Wie möchtest du genannt werden?",
+  "yourName": "Dein Name",
+  "next": "Weiter",
+  "errorLabel": "Fehler: ",
+  
+  "welcomeTitle": "Willkommen bei MealTrack!",
+  "welcomeSubtitle": "Behalte den Überblick über deine Lebensmittel",
+  "loginBtn": "Einloggen",
+  "continueGuestBtn": "Als Gast fortsetzen",
+  
+  "existingAccountFound": "Bestehendes Konto gefunden",
+  "existingAccountFoundDescription": "Dieses Konto ist bereits registriert. Wenn Sie fortfahren, gehen alle Daten Ihres aktuellen Gast-Kontos verloren.\n\nMöchten Sie sich trotzdem mit dem bestehenden Konto anmelden?",
+  "signedInWithExistingAccount": "Sie wurden mit Ihrem bestehenden Konto angemeldet.",
+  "signInErrorPrefix": "Fehler bei der Anmeldung: ",
+  "signInSubtitle": "Bitte melden Sie sich an, um fortzufahren.",
+  "signUpSubtitle": "Bitte erstellen Sie ein Konto, um fortzufahren",
+  "signInAction": "anmelden",
+  "signUpAction": "registrieren",
+  "tosDisclaimer": "Durch {action} stimmen Sie unseren Nutzungsbedingungen zu.",
+  "@tosDisclaimer": {
+    "placeholders": {
+      "action": {"type": "String"}
+    }
+  },
+  
+  "settings": "Einstellungen",
+  "stockValue": "VORRATSWERT"
+}

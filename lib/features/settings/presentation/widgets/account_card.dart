@@ -6,7 +6,7 @@ import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/user_account_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/link_account_bottom_sheet.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/extensions/user_extension.dart';
 
 class AccountCard extends ConsumerWidget {
@@ -63,9 +63,7 @@ class AccountCard extends ConsumerWidget {
               await _handleAuthSuccess(context, state.user);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(AppLocalizations.linkAccountSuccess),
-                  ),
+                  const SnackBar(content: Text(L10n.linkAccountSuccess)),
                 );
               }
             }),
@@ -87,17 +85,17 @@ class AccountCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(AppLocalizations.warning),
-        content: const Text(AppLocalizations.linkAccountExistingWarning),
+        title: const Text(L10n.warning),
+        content: const Text(L10n.linkAccountExistingWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text(AppLocalizations.cancel),
+            child: const Text(L10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text(AppLocalizations.proceed),
+            child: const Text(L10n.proceed),
           ),
         ],
       ),

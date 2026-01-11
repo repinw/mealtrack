@@ -1,95 +1,87 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 void main() {
   group('Static constants', () {
     test('AppLocalizations constants are accessible', () {
-      expect(AppLocalizations.noAvailableProducts, isNotEmpty);
-      expect(AppLocalizations.noAvailableItems, isNotEmpty);
-      expect(AppLocalizations.noItemsFound, isNotEmpty);
-      expect(AppLocalizations.debugHiveReset, isNotEmpty);
-      expect(AppLocalizations.debugDataDeleted, isNotEmpty);
-      expect(AppLocalizations.imageUploading, isNotEmpty);
-      expect(AppLocalizations.noTextFromAi, isNotEmpty);
-      expect(AppLocalizations.aiResult, isNotEmpty);
-      expect(AppLocalizations.aiRequestError, isNotEmpty);
-      expect(AppLocalizations.emptyJsonString, isNotEmpty);
-      expect(AppLocalizations.sanitizedJsonEmpty, isNotEmpty);
-      expect(AppLocalizations.unexpectedJsonFormat, isNotEmpty);
-      expect(AppLocalizations.jsonParsingError, isNotEmpty);
-      expect(AppLocalizations.unknownStorename, isNotEmpty);
-      expect(AppLocalizations.unknownArticle, isNotEmpty);
-      expect(AppLocalizations.defaultStoreName, isNotEmpty);
-      expect(AppLocalizations.pleaseSelectPdf, isNotEmpty);
-      expect(AppLocalizations.digitalFridge, isNotEmpty);
-      expect(AppLocalizations.imageFromGallery, isNotEmpty);
-      expect(AppLocalizations.imageFromCamera, isNotEmpty);
-      expect(AppLocalizations.imageFromPdf, isNotEmpty);
-      expect(AppLocalizations.receiptReadErrorFormat, isNotEmpty);
-      expect(AppLocalizations.errorOccurred, isNotEmpty);
-      expect(AppLocalizations.quantityUpdateFailed, isNotEmpty);
-      expect(AppLocalizations.loading, isNotEmpty);
+      expect(L10n.noAvailableProducts, isNotEmpty);
+      expect(L10n.noAvailableItems, isNotEmpty);
+      expect(L10n.noItemsFound, isNotEmpty);
+      expect(L10n.debugHiveReset, isNotEmpty);
+      expect(L10n.debugDataDeleted, isNotEmpty);
+      expect(L10n.imageUploading, isNotEmpty);
+      expect(L10n.noTextFromAi, isNotEmpty);
+      expect(L10n.aiResult, isNotEmpty);
+      expect(L10n.aiRequestError, isNotEmpty);
+      expect(L10n.emptyJsonString, isNotEmpty);
+      expect(L10n.sanitizedJsonEmpty, isNotEmpty);
+      expect(L10n.unexpectedJsonFormat, isNotEmpty);
+      expect(L10n.jsonParsingError, isNotEmpty);
+      expect(L10n.unknownStorename, isNotEmpty);
+      expect(L10n.unknownArticle, isNotEmpty);
+      expect(L10n.defaultStoreName, isNotEmpty);
+      expect(L10n.pleaseSelectPdf, isNotEmpty);
+      expect(L10n.digitalFridge, isNotEmpty);
+      expect(L10n.imageFromGallery, isNotEmpty);
+      expect(L10n.imageFromCamera, isNotEmpty);
+      expect(L10n.imageFromPdf, isNotEmpty);
+      expect(L10n.receiptReadErrorFormat, isNotEmpty);
+      expect(L10n.errorOccurred, isNotEmpty);
+      expect(L10n.quantityUpdateFailed, isNotEmpty);
+      expect(L10n.loading, isNotEmpty);
     });
 
     test('Additional constants are accessible', () {
-      expect(AppLocalizations.addReceipt, isNotEmpty);
-      expect(AppLocalizations.selectOption, isNotEmpty);
-      expect(AppLocalizations.archive, isNotEmpty);
-      expect(AppLocalizations.filterAll, isNotEmpty);
-      expect(AppLocalizations.filterAvailable, isNotEmpty);
-      expect(AppLocalizations.filterEmpty, isNotEmpty);
-      expect(AppLocalizations.verifyScan, isNotEmpty);
-      expect(AppLocalizations.positions, isNotEmpty);
-      expect(AppLocalizations.amountAbbr, isNotEmpty);
-      expect(AppLocalizations.brandDescription, isNotEmpty);
-      expect(AppLocalizations.weight, isNotEmpty);
-      expect(AppLocalizations.price, isNotEmpty);
-      expect(AppLocalizations.save, isNotEmpty);
-      expect(AppLocalizations.total, isNotEmpty);
-      expect(AppLocalizations.initializingApp, isNotEmpty);
-      expect(AppLocalizations.retry, isNotEmpty);
+      expect(L10n.addReceipt, isNotEmpty);
+      expect(L10n.selectOption, isNotEmpty);
+      expect(L10n.archive, isNotEmpty);
+      expect(L10n.filterAll, isNotEmpty);
+      expect(L10n.filterAvailable, isNotEmpty);
+      expect(L10n.filterEmpty, isNotEmpty);
+      expect(L10n.verifyScan, isNotEmpty);
+      expect(L10n.positions, isNotEmpty);
+      expect(L10n.amountAbbr, isNotEmpty);
+      expect(L10n.brandDescription, isNotEmpty);
+      expect(L10n.weight, isNotEmpty);
+      expect(L10n.price, isNotEmpty);
+      expect(L10n.save, isNotEmpty);
+      expect(L10n.total, isNotEmpty);
+      expect(L10n.initializingApp, isNotEmpty);
+      expect(L10n.retry, isNotEmpty);
     });
   });
 
   group('Dynamic methods', () {
     test('purchases returns formatted string with count', () {
-      expect(AppLocalizations.purchases(0), '0 Einkäufe');
-      expect(AppLocalizations.purchases(1), '1 Einkäufe');
-      expect(AppLocalizations.purchases(5), '5 Einkäufe');
+      expect(L10n.purchases(0), '0 Einkäufe');
+      expect(L10n.purchases(1), '1 Einkäufe');
+      expect(L10n.purchases(5), '5 Einkäufe');
     });
 
     test('items returns formatted string with count', () {
-      expect(AppLocalizations.items(0), '0 Teile');
-      expect(AppLocalizations.items(1), '1 Teile');
-      expect(AppLocalizations.items(10), '10 Teile');
+      expect(L10n.items(0), '0 Teile');
+      expect(L10n.items(1), '1 Teile');
+      expect(L10n.items(10), '10 Teile');
     });
 
     test('entries returns formatted string with count', () {
-      expect(AppLocalizations.entries(0), '0 Einträge');
-      expect(AppLocalizations.entries(1), '1 Einträge');
-      expect(AppLocalizations.entries(3), '3 Einträge');
+      expect(L10n.entries(0), '0 Einträge');
+      expect(L10n.entries(1), '1 Einträge');
+      expect(L10n.entries(3), '3 Einträge');
     });
 
     test('articles returns formatted string with count', () {
-      expect(AppLocalizations.articles(0), '0 Artikel');
-      expect(AppLocalizations.articles(1), '1 Artikel');
-      expect(AppLocalizations.articles(7), '7 Artikel');
+      expect(L10n.articles(0), '0 Artikel');
+      expect(L10n.articles(1), '1 Artikel');
+      expect(L10n.articles(7), '7 Artikel');
     });
 
     test('errorInitializing returns formatted error message', () {
       expect(
-        AppLocalizations.errorInitializing('Network error'),
+        L10n.errorInitializing('Network error'),
         'Fehler beim Initialisieren der App: Network error',
       );
-      expect(
-        AppLocalizations.errorInitializing(Exception('test')),
-        contains('Exception'),
-      );
+      expect(L10n.errorInitializing(Exception('test')), contains('Exception'));
     });
-  });
-
-  test('AppLocalizations can be instantiated', () {
-    final loc = AppLocalizations();
-    expect(loc, isNotNull);
   });
 }

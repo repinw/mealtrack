@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/settings/presentation/settings_page.dart';
@@ -48,21 +48,19 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         if (kDebugMode)
           IconButton(
             icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
-            tooltip: AppLocalizations.debugHiveReset,
+            tooltip: L10n.debugHiveReset,
             onPressed: () async {
               await ref.read(fridgeItemsProvider.notifier).deleteAll();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(AppLocalizations.debugDataDeleted),
-                  ),
+                  const SnackBar(content: Text(L10n.debugDataDeleted)),
                 );
               }
             },
           ),
         IconButton(
           icon: const Icon(Icons.settings, color: Colors.blue),
-          tooltip: AppLocalizations.settings,
+          tooltip: L10n.settings,
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -83,7 +81,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    AppLocalizations.stockValue,
+                    L10n.stockValue,
                     style: TextStyle(
                       fontSize: 12,
                       color: labelColor,
@@ -116,7 +114,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        AppLocalizations.purchases(stats.scanCount),
+                        L10n.purchases(stats.scanCount),
                         style: const TextStyle(color: labelColor, fontSize: 13),
                       ),
                     ],
@@ -133,7 +131,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       border: Border.all(color: Colors.white12),
                     ),
                     child: Text(
-                      AppLocalizations.items(stats.articleCount),
+                      L10n.items(stats.articleCount),
                       style: const TextStyle(
                         color: highlightColor,
                         fontWeight: FontWeight.bold,

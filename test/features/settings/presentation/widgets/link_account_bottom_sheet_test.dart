@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/link_account_bottom_sheet.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 void main() {
   testWidgets('LinkAccountBottomSheet renders correctly', (tester) async {
@@ -58,7 +58,7 @@ void main() {
     expect(find.byType(LinkAccountBottomSheet), findsOneWidget);
 
     // Test New Account button
-    await tester.tap(find.text(AppLocalizations.createNewAccount));
+    await tester.tap(find.text(L10n.createNewAccount));
     await tester.pumpAndSettle(); // Allow pop animation
 
     expect(newAccountPressed, isTrue);
@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Test Existing Account button
-    await tester.tap(find.text(AppLocalizations.useExistingAccount));
+    await tester.tap(find.text(L10n.useExistingAccount));
     await tester.pumpAndSettle();
 
     expect(existingAccountPressed, isTrue);

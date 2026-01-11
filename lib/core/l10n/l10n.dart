@@ -1,4 +1,9 @@
-class AppLocalizations {
+/// Static German strings for non-widget classes that don't have BuildContext.
+/// This provides the same strings as AppLocalizations but without requiring context.
+/// Use AppLocalizations.of(context) in widgets where context is available.
+class L10n {
+  L10n._();
+
   static const String noAvailableProducts = 'Keine Produkte erkannt';
   static const String addReceipt = 'Kassenbon hinzufügen';
   static const String selectOption = 'Option wählen';

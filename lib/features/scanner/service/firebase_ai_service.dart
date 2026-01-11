@@ -4,7 +4,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
 class FirebaseAiService {
@@ -42,7 +42,7 @@ class FirebaseAiService {
   }
 
   Future<String> analyzeImageWithGemini(XFile imageFile) async {
-    debugPrint(AppLocalizations.imageUploading);
+    debugPrint(L10n.imageUploading);
     debugPrint("Starting compression...");
 
     final Uint8List? compressedBytes = await imageCompressor.compressWithFile(
@@ -104,11 +104,11 @@ class FirebaseAiService {
         );
       }
 
-      debugPrint("${AppLocalizations.aiResult}$extractedText", wrapWidth: 1024);
+      debugPrint("${L10n.aiResult}$extractedText", wrapWidth: 1024);
       return extractedText;
     } catch (e) {
       if (e is ReceiptAnalysisException) rethrow;
-      debugPrint("${AppLocalizations.aiRequestError}$e");
+      debugPrint("${L10n.aiRequestError}$e");
       throw ReceiptAnalysisException(
         'AI Request Failed',
         originalException: e,

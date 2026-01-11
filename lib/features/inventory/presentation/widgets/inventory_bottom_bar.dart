@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_options_bottom_sheet.dart';
@@ -50,7 +50,7 @@ class InventoryBottomBar extends ConsumerWidget {
                       Icon(Icons.center_focus_weak, color: AppTheme.white),
                       SizedBox(width: 8),
                       Text(
-                        AppLocalizations.addReceipt,
+                        L10n.addReceipt,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

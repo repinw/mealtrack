@@ -2,8 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
-import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
@@ -31,7 +30,7 @@ void main() {
     when(() => mockAuth.currentUser).thenReturn(mockUser);
   });
 
-  Widget createSubject(User user) {
+  Widget createAccountCardSubject(User user) {
     return ProviderScope(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
       child: MaterialApp(
@@ -40,143 +39,241 @@ void main() {
     );
   }
 
-  testWidgets('AccountCard shows GuestModeCard for anonymous user', (
-    tester,
-  ) async {
+  Widget createUserAccountCardSubject(User user) {
+    return ProviderScope(
+      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+      child: MaterialApp(
+        home: Scaffold(body: UserAccountCard(user: user)),
+      ),
+    );
+  }
+
+  void setupGuestUser() {
     when(() => mockUser.isAnonymous).thenReturn(true);
     when(() => mockUser.uid).thenReturn('guest123');
     when(() => mockUser.displayName).thenReturn(null);
     when(() => mockUser.email).thenReturn(null);
+  }
 
-    await tester.pumpWidget(createSubject(mockUser));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(GuestModeCard), findsOneWidget);
-    expect(find.byType(UserAccountCard), findsOneWidget);
-    expect(find.text(AppLocalizations.guestMode), findsWidgets);
-  });
-
-  testWidgets('AccountCard hides GuestModeCard for authenticated user', (
-    tester,
-  ) async {
+  void setupAuthenticatedUser() {
     when(() => mockUser.isAnonymous).thenReturn(false);
     when(() => mockUser.uid).thenReturn('user123');
-    when(() => mockUser.displayName).thenReturn('User');
-    when(() => mockUser.email).thenReturn('user@example.com');
+    when(() => mockUser.displayName).thenReturn('Test User');
+    when(() => mockUser.email).thenReturn('test@example.com');
+  }
 
-    await tester.pumpWidget(createSubject(mockUser));
-    await tester.pumpAndSettle();
+  group('AccountCard rendering', () {
+    testWidgets('shows GuestModeCard for anonymous user', (tester) async {
+      setupGuestUser();
 
-    expect(find.byType(GuestModeCard), findsNothing);
-    expect(find.byType(UserAccountCard), findsOneWidget);
-  });
-
-  group('Guest interactions', () {
-    setUp(() {
-      when(() => mockUser.isAnonymous).thenReturn(true);
-      when(() => mockUser.uid).thenReturn('guest123');
-      when(() => mockUser.displayName).thenReturn(null);
-      when(() => mockUser.email).thenReturn(null);
-      when(() => mockUser.delete()).thenAnswer((_) async {});
-    });
-
-    testWidgets('Opens LinkAccountBottomSheet when Link Account is tapped', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createSubject(mockUser));
+      await tester.pumpWidget(createAccountCardSubject(mockUser));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithIcon(FilledButton, Icons.link));
+      expect(find.byType(GuestModeCard), findsOneWidget);
+      expect(find.byType(UserAccountCard), findsOneWidget);
+      expect(find.text(L10n.guestMode), findsWidgets);
+    });
+
+    testWidgets('hides GuestModeCard for authenticated user', (tester) async {
+      setupAuthenticatedUser();
+
+      await tester.pumpWidget(createAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GuestModeCard), findsNothing);
+      expect(find.byType(UserAccountCard), findsOneWidget);
+    });
+  });
+
+  group('Guest interactions - Link Account', () {
+    testWidgets('opens LinkAccountBottomSheet when Link Account is tapped', (
+      tester,
+    ) async {
+      setupGuestUser();
+      when(() => mockUser.delete()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Tap the Link Account button in GuestModeCard
+      await tester.tap(find.text(L10n.linkAccount));
       await tester.pumpAndSettle();
 
       expect(find.byType(LinkAccountBottomSheet), findsOneWidget);
-    }, skip: true); // TODO: Verify locally
+      expect(find.text(L10n.createNewAccount), findsOneWidget);
+      expect(find.text(L10n.useExistingAccount), findsOneWidget);
+    });
 
-    testWidgets(
-      'Shows generic sign in screen when Create New Account is tapped',
-      (tester) async {
-        await tester.pumpWidget(createSubject(mockUser));
-        await tester.pumpAndSettle();
-
-        // Open bottom sheet
-        await tester.tap(find.widgetWithIcon(FilledButton, Icons.link));
-        await tester.pumpAndSettle();
-
-        // Tap create new account button
-        await tester.tap(find.widgetWithIcon(FilledButton, Icons.person_add));
-        await tester.pump(); // Start transition
-        await tester.pump(); // transition
-
-        expect(find.byType(MySignInScreen), findsOneWidget);
-      },
-      skip: true,
-    );
-
-    testWidgets('Shows warning dialog when Use Existing Account is tapped', (
+    testWidgets('shows warning dialog when Use Existing Account is tapped', (
       tester,
     ) async {
-      await tester.pumpWidget(createSubject(mockUser));
+      setupGuestUser();
+      when(() => mockUser.delete()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createAccountCardSubject(mockUser));
       await tester.pumpAndSettle();
 
       // Open bottom sheet
-      await tester.tap(find.widgetWithIcon(FilledButton, Icons.link));
+      await tester.tap(find.text(L10n.linkAccount));
       await tester.pumpAndSettle();
 
-      // Tap existing account button
-      await tester.tap(find.widgetWithIcon(OutlinedButton, Icons.login));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text(AppLocalizations.warning), findsOneWidget);
-    }, skip: true);
-
-    testWidgets('Deletes account when confirming Use Existing Account', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createSubject(mockUser));
-      await tester.pumpAndSettle();
-
-      // Open bottom sheet
-      await tester.tap(find.widgetWithIcon(FilledButton, Icons.link));
-      await tester.pumpAndSettle();
-
-      // Tap existing account button
-      await tester.tap(find.widgetWithIcon(OutlinedButton, Icons.login));
-      await tester.pumpAndSettle();
-
-      // Tap Proceed (red button)
+      // Tap Use Existing Account button
       await tester.tap(
-        find.widgetWithText(FilledButton, AppLocalizations.proceed),
+        find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
       );
       await tester.pumpAndSettle();
 
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text(L10n.warning), findsOneWidget);
+      expect(find.text(L10n.linkAccountExistingWarning), findsOneWidget);
+    });
+
+    testWidgets('deletes guest account when confirming Use Existing Account', (
+      tester,
+    ) async {
+      setupGuestUser();
+      when(() => mockUser.delete()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Open bottom sheet
+      await tester.tap(find.text(L10n.linkAccount));
+      await tester.pumpAndSettle();
+
+      // Tap Use Existing Account button
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap Proceed (confirm deletion)
+      await tester.tap(find.widgetWithText(FilledButton, L10n.proceed));
+      await tester.pumpAndSettle();
+
       verify(() => mockUser.delete()).called(1);
-    }, skip: true);
+    });
 
     testWidgets(
-      'Does NOT delete account when cancelling Use Existing Account',
+      'does NOT delete account when cancelling Use Existing Account',
       (tester) async {
-        await tester.pumpWidget(createSubject(mockUser));
+        setupGuestUser();
+        when(() => mockUser.delete()).thenAnswer((_) async {});
+
+        await tester.pumpWidget(createAccountCardSubject(mockUser));
         await tester.pumpAndSettle();
 
         // Open bottom sheet
-        await tester.tap(find.widgetWithIcon(FilledButton, Icons.link));
+        await tester.tap(find.text(L10n.linkAccount));
         await tester.pumpAndSettle();
 
-        // Tap existing account button
-        await tester.tap(find.widgetWithIcon(OutlinedButton, Icons.login));
+        // Tap Use Existing Account button
+        await tester.tap(
+          find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
+        );
         await tester.pumpAndSettle();
 
         // Tap Cancel
-        await tester.tap(
-          find.widgetWithText(TextButton, AppLocalizations.cancel),
-        );
+        await tester.tap(find.widgetWithText(TextButton, L10n.cancel));
         await tester.pumpAndSettle();
 
         verifyNever(() => mockUser.delete());
         expect(find.byType(AlertDialog), findsNothing);
       },
-      skip: true,
     );
+  });
+
+  group('Authenticated user - Logout', () {
+    testWidgets('calls signOut when Logout button is tapped', (tester) async {
+      setupAuthenticatedUser();
+      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createUserAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Find and tap the Logout button
+      await tester.tap(find.text(L10n.logout));
+      await tester.pumpAndSettle();
+
+      verify(() => mockAuth.signOut()).called(1);
+    });
+  });
+
+  group('Authenticated user - Delete Account', () {
+    testWidgets('shows delete confirmation dialog when Delete is tapped', (
+      tester,
+    ) async {
+      setupAuthenticatedUser();
+
+      await tester.pumpWidget(createUserAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Find and tap the Delete Account button
+      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text(L10n.deleteAccountQuestion), findsOneWidget);
+      expect(find.text(L10n.deleteAccountWarning), findsOneWidget);
+    });
+
+    testWidgets('deletes account when confirming deletion', (tester) async {
+      setupAuthenticatedUser();
+      when(() => mockUser.delete()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createUserAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Tap Delete Account button
+      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.pumpAndSettle();
+
+      // Tap Delete (red confirmation button)
+      await tester.tap(find.widgetWithText(FilledButton, L10n.delete));
+      await tester.pumpAndSettle();
+
+      verify(() => mockUser.delete()).called(1);
+    });
+
+    testWidgets('does NOT delete account when cancelling deletion', (
+      tester,
+    ) async {
+      setupAuthenticatedUser();
+
+      await tester.pumpWidget(createUserAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Tap Delete Account button
+      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.pumpAndSettle();
+
+      // Tap Cancel
+      await tester.tap(find.widgetWithText(TextButton, L10n.cancel));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockUser.delete());
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('shows error snackbar when delete fails with generic error', (
+      tester,
+    ) async {
+      setupAuthenticatedUser();
+      when(() => mockUser.delete()).thenThrow(Exception('Network error'));
+
+      await tester.pumpWidget(createUserAccountCardSubject(mockUser));
+      await tester.pumpAndSettle();
+
+      // Tap Delete Account button
+      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.pumpAndSettle();
+
+      // Tap Delete (red confirmation button)
+      await tester.tap(find.widgetWithText(FilledButton, L10n.delete));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.textContaining(L10n.deleteAccountError), findsOneWidget);
+    });
   });
 }

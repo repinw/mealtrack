@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
@@ -442,7 +442,7 @@ void main() {
         expect(state.error, isA<FormatException>());
         expect(
           (state.error as FormatException).message,
-          AppLocalizations.pleaseSelectPdf,
+          L10n.pleaseSelectPdf,
         );
       },
     );
@@ -471,7 +471,7 @@ void main() {
         expect(state.error, isA<FormatException>());
         expect(
           (state.error as FormatException).message,
-          AppLocalizations.pleaseSelectPdf,
+          L10n.pleaseSelectPdf,
         );
       },
     );

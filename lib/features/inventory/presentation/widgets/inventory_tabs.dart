@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 class InventoryTabs extends ConsumerWidget {
   const InventoryTabs({super.key});
@@ -21,21 +21,21 @@ class InventoryTabs extends ConsumerWidget {
             context,
             ref,
             InventoryFilterType.all,
-            AppLocalizations.filterAll,
+            L10n.filterAll,
             currentFilter == InventoryFilterType.all,
           ),
           _buildTab(
             context,
             ref,
             InventoryFilterType.available,
-            AppLocalizations.filterAvailable,
+            L10n.filterAvailable,
             currentFilter == InventoryFilterType.available,
           ),
           _buildTab(
             context,
             ref,
             InventoryFilterType.empty,
-            AppLocalizations.filterEmpty,
+            L10n.filterEmpty,
             currentFilter == InventoryFilterType.empty,
           ),
         ],

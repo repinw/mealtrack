@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
@@ -29,10 +29,10 @@ class ScannerViewModel extends _$ScannerViewModel {
       if (result != null) {
         final path = result.files.first.path;
         if (path == null) {
-          throw const FormatException(AppLocalizations.pleaseSelectPdf);
+          throw const FormatException(L10n.pleaseSelectPdf);
         }
         if (!path.toLowerCase().endsWith('.pdf')) {
-          throw const FormatException(AppLocalizations.pleaseSelectPdf);
+          throw const FormatException(L10n.pleaseSelectPdf);
         }
 
         return await receiptRepository.analyzePdfReceipt(XFile(path));

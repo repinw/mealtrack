@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
@@ -187,7 +187,7 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text(AppLocalizations.noItemsFound), findsOneWidget);
+      expect(find.text(L10n.noItemsFound), findsOneWidget);
     },
   );
 
@@ -223,7 +223,7 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text(AppLocalizations.noAvailableItems), findsOneWidget);
+      expect(find.text(L10n.noAvailableItems), findsOneWidget);
     },
   );
 
@@ -259,9 +259,9 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text(AppLocalizations.filterAll), findsOneWidget);
+    expect(find.text(L10n.filterAll), findsOneWidget);
 
-    await tester.tap(find.text(AppLocalizations.filterAvailable));
+    await tester.tap(find.text(L10n.filterAvailable));
     await tester.pumpAndSettle();
   });
 

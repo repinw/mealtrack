@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_tabs.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
@@ -40,9 +40,9 @@ void main() {
     testWidgets('renders all three filter tabs', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.text(AppLocalizations.filterAll), findsOneWidget);
-      expect(find.text(AppLocalizations.filterAvailable), findsOneWidget);
-      expect(find.text(AppLocalizations.filterEmpty), findsOneWidget);
+      expect(find.text(L10n.filterAll), findsOneWidget);
+      expect(find.text(L10n.filterAvailable), findsOneWidget);
+      expect(find.text(L10n.filterEmpty), findsOneWidget);
     });
 
     testWidgets('tapping Available tab calls setFilter with available', (
@@ -50,7 +50,7 @@ void main() {
     ) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(AppLocalizations.filterAvailable));
+      await tester.tap(find.text(L10n.filterAvailable));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.available);
@@ -59,7 +59,7 @@ void main() {
     testWidgets('tapping Empty tab calls setFilter with empty', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(AppLocalizations.filterEmpty));
+      await tester.tap(find.text(L10n.filterEmpty));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.empty);
@@ -68,9 +68,9 @@ void main() {
     testWidgets('tapping All tab calls setFilter with all', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(AppLocalizations.filterAvailable));
+      await tester.tap(find.text(L10n.filterAvailable));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(AppLocalizations.filterAll));
+      await tester.tap(find.text(L10n.filterAll));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.all);
@@ -80,7 +80,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
 
       final allesText = tester.widget<Text>(
-        find.text(AppLocalizations.filterAll),
+        find.text(L10n.filterAll),
       );
       expect(allesText.style?.fontWeight, FontWeight.bold);
     });
@@ -89,12 +89,12 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
 
       final availableText = tester.widget<Text>(
-        find.text(AppLocalizations.filterAvailable),
+        find.text(L10n.filterAvailable),
       );
       expect(availableText.style?.fontWeight, FontWeight.normal);
 
       final emptyText = tester.widget<Text>(
-        find.text(AppLocalizations.filterEmpty),
+        find.text(L10n.filterEmpty),
       );
       expect(emptyText.style?.fontWeight, FontWeight.normal);
     });

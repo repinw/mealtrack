@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 
@@ -26,13 +26,13 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            AppLocalizations.selectOption,
+            L10n.selectOption,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.camera_alt, color: Colors.blueGrey),
-            title: Text(AppLocalizations.imageFromCamera),
+            title: Text(L10n.imageFromCamera),
             onTap: () => _handleAction(
               context,
               ref,
@@ -43,7 +43,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.photo_library, color: Colors.blueGrey),
-            title: Text(AppLocalizations.imageFromGallery),
+            title: Text(L10n.imageFromGallery),
             onTap: () => _handleAction(
               context,
               ref,
@@ -57,7 +57,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
               Icons.picture_as_pdf_rounded,
               color: Colors.blueGrey,
             ),
-            title: Text(AppLocalizations.imageFromPdf),
+            title: Text(L10n.imageFromPdf),
             onTap: () => _handleAction(
               context,
               ref,
@@ -97,7 +97,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
 
     if (result == null || result.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppLocalizations.noAvailableProducts)),
+        const SnackBar(content: Text(L10n.noAvailableProducts)),
       );
       return;
     }
@@ -116,14 +116,14 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
     if (error is ReceiptAnalysisException) {
       if (error.code == 'INVALID_JSON' ||
           error.originalException is FormatException) {
-        message = AppLocalizations.receiptReadErrorFormat;
+        message = L10n.receiptReadErrorFormat;
       } else {
         message = error.message;
       }
     } else if (message.contains('FormatException')) {
-      message = AppLocalizations.receiptReadErrorFormat;
+      message = L10n.receiptReadErrorFormat;
     } else {
-      message = '${AppLocalizations.errorOccurred}$message';
+      message = '${L10n.errorOccurred}$message';
     }
 
     messenger.showSnackBar(

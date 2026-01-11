@@ -3,9 +3,9 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/config/app_config.dart';
+import 'package:mealtrack/core/config/google_sign_in_config.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 class UserAccountCard extends ConsumerWidget {
   const UserAccountCard({super.key, required this.user});
@@ -21,26 +21,26 @@ class UserAccountCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.userAccount,
+              L10n.userAccount,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.person),
-              title: const Text(AppLocalizations.name),
-              subtitle: Text(user.displayName ?? AppLocalizations.notAvailable),
+              title: const Text(L10n.name),
+              subtitle: Text(user.displayName ?? L10n.notAvailable),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.email),
-              title: const Text(AppLocalizations.email),
-              subtitle: Text(user.email ?? AppLocalizations.notAvailable),
+              title: const Text(L10n.email),
+              subtitle: Text(user.email ?? L10n.notAvailable),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.fingerprint),
-              title: const Text(AppLocalizations.id),
+              title: const Text(L10n.id),
               subtitle: SelectableText(user.uid),
             ),
             const SizedBox(height: 16),
@@ -52,7 +52,7 @@ class UserAccountCard extends ConsumerWidget {
                     await ref.read(firebaseAuthProvider).signOut();
                   },
                   icon: const Icon(Icons.logout),
-                  label: const Text(AppLocalizations.logout),
+                  label: const Text(L10n.logout),
                 ),
               ),
             if (!user.isAnonymous) const SizedBox(height: 8),
@@ -64,17 +64,13 @@ class UserAccountCard extends ConsumerWidget {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (dialogContext) => AlertDialog(
-                        title: const Text(
-                          AppLocalizations.deleteAccountQuestion,
-                        ),
-                        content: const Text(
-                          AppLocalizations.deleteAccountWarning,
-                        ),
+                        title: const Text(L10n.deleteAccountQuestion),
+                        content: const Text(L10n.deleteAccountWarning),
                         actions: [
                           TextButton(
                             onPressed: () =>
                                 Navigator.of(dialogContext).pop(false),
-                            child: const Text(AppLocalizations.cancel),
+                            child: const Text(L10n.cancel),
                           ),
                           FilledButton(
                             onPressed: () =>
@@ -82,7 +78,7 @@ class UserAccountCard extends ConsumerWidget {
                             style: FilledButton.styleFrom(
                               backgroundColor: Colors.red,
                             ),
-                            child: const Text(AppLocalizations.delete),
+                            child: const Text(L10n.delete),
                           ),
                         ],
                       ),
@@ -93,7 +89,7 @@ class UserAccountCard extends ConsumerWidget {
                   },
                   style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
                   icon: const Icon(Icons.delete_forever),
-                  label: const Text(AppLocalizations.deleteAccount),
+                  label: const Text(L10n.deleteAccount),
                 ),
               ),
           ],
@@ -112,7 +108,7 @@ class UserAccountCard extends ConsumerWidget {
           providers: [
             EmailAuthProvider(),
             GoogleProvider(
-              clientId: googleClientId,
+              clientId: GoogleSignInConfig.clientId,
               scopes: ['email', 'profile'],
             ),
           ],
@@ -123,23 +119,21 @@ class UserAccountCard extends ConsumerWidget {
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${AppLocalizations.deleteAccountError}$e'),
-                ),
+                SnackBar(content: Text('${L10n.deleteAccountError}$e')),
               );
             }
           }
         }
       } else if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.deleteAccountError}$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${L10n.deleteAccountError}$e')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.deleteAccountError}$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${L10n.deleteAccountError}$e')));
       }
     }
   }

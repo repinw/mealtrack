@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
@@ -150,7 +150,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text(AppLocalizations.quantityUpdateFailed), findsOneWidget);
+      expect(find.text(L10n.quantityUpdateFailed), findsOneWidget);
     });
 
     testWidgets('SnackBar has floating behavior on error', (

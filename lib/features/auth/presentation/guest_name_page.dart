@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 
 class GuestNamePage extends ConsumerStatefulWidget {
   final User? user;
@@ -60,7 +60,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.errorLabel}${e.message}')),
+          SnackBar(content: Text('${L10n.errorLabel}${e.message}')),
         );
       }
     }
@@ -83,7 +83,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
             children: [
               const Spacer(),
               Text(
-                AppLocalizations.howShouldWeCallYou,
+                L10n.howShouldWeCallYou,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -93,7 +93,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: AppLocalizations.yourName,
+                  labelText: L10n.yourName,
                   border: OutlineInputBorder(),
                 ),
                 autofocus: true,
@@ -109,7 +109,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(AppLocalizations.next),
+                    : const Text(L10n.next),
               ),
               const Spacer(flex: 2),
             ],

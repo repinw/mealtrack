@@ -6,7 +6,7 @@ import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 
 class MockInventoryFilter extends InventoryFilter {
@@ -90,7 +90,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppLocalizations.noAvailableItems), findsOneWidget);
+      expect(find.text(L10n.noAvailableItems), findsOneWidget);
     },
   );
 
@@ -111,7 +111,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppLocalizations.noItemsFound), findsOneWidget);
+      expect(find.text(L10n.noItemsFound), findsOneWidget);
     },
   );
 
@@ -185,7 +185,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text(AppLocalizations.archive), findsOneWidget);
+      expect(find.text(L10n.archive), findsOneWidget);
       expect(find.byIcon(Icons.archive_outlined), findsOneWidget);
     },
   );
@@ -225,7 +225,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(AppLocalizations.archive));
+    await tester.tap(find.text(L10n.archive));
     await tester.pumpAndSettle();
 
     expect(mockFridgeItems.deletedReceiptIds, contains('receipt-1'));
@@ -265,7 +265,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text(AppLocalizations.archive), findsNothing);
+    expect(find.text(L10n.archive), findsNothing);
     expect(find.byIcon(Icons.archive_outlined), findsNothing);
   });
 }
