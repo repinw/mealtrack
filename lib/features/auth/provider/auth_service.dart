@@ -39,7 +39,7 @@ Stream<UserProfile?> userProfile(Ref ref) {
         displayName: user.displayName,
         isAnonymous: user.isAnonymous,
       );
-      await docRef.set(profile.toJson());
+      await docRef.set(profile.toJson(), SetOptions(merge: true));
       return profile;
     }
     return UserProfile.fromJson(snapshot.data()!);

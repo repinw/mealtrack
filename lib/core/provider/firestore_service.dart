@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
@@ -27,9 +28,15 @@ class FirestoreService {
   final FirebaseFirestore _firestore;
   final String _userId;
   final String? _householdId;
+  final Random _random;
 
-  FirestoreService(this._firestore, this._userId, {String? householdId})
-    : _householdId = householdId;
+  FirestoreService(
+    this._firestore,
+    this._userId, {
+    String? householdId,
+    Random? random,
+  }) : _householdId = householdId,
+       _random = random ?? Random.secure();
 
   String get _activeHouseholdId => _householdId ?? _userId;
 
@@ -85,7 +92,20 @@ class FirestoreService {
   }
 
   Future<String> generateInviteCode() async {
-    final code = _generateRandom6Digit();
+    String code = '';
+    bool exists = true;
+    int attempts = 0;
+
+    while (exists && attempts < 3) {
+      code = _generateRandom6Digit();
+      final doc = await _firestore
+          .collection(invitesCollection)
+          .doc(code)
+          .get();
+      exists = doc.exists;
+      attempts++;
+    }
+
     final expiresAt = DateTime.now().add(const Duration(days: 1));
 
     await _firestore.collection(invitesCollection).doc(code).set({
@@ -104,7 +124,7 @@ class FirestoreService {
 
     final data = doc.data()!;
     final expiresAt = (data['expiresAt'] as Timestamp).toDate();
-    if (DateTime.now().isAfter(expiresAt)) {
+    if (!DateTime.now().isBefore(expiresAt)) {
       throw Exception('Code Expired');
     }
 
@@ -132,7 +152,7 @@ class FirestoreService {
   }
 
   String _generateRandom6Digit() {
-    final random = DateTime.now().microsecondsSinceEpoch % 1000000;
-    return random.toString().padLeft(6, '0');
+    final randomValue = _random.nextInt(1000000);
+    return randomValue.toString().padLeft(6, '0');
   }
 }

@@ -5,19 +5,19 @@ import 'package:mealtrack/features/sharing/provider/sharing_provider.dart';
 
 // Manual Fake
 class FakeFirestoreService extends Fake implements FirestoreService {
-  bool shouldThrow = false;
+  String? errorToThrow;
   String generatedCode = '123456';
   String? joinedCode;
 
   @override
   Future<String> generateInviteCode() async {
-    if (shouldThrow) throw Exception('Generate Error');
+    if (errorToThrow != null) throw Exception(errorToThrow);
     return generatedCode;
   }
 
   @override
   Future<void> joinHousehold(String code) async {
-    if (shouldThrow) throw Exception('Join Error');
+    if (errorToThrow != null) throw Exception(errorToThrow);
     joinedCode = code;
   }
 }
@@ -62,7 +62,7 @@ void main() {
 
       test('sets state to AsyncError on failure', () async {
         final container = makeContainer();
-        fakeFirestoreService.shouldThrow = true;
+        fakeFirestoreService.errorToThrow = 'Generate Error';
 
         await container.read(sharingViewModelProvider.notifier).generateCode();
 
@@ -89,7 +89,7 @@ void main() {
 
       test('sets state to AsyncError on failure', () async {
         final container = makeContainer();
-        fakeFirestoreService.shouldThrow = true;
+        fakeFirestoreService.errorToThrow = 'Join Error';
 
         await container
             .read(sharingViewModelProvider.notifier)
@@ -99,6 +99,22 @@ void main() {
         expect(state, isA<AsyncError>());
         expect(state.error.toString(), contains('Join Error'));
       });
+
+      test(
+        'sets state to AsyncError with "Invalid Code" for UI handling',
+        () async {
+          final container = makeContainer();
+          fakeFirestoreService.errorToThrow = 'Invalid Code';
+
+          await container
+              .read(sharingViewModelProvider.notifier)
+              .joinHousehold('000000');
+
+          final state = container.read(sharingViewModelProvider);
+          expect(state, isA<AsyncError>());
+          expect(state.error.toString(), contains('Invalid Code'));
+        },
+      );
     });
   });
 }

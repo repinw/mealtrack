@@ -1,9 +1,13 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockRandom extends Mock implements Random {}
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
@@ -26,8 +30,42 @@ void main() {
             .get();
 
         expect(snapshot.exists, isTrue);
+        expect(code.length, 6);
         expect(snapshot.data()!['hostUid'], userId);
         expect(snapshot.data()!.containsKey('expiresAt'), isTrue);
+      });
+
+      test('generateInviteCode retries on collision', () async {
+        final mockRandom = MockRandom();
+        final serviceWithMock = FirestoreService(
+          fakeFirestore,
+          userId,
+          random: mockRandom,
+        );
+
+        const collidingCode = '111111';
+        const newCode = '222222';
+
+        // Pre-fill a colliding code
+        await fakeFirestore
+            .collection(invitesCollection)
+            .doc(collidingCode)
+            .set({'hostUid': 'someone-else'});
+
+        // Mock returns collidingCode first, then newCode
+        final responses = [111111, 222222];
+        var i = 0;
+        when(() => mockRandom.nextInt(any())).thenAnswer((_) => responses[i++]);
+
+        final code = await serviceWithMock.generateInviteCode();
+
+        expect(code, newCode);
+        final snapshot = await fakeFirestore
+            .collection(invitesCollection)
+            .doc(newCode)
+            .get();
+        expect(snapshot.exists, isTrue);
+        expect(snapshot.data()!['hostUid'], userId);
       });
     });
 
@@ -76,6 +114,21 @@ void main() {
         await fakeFirestore.collection(invitesCollection).doc(inviteCode).set({
           'hostUid': hostId,
           'expiresAt': Timestamp.fromDate(expiresAt),
+        });
+
+        expect(
+          () => firestoreService.joinHousehold(inviteCode),
+          throwsA(predicate((e) => e.toString().contains('Code Expired'))),
+        );
+      });
+
+      test('joinHousehold fails when expiresAt is exactly now', () async {
+        const inviteCode = 'boundary-code';
+        final now = DateTime.now();
+
+        await fakeFirestore.collection(invitesCollection).doc(inviteCode).set({
+          'hostUid': 'host',
+          'expiresAt': Timestamp.fromDate(now),
         });
 
         expect(
