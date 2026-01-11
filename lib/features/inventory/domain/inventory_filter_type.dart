@@ -1,1 +1,1 @@
-enum InventoryFilterType { all, available, empty }
+enum InventoryFilterType { all, available, consumed }

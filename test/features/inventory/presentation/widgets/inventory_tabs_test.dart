@@ -67,7 +67,7 @@ void main() {
       await tester.tap(find.text('Verbraucht'));
       await tester.pumpAndSettle();
 
-      expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.empty);
+      expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.consumed);
     });
 
     testWidgets('tapping All tab calls setFilter with all', (tester) async {

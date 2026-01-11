@@ -179,7 +179,7 @@ void main() {
 
       container
           .read(inventoryFilterProvider.notifier)
-          .setFilter(InventoryFilterType.empty);
+          .setFilter(InventoryFilterType.consumed);
 
       await container.read(fridgeItemsProvider.future);
 
@@ -222,7 +222,7 @@ void main() {
         // Set to Empty filter
         container
             .read(inventoryFilterProvider.notifier)
-            .setFilter(InventoryFilterType.empty);
+            .setFilter(InventoryFilterType.consumed);
 
         await container.read(fridgeItemsProvider.future);
 

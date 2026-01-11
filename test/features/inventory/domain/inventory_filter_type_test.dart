@@ -9,7 +9,10 @@ void main() {
         InventoryFilterType.values,
         contains(InventoryFilterType.available),
       );
-      expect(InventoryFilterType.values, contains(InventoryFilterType.empty));
+      expect(
+        InventoryFilterType.values,
+        contains(InventoryFilterType.consumed),
+      );
       expect(InventoryFilterType.values.length, 3);
     });
   });

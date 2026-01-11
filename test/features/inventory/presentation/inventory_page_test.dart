@@ -80,7 +80,14 @@ void main() {
       ),
     );
 
-    expect(find.text('VORRATSWERT'), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(InventoryPage)),
+        )!.stockValue,
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Test Inventory'), findsNothing);
   });
 
@@ -174,7 +181,14 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('Keine Artikel gefunden'), findsOneWidget);
+      expect(
+        find.text(
+          AppLocalizations.of(
+            tester.element(find.byType(InventoryPage)),
+          )!.noItemsFound,
+        ),
+        findsOneWidget,
+      );
     },
   );
 
@@ -207,7 +221,14 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('Keine verfügbaren Artikel'), findsOneWidget);
+      expect(
+        find.text(
+          AppLocalizations.of(
+            tester.element(find.byType(InventoryPage)),
+          )!.noAvailableItems,
+        ),
+        findsOneWidget,
+      );
     },
   );
 
@@ -240,9 +261,22 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text('Alle'), findsOneWidget);
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(InventoryPage)),
+        )!.filterAll,
+      ),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text('Vorrat'));
+    await tester.tap(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(InventoryPage)),
+        )!.filterAvailable,
+      ),
+    );
     await tester.pumpAndSettle();
   });
 

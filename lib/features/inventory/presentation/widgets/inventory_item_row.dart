@@ -73,8 +73,9 @@ class InventoryItemRow extends ConsumerWidget {
                     Text(
                       item.name,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
                         color: isOutOfStock
                             ? Colors.grey.shade400
                             : const Color(0xFF2D3142),

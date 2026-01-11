@@ -96,7 +96,7 @@ AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
             return true;
           case InventoryFilterType.available:
             return item.quantity > 0;
-          case InventoryFilterType.empty:
+          case InventoryFilterType.consumed:
             return item.quantity < item.initialQuantity;
         }
       }).toList();
