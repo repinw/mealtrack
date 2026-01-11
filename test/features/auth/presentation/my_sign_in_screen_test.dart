@@ -42,13 +42,7 @@ void main() async {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: MySignInScreen(
-              mfaAction: AuthStateChangeAction<MFARequired>(
-                (context, state) {},
-              ),
-            ),
-          ),
+          home: Scaffold(body: const MySignInScreen()),
         ),
       ),
     );
@@ -81,11 +75,7 @@ void main() async {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => MySignInScreen(
-                        mfaAction: AuthStateChangeAction<MFARequired>(
-                          (context, state) {},
-                        ),
-                      ),
+                      builder: (context) => const MySignInScreen(),
                     ),
                   );
                 },

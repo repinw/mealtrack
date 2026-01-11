@@ -21,7 +21,7 @@ class MockUser extends Mock implements User {}
 
 class MockFridgeItemsNotifier extends FridgeItems {
   @override
-  Future<List<FridgeItem>> build() async => [];
+  Stream<List<FridgeItem>> build() => Stream.value([]);
 
   @override
   Future<void> deleteAll() async {}

@@ -36,7 +36,7 @@ class MockFridgeItems extends FridgeItems {
   MockFridgeItems(this.items);
 
   @override
-  Future<List<FridgeItem>> build() async => items;
+  Stream<List<FridgeItem>> build() => Stream.value(items);
 
   @override
   Future<void> deleteItemsByReceipt(String receiptId) async {

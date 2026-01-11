@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/auth/presentation/auth_sign_in_screen.dart';
+import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -41,7 +41,7 @@ class WelcomePage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const AuthSignInScreen(),
+                      builder: (context) => const MySignInScreen(),
                     ),
                   );
                 },

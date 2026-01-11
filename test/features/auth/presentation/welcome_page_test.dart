@@ -44,7 +44,7 @@ void main() async {
     expect(find.text('Als Gast fortsetzen'), findsOneWidget);
   });
 
-  testWidgets('WelcomePage navigates to AuthSignInScreen on login press', (
+  testWidgets('WelcomePage navigates to MySignInScreen on login press', (
     tester,
   ) async {
     await tester.pumpWidget(

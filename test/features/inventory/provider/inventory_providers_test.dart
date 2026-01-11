@@ -10,22 +10,26 @@ class MockFridgeRepository extends Mock implements FridgeRepository {}
 
 void main() {
   late MockFridgeRepository mockRepository;
-  late ProviderContainer container;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
-    container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
-    );
+    // Default stub for watchItems() - FridgeItems.build() uses this stream
+    when(
+      () => mockRepository.watchItems(),
+    ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
     registerFallbackValue(<FridgeItem>[]);
     registerFallbackValue(
       FridgeItem.create(name: 'fallback', storeName: 'fallback'),
     );
   });
 
-  tearDown(() {
-    container.dispose();
-  });
+  ProviderContainer makeContainer() {
+    final container = ProviderContainer(
+      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
 
   group('FridgeItems Notifier', () {
     final fixedDate = DateTime(2023, 1, 1);
@@ -44,33 +48,43 @@ void main() {
 
     test('build loads items from repository', () async {
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       final items = await container.read(fridgeItemsProvider.future);
 
       expect(items, [item1, item2]);
-      verify(() => mockRepository.getItems()).called(1);
+      verify(() => mockRepository.watchItems()).called(1);
     });
 
     test('reload re-fetches items from repository', () async {
-      when(() => mockRepository.getItems()).thenAnswer((_) async => [item1]);
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
 
       await container.read(fridgeItemsProvider.notifier).reload();
 
       final items = await container.read(fridgeItemsProvider.future);
       expect(items, [item1, item2]);
-      verify(() => mockRepository.getItems()).called(2);
+      verify(() => mockRepository.watchItems()).called(2);
     });
 
     test('addItems calls repository addItems and invalidates', () async {
-      when(() => mockRepository.getItems()).thenAnswer((_) async => []);
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+
       when(() => mockRepository.addItems(any())).thenAnswer((_) async {});
 
       await container.read(fridgeItemsProvider.notifier).addItems([item1]);
@@ -79,7 +93,9 @@ void main() {
     });
 
     test('updateItem calls repository updateItem and invalidates', () async {
-      when(() => mockRepository.getItems()).thenAnswer((_) async => [item1]);
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+
       when(() => mockRepository.updateItem(any())).thenAnswer((_) async {});
 
       final updatedItem1 = item1.copyWith(quantity: 5);
@@ -113,14 +129,18 @@ void main() {
         receiptId: 'receipt-2',
       );
 
-      when(() => mockRepository.getItems()).thenAnswer(
-        (_) async => [
+      // Set up mock BEFORE creating container
+      when(() => mockRepository.watchItems()).thenAnswer(
+        (_) => Stream.value([
           itemWithReceipt1,
           itemWithReceipt2,
           itemWithDifferentReceipt,
-        ],
+        ]),
       );
       when(() => mockRepository.deleteItem(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future); // Ensure loaded
 
@@ -136,11 +156,13 @@ void main() {
 
   group('InventoryFilter', () {
     test('initial state is all', () {
+      final container = makeContainer();
       final filter = container.read(inventoryFilterProvider);
       expect(filter, InventoryFilterType.all);
     });
 
     test('toggle switches state', () {
+      final container = makeContainer();
       container
           .read(inventoryFilterProvider.notifier)
           .setFilter(InventoryFilterType.available);
@@ -165,9 +187,13 @@ void main() {
         quantity: 1,
       ).copyWith(quantity: 0);
 
+      // Set up mock BEFORE creating container
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, __) {});
 
       final available = await container.read(
         availableFridgeItemsProvider.future,
@@ -199,9 +225,13 @@ void main() {
         storeName: 'S',
       ); // Null receiptId
 
+      // Set up mock BEFORE creating container
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2, item3, item4]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2, item3, item4]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, __) {});
 
       final grouped = await container.read(groupedFridgeItemsProvider.future);
 
@@ -220,12 +250,18 @@ void main() {
         quantity: 5,
       );
 
-      when(() => mockRepository.getItems()).thenAnswer((_) async => [item]);
+      // Set up mock BEFORE creating container
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
       when(() => mockRepository.updateQuantity(any(), any())).thenAnswer((
         _,
       ) async {
         await Future.delayed(const Duration(milliseconds: 50));
       });
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, __) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -242,10 +278,16 @@ void main() {
         quantity: 5,
       );
 
-      when(() => mockRepository.getItems()).thenAnswer((_) async => [item]);
+      // Set up mock BEFORE creating container
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
       when(
         () => mockRepository.updateQuantity(any(), any()),
       ).thenThrow(Exception('Fail'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, __) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -262,6 +304,7 @@ void main() {
 
   group('inventoryStatsProvider', () {
     test('returns empty stats initially', () {
+      final container = makeContainer();
       final stats = container.read(inventoryStatsProvider);
       expect(stats, InventoryStats.empty);
     });
@@ -282,9 +325,13 @@ void main() {
         receiptId: 'R2',
       );
 
+      // Set up mock BEFORE creating container
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       // Trigger load
       await container.read(fridgeItemsProvider.future);
@@ -310,9 +357,13 @@ void main() {
         unitPrice: 5.0,
       ).copyWith(quantity: 0);
 
+      // Set up mock BEFORE creating container
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -347,9 +398,13 @@ void main() {
         quantity: 1,
       ); // No receipt
 
+      // Set up mock BEFORE creating container
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2, item3, item4]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2, item3, item4]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 

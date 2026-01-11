@@ -27,6 +27,10 @@ class FridgeRepository {
     }
   }
 
+  Stream<List<FridgeItem>> watchItems() {
+    return _firestoreService.watchItems();
+  }
+
   Future<void> addItems(List<FridgeItem> items) async {
     try {
       await _firestoreService.addItemsBatch(items);

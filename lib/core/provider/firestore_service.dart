@@ -10,30 +10,49 @@ part 'firestore_service.g.dart';
 FirestoreService firestoreService(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final user = authState.value;
+  final profile = ref.watch(userProfileProvider).value;
 
   if (user == null) {
     throw Exception('User not authenticated');
   }
 
-  return FirestoreService(FirebaseFirestore.instance, user.uid);
+  return FirestoreService(
+    FirebaseFirestore.instance,
+    user.uid,
+    householdId: profile?.householdId,
+  );
 }
 
 class FirestoreService {
   final FirebaseFirestore _firestore;
   final String _userId;
+  final String? _householdId;
 
-  FirestoreService(this._firestore, this._userId);
+  FirestoreService(this._firestore, this._userId, {String? householdId})
+    : _householdId = householdId;
+
+  String get _activeHouseholdId => _householdId ?? _userId;
 
   CollectionReference<Map<String, dynamic>> get _inventoryCollection {
+    // Shared inventory: households/{householdId}/inventory
+    // Personal inventory: households/{userId}/inventory
     return _firestore
-        .collection(usersCollection)
-        .doc(_userId)
+        .collection(householdsCollection)
+        .doc(_activeHouseholdId)
         .collection(inventoryCollection);
   }
 
   Future<List<FridgeItem>> getItems() async {
     final snapshot = await _inventoryCollection.get();
     return snapshot.docs.map((doc) => FridgeItem.fromJson(doc.data())).toList();
+  }
+
+  Stream<List<FridgeItem>> watchItems() {
+    return _inventoryCollection.snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => FridgeItem.fromJson(doc.data()))
+          .toList();
+    });
   }
 
   Future<void> addItem(FridgeItem item) async {
@@ -63,5 +82,57 @@ class FirestoreService {
       batch.delete(doc.reference);
     }
     await batch.commit();
+  }
+
+  Future<String> generateInviteCode() async {
+    final code = _generateRandom6Digit();
+    final expiresAt = DateTime.now().add(const Duration(days: 1));
+
+    await _firestore.collection(invitesCollection).doc(code).set({
+      'hostUid': _userId,
+      'expiresAt': Timestamp.fromDate(expiresAt),
+    });
+
+    return code;
+  }
+
+  Future<void> joinHousehold(String code) async {
+    final doc = await _firestore.collection(invitesCollection).doc(code).get();
+    if (!doc.exists) {
+      throw Exception('Invalid Code');
+    }
+
+    final data = doc.data()!;
+    final expiresAt = (data['expiresAt'] as Timestamp).toDate();
+    if (DateTime.now().isAfter(expiresAt)) {
+      throw Exception('Code Expired');
+    }
+
+    final hostUid = data['hostUid'] as String;
+    if (hostUid == _userId) {
+      throw Exception('Cannot Join Own Household');
+    }
+
+    await _firestore.collection(usersCollection).doc(_userId).update({
+      'householdId': hostUid,
+    });
+  }
+
+  Future<void> removeMember(String uid) async {
+    // Only remove if it's actually a guest (leaving hostUid null for guests resets them)
+    await _firestore.collection(usersCollection).doc(uid).update({
+      'householdId': FieldValue.delete(),
+    });
+  }
+
+  Future<void> leaveHousehold() async {
+    await _firestore.collection(usersCollection).doc(_userId).update({
+      'householdId': FieldValue.delete(),
+    });
+  }
+
+  String _generateRandom6Digit() {
+    final random = DateTime.now().microsecondsSinceEpoch % 1000000;
+    return random.toString().padLeft(6, '0');
   }
 }

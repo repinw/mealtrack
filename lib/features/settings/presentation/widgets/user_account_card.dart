@@ -4,6 +4,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/config/google_sign_in_config.dart';
+import 'package:mealtrack/core/models/user_profile.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -15,6 +16,8 @@ class UserAccountCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(userProfileProvider);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -26,23 +29,20 @@ class UserAccountCard extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.person),
-              title: Text(l10n.name),
-              subtitle: Text(user.displayName ?? l10n.notAvailable),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.email),
-              title: Text(l10n.email),
-              subtitle: Text(user.email ?? l10n.notAvailable),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.fingerprint),
-              title: Text(l10n.id),
-              subtitle: SelectableText(user.uid),
+            profileAsync.when(
+              data: (profile) =>
+                  _buildProfileInfo(context, l10n, profile, user),
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (err, stack) => ListTile(
+                leading: const Icon(Icons.error, color: Colors.red),
+                title: Text(l10n.errorLabel),
+                subtitle: Text(err.toString()),
+              ),
             ),
             const SizedBox(height: 16),
             if (!user.isAnonymous)
@@ -96,6 +96,39 @@ class UserAccountCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileInfo(
+    BuildContext context,
+    AppLocalizations l10n,
+    UserProfile? profile,
+    User user,
+  ) {
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.person),
+          title: Text(l10n.name),
+          subtitle: Text(
+            profile?.displayName ?? user.displayName ?? l10n.notAvailable,
+          ),
+        ),
+        if (!(user.isAnonymous && (profile?.isAnonymous ?? true)))
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.email),
+            title: Text(l10n.email),
+            subtitle: Text(profile?.email ?? user.email ?? l10n.notAvailable),
+          ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.fingerprint),
+          title: Text(l10n.id),
+          subtitle: SelectableText(profile?.uid ?? user.uid),
+        ),
+      ],
     );
   }
 

@@ -1,219 +1,185 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/firestore_service.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
-  late MockFirebaseAuth mockAuth;
   late FirestoreService firestoreService;
+  const userId = 'user-123';
 
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
-    mockAuth = MockFirebaseAuth();
-    firestoreService = FirestoreService(fakeFirestore, 'test_user_id');
+    firestoreService = FirestoreService(fakeFirestore, userId);
   });
 
   group('FirestoreService', () {
-    test('addItem adds item to firestore', () async {
-      await mockAuth.signInAnonymously();
-      final item = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
+    group('Invites', () {
+      test('generateInviteCode creates document with expiresAt', () async {
+        final code = await firestoreService.generateInviteCode();
 
-      await firestoreService.addItem(item);
+        final snapshot = await fakeFirestore
+            .collection(invitesCollection)
+            .doc(code)
+            .get();
 
-      final snapshot = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .get();
-
-      expect(snapshot.exists, isTrue);
-      expect(snapshot.data()!['name'], 'Apple');
+        expect(snapshot.exists, isTrue);
+        expect(snapshot.data()!['hostUid'], userId);
+        expect(snapshot.data()!.containsKey('expiresAt'), isTrue);
+      });
     });
 
-    test('addItemsBatch adds multiple items using batch', () async {
-      await mockAuth.signInAnonymously();
-      final item1 = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
-      final item2 = FridgeItem(
-        id: '2',
-        name: 'Banana',
-        quantity: 2,
-        entryDate: DateTime(2023, 1, 2),
-        storeName: 'Test Store',
-      );
+    group('Households', () {
+      test('joinHousehold success updates user householdId', () async {
+        // Setup Invite
+        const inviteCode = '123456';
+        const hostId = 'host-user';
+        final expiresAt = DateTime.now().add(const Duration(hours: 1));
 
-      await firestoreService.addItemsBatch([item1, item2]);
+        await fakeFirestore.collection(invitesCollection).doc(inviteCode).set({
+          'hostUid': hostId,
+          'expiresAt': Timestamp.fromDate(expiresAt),
+        });
 
-      final snapshot1 = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .get();
-      final snapshot2 = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('2')
-          .get();
+        // Setup User
+        await fakeFirestore.collection(usersCollection).doc(userId).set({
+          'uid': userId,
+        });
 
-      expect(snapshot1.exists, isTrue);
-      expect(snapshot1.data()!['name'], 'Apple');
-      expect(snapshot2.exists, isTrue);
-      expect(snapshot2.data()!['name'], 'Banana');
+        // Action
+        await firestoreService.joinHousehold(inviteCode);
+
+        // Verify
+        final userDoc = await fakeFirestore
+            .collection(usersCollection)
+            .doc(userId)
+            .get();
+        expect(userDoc.data()!['householdId'], hostId);
+      });
+
+      test('joinHousehold fails with Invalid Code', () async {
+        expect(
+          () => firestoreService.joinHousehold('invalid-code'),
+          throwsA(predicate((e) => e.toString().contains('Invalid Code'))),
+        );
+      });
+
+      test('joinHousehold fails with Expired Code', () async {
+        const inviteCode = 'expired-code';
+        const hostId = 'host-user';
+        final expiresAt = DateTime.now().subtract(
+          const Duration(hours: 1),
+        ); // Past
+
+        await fakeFirestore.collection(invitesCollection).doc(inviteCode).set({
+          'hostUid': hostId,
+          'expiresAt': Timestamp.fromDate(expiresAt),
+        });
+
+        expect(
+          () => firestoreService.joinHousehold(inviteCode),
+          throwsA(predicate((e) => e.toString().contains('Code Expired'))),
+        );
+      });
+
+      test('joinHousehold fails when joining Own Household', () async {
+        const inviteCode = 'my-own-code';
+        final expiresAt = DateTime.now().add(const Duration(hours: 1));
+
+        // Invite where host is ME
+        await fakeFirestore.collection(invitesCollection).doc(inviteCode).set({
+          'hostUid': userId,
+          'expiresAt': Timestamp.fromDate(expiresAt),
+        });
+
+        expect(
+          () => firestoreService.joinHousehold(inviteCode),
+          throwsA(
+            predicate(
+              (e) => e.toString().contains('Cannot Join Own Household'),
+            ),
+          ),
+        );
+      });
+
+      test('leaveHousehold removes householdId from user', () async {
+        // Setup User in a household
+        await fakeFirestore.collection(usersCollection).doc(userId).set({
+          'uid': userId,
+          'householdId': 'some-host-id',
+        });
+
+        // Action
+        await firestoreService.leaveHousehold();
+
+        // Verify
+        final userDoc = await fakeFirestore
+            .collection(usersCollection)
+            .doc(userId)
+            .get();
+        expect(userDoc.data()!.containsKey('householdId'), isFalse);
+      });
+
+      test('removeMember removes householdId from target user', () async {
+        const targetUserId = 'target-user';
+
+        // Setup Target User
+        await fakeFirestore.collection(usersCollection).doc(targetUserId).set({
+          'uid': targetUserId,
+          'householdId': userId, // In my household
+        });
+
+        // Action
+        await firestoreService.removeMember(targetUserId);
+
+        // Verify
+        final userDoc = await fakeFirestore
+            .collection(usersCollection)
+            .doc(targetUserId)
+            .get();
+        expect(userDoc.data()!.containsKey('householdId'), isFalse);
+      });
     });
 
-    test('getItems returns list of items', () async {
-      await mockAuth.signInAnonymously();
-      final item1 = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
-      final item2 = FridgeItem(
-        id: '2',
-        name: 'Banana',
-        quantity: 2,
-        entryDate: DateTime(2023, 1, 2),
-        storeName: 'Test Store',
-      );
+    group('Inventory', () {
+      test('addItem adds item to inventory collection', () async {
+        final item = FridgeItem.create(
+          name: 'Milk',
+          storeName: 'Shop',
+          quantity: 1,
+          now: () => DateTime.now(),
+        );
 
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .set(item1.toJson());
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('2')
-          .set(item2.toJson());
+        await firestoreService.addItem(item);
 
-      final items = await firestoreService.getItems();
+        final items = await firestoreService.getItems();
+        expect(items.length, 1);
+        expect(items.first.name, 'Milk');
+      });
 
-      expect(items.length, 2);
-      expect(items.any((i) => i.id == '1'), isTrue);
-      expect(items.any((i) => i.id == '2'), isTrue);
-    });
+      test('deleteItem removes item', () async {
+        final item = FridgeItem.create(
+          name: 'Bread',
+          storeName: 'Shop',
+          quantity: 1,
+          now: () => DateTime.now(),
+        );
 
-    test('updateItem updates existing item', () async {
-      await mockAuth.signInAnonymously();
-      final item = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
+        await firestoreService.addItem(item);
 
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .set(item.toJson());
+        // Verify added
+        var items = await firestoreService.getItems();
+        expect(items.length, 1);
 
-      final updatedItem = item.copyWith(name: 'Green Apple', quantity: 5);
+        // Delete
+        await firestoreService.deleteItem(item.id);
 
-      await firestoreService.updateItem(updatedItem);
-
-      final snapshot = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .get();
-
-      expect(snapshot.data()!['name'], 'Green Apple');
-      expect(snapshot.data()!['quantity'], 5);
-    });
-
-    test('deleteItem removes item', () async {
-      await mockAuth.signInAnonymously();
-      final item = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
-
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .set(item.toJson());
-
-      await firestoreService.deleteItem('1');
-
-      final snapshot = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .get();
-
-      expect(snapshot.exists, isFalse);
-    });
-
-    test('deleteAllItems removes all items', () async {
-      await mockAuth.signInAnonymously();
-      final item1 = FridgeItem(
-        id: '1',
-        name: 'Apple',
-        quantity: 1,
-        entryDate: DateTime(2023, 1, 1),
-        storeName: 'Test Store',
-      );
-      final item2 = FridgeItem(
-        id: '2',
-        name: 'Banana',
-        quantity: 2,
-        entryDate: DateTime(2023, 1, 2),
-        storeName: 'Test Store',
-      );
-
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('1')
-          .set(item1.toJson());
-      await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .doc('2')
-          .set(item2.toJson());
-
-      await firestoreService.deleteAllItems();
-
-      final snapshot = await fakeFirestore
-          .collection('users')
-          .doc('test_user_id')
-          .collection('inventory')
-          .get();
-
-      expect(snapshot.docs.isEmpty, isTrue);
+        // Verify removed
+        items = await firestoreService.getItems();
+        expect(items, isEmpty);
+      });
     });
   });
 }

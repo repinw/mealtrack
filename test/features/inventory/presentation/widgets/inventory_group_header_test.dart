@@ -119,7 +119,7 @@ class _TrackingMockFridgeItems extends FridgeItems {
   _TrackingMockFridgeItems({required this.onDeleteItemsByReceipt});
 
   @override
-  Future<List<FridgeItem>> build() async => [];
+  Stream<List<FridgeItem>> build() => Stream.value([]);
 
   @override
   Future<void> deleteItemsByReceipt(String receiptId) async {

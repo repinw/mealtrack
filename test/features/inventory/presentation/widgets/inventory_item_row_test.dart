@@ -8,14 +8,12 @@ import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.d
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
-class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
-    with Mock
-    implements FridgeItems {
+class MockFridgeItems extends FridgeItems with Mock {
   final List<(FridgeItem, int)> updateQuantityCalls = [];
   bool shouldThrowOnUpdate = false;
 
   @override
-  Future<List<FridgeItem>> build() async => [];
+  Stream<List<FridgeItem>> build() => Stream.value([]);
 
   @override
   Future<void> updateQuantity(FridgeItem item, int delta) async {
@@ -39,11 +37,6 @@ class MockFridgeItems extends TitleNotifier<List<FridgeItem>>
 
   @override
   Future<void> updateItem(FridgeItem item) async {}
-}
-
-class TitleNotifier<T> extends AsyncNotifier<T> {
-  @override
-  Future<T> build() async => throw UnimplementedError();
 }
 
 class FakeFridgeItem extends Fake implements FridgeItem {}

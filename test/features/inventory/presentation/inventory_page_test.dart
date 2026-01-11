@@ -25,8 +25,8 @@ class MockInventoryFilterNotifier extends InventoryFilter {
 
 class MockFridgeItemsNotifier extends FridgeItems {
   @override
-  Future<List<FridgeItem>> build() async {
-    return [];
+  Stream<List<FridgeItem>> build() {
+    return Stream.value([]);
   }
 
   @override

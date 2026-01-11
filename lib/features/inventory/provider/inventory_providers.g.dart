@@ -15,7 +15,7 @@ part of 'inventory_providers.dart';
 const fridgeItemsProvider = FridgeItemsProvider._();
 
 final class FridgeItemsProvider
-    extends $AsyncNotifierProvider<FridgeItems, List<FridgeItem>> {
+    extends $StreamNotifierProvider<FridgeItems, List<FridgeItem>> {
   const FridgeItemsProvider._()
     : super(
         from: null,
@@ -35,10 +35,10 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'06a4d828665d81d17322b698390270a0fa342d06';
+String _$fridgeItemsHash() => r'6a9d51ab0f43c7c57d057b6eae7c0780405d7534';
 
-abstract class _$FridgeItems extends $AsyncNotifier<List<FridgeItem>> {
-  FutureOr<List<FridgeItem>> build();
+abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
+  Stream<List<FridgeItem>> build();
   @$mustCallSuper
   @override
   void runBuild() {

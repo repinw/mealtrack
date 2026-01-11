@@ -11,12 +11,10 @@ import 'package:mealtrack/l10n/app_localizations.dart';
 class MySignInScreen extends ConsumerWidget {
   const MySignInScreen({
     super.key,
-    required this.mfaAction,
     this.actions,
     this.showInventoryPageOnSuccess = true,
   });
 
-  final AuthStateChangeAction<MFARequired> mfaAction;
   final List<FirebaseUIAction>? actions;
   final bool showInventoryPageOnSuccess;
 
@@ -119,7 +117,6 @@ class MySignInScreen extends ConsumerWidget {
               );
             }
           }),
-          mfaAction,
           ...?actions,
         ],
         styles: const {

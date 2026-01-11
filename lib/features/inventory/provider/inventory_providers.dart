@@ -9,17 +9,13 @@ part 'inventory_providers.g.dart';
 @riverpod
 class FridgeItems extends _$FridgeItems {
   @override
-  Future<List<FridgeItem>> build() async {
+  Stream<List<FridgeItem>> build() {
     final repository = ref.watch(fridgeRepositoryProvider);
-    return repository.getItems();
+    return repository.watchItems();
   }
 
   Future<void> reload() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final repository = ref.read(fridgeRepositoryProvider);
-      return repository.getItems();
-    });
+    ref.invalidateSelf();
   }
 
   Future<void> addItems(List<FridgeItem> items) async {

@@ -284,4 +284,78 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get stockValue => 'VORRATSWERT';
+
+  @override
+  String get sharing => 'Teilen';
+
+  @override
+  String get invite => 'Einladen';
+
+  @override
+  String get join => 'Beitreten';
+
+  @override
+  String get generateCode => 'Code generieren';
+
+  @override
+  String get sharingCode => 'Dein Sharing-Code';
+
+  @override
+  String get sharingCodeDescription =>
+      'Teile diesen Code, um deine Vorräte gemeinsam mit anderen zu verwalten.';
+
+  @override
+  String get enterSharingCode => 'Sharing-Code eingeben';
+
+  @override
+  String get joinHousehold => 'Haushalt beitreten';
+
+  @override
+  String get invalidCode => 'Ungültiger Code';
+
+  @override
+  String get codeExpired => 'Code abgelaufen';
+
+  @override
+  String get codeValidDuration => 'Code ist für 24 Stunden gültig';
+
+  @override
+  String get copyCode => 'Code kopieren';
+
+  @override
+  String get codeCopied => 'Code kopiert!';
+
+  @override
+  String get convertAccountToShare =>
+      'Bitte verknüpfen Sie Ihr Konto, um einen Haushalt erstellen zu können.';
+
+  @override
+  String get householdMembers => 'Haushaltsmitglieder';
+
+  @override
+  String get you => 'Du';
+
+  @override
+  String get removeMember => 'Mitglied entfernen';
+
+  @override
+  String get removeMemberConfirmation =>
+      'Möchten Sie dieses Mitglied wirklich aus dem Haushalt entfernen?';
+
+  @override
+  String get remove => 'Entfernen';
+
+  @override
+  String get cannotJoinOwnHousehold =>
+      'Sie können nicht Ihrem eigenen Haushalt beitreten.';
+
+  @override
+  String get leaveHousehold => 'Haushalt verlassen';
+
+  @override
+  String get leaveHouseholdConfirmation =>
+      'Möchten Sie den Haushalt wirklich verlassen?';
+
+  @override
+  String get leave => 'Verlassen';
 }

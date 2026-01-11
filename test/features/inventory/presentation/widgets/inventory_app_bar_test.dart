@@ -17,7 +17,7 @@ class MockFridgeItemsNotifier extends FridgeItems {
   MockFridgeItemsNotifier([this.mockItems = const []]);
 
   @override
-  Future<List<FridgeItem>> build() async => mockItems;
+  Stream<List<FridgeItem>> build() => Stream.value(mockItems);
 
   @override
   Future<void> deleteAll() async {
