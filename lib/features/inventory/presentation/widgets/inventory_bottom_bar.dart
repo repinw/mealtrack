@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_options_bottom_sheet.dart';
@@ -10,6 +10,7 @@ class InventoryBottomBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final scannerState = ref.watch(scannerViewModelProvider);
     final isLoading = scannerState.isLoading;
 
@@ -44,14 +45,17 @@ class InventoryBottomBar extends ConsumerWidget {
                       strokeWidth: 2,
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.center_focus_weak, color: AppTheme.white),
-                      SizedBox(width: 8),
+                      const Icon(
+                        Icons.center_focus_weak,
+                        color: AppTheme.white,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        L10n.addReceipt,
-                        style: TextStyle(
+                        l10n.addReceipt,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),

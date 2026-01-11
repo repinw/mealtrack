@@ -6,7 +6,7 @@ import 'package:mealtrack/features/auth/presentation/auth_forgot_password_screen
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MySignInScreen extends ConsumerWidget {
   const MySignInScreen({
@@ -41,6 +41,7 @@ class MySignInScreen extends ConsumerWidget {
             );
           }),
           AuthStateChangeAction<AuthFailed>((context, state) async {
+            final l10n = AppLocalizations.of(context)!;
             final exception = state.exception;
             if (exception is FirebaseAuthException &&
                 exception.code == 'credential-already-in-use') {
@@ -49,16 +50,16 @@ class MySignInScreen extends ConsumerWidget {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text(L10n.existingAccountFound),
-                    content: const Text(L10n.existingAccountFoundDescription),
+                    title: Text(l10n.existingAccountFound),
+                    content: Text(l10n.existingAccountFoundDescription),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text(L10n.cancel),
+                        child: Text(l10n.cancel),
                       ),
                       FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text(L10n.proceed),
+                        child: Text(l10n.proceed),
                       ),
                     ],
                   ),
@@ -72,8 +73,8 @@ class MySignInScreen extends ConsumerWidget {
                         .signInWithCredential(credential);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(L10n.signedInWithExistingAccount),
+                        SnackBar(
+                          content: Text(l10n.signedInWithExistingAccount),
                         ),
                       );
                       Navigator.of(context).pop();
@@ -81,7 +82,7 @@ class MySignInScreen extends ConsumerWidget {
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${L10n.signInErrorPrefix}$e')),
+                        SnackBar(content: Text('${l10n.signInErrorPrefix}$e')),
                       );
                     }
                   }
@@ -125,9 +126,10 @@ class MySignInScreen extends ConsumerWidget {
           EmailFormStyle(signInButtonVariant: ButtonVariant.filled),
         },
         subtitleBuilder: (context, action) {
+          final l10n = AppLocalizations.of(context)!;
           final actionText = switch (action) {
-            AuthAction.signIn => L10n.signInSubtitle,
-            AuthAction.signUp => L10n.signUpSubtitle,
+            AuthAction.signIn => l10n.signInSubtitle,
+            AuthAction.signUp => l10n.signUpSubtitle,
             _ => throw Exception('Invalid action: $action'),
           };
 
@@ -137,9 +139,10 @@ class MySignInScreen extends ConsumerWidget {
           );
         },
         footerBuilder: (context, action) {
+          final l10n = AppLocalizations.of(context)!;
           final actionText = switch (action) {
-            AuthAction.signIn => L10n.signInAction,
-            AuthAction.signUp => L10n.signUpAction,
+            AuthAction.signIn => l10n.signInAction,
+            AuthAction.signUp => l10n.signUpAction,
             _ => throw Exception('Invalid action: $action'),
           };
 
@@ -147,7 +150,7 @@ class MySignInScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(
-                L10n.tosDisclaimer(actionText),
+                l10n.tosDisclaimer(actionText),
                 style: const TextStyle(color: Colors.grey),
               ),
             ),

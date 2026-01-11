@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class GuestNamePage extends ConsumerStatefulWidget {
   final User? user;
@@ -32,6 +32,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
@@ -60,7 +61,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${L10n.errorLabel}${e.message}')),
+          SnackBar(content: Text('${l10n.errorLabel}${e.message}')),
         );
       }
     }
@@ -68,6 +69,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -83,7 +85,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
             children: [
               const Spacer(),
               Text(
-                L10n.howShouldWeCallYou,
+                l10n.howShouldWeCallYou,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -92,9 +94,9 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
               const SizedBox(height: 32),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: L10n.yourName,
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.yourName,
+                  border: const OutlineInputBorder(),
                 ),
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
@@ -109,7 +111,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(L10n.next),
+                    : Text(l10n.next),
               ),
               const Spacer(flex: 2),
             ],

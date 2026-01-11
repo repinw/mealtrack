@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_bottom_bar.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockScannerViewModelNotLoading extends ScannerViewModel {
   @override
@@ -23,6 +23,9 @@ void main() {
             ),
           ],
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
             theme: AppTheme.theme,
             home: const Scaffold(body: InventoryBottomBar()),
           ),
@@ -30,7 +33,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(L10n.addReceipt), findsOneWidget);
+      expect(find.text('Kassenbon hinzufügen'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
@@ -44,6 +47,8 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.theme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: InventoryBottomBar()),
           ),
         ),
@@ -64,6 +69,8 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.theme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: InventoryBottomBar()),
           ),
         ),
@@ -83,6 +90,8 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.theme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: InventoryBottomBar()),
           ),
         ),

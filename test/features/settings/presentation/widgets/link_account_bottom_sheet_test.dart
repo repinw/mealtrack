@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/link_account_bottom_sheet.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations_de.dart';
 
 void main() {
+  final l10n = AppLocalizationsDe();
+
   testWidgets('LinkAccountBottomSheet renders correctly', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: LinkAccountBottomSheet(
             onNewAccount: () {},
@@ -26,6 +31,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) {
@@ -58,7 +65,7 @@ void main() {
     expect(find.byType(LinkAccountBottomSheet), findsOneWidget);
 
     // Test New Account button
-    await tester.tap(find.text(L10n.createNewAccount));
+    await tester.tap(find.text(l10n.createNewAccount));
     await tester.pumpAndSettle(); // Allow pop animation
 
     expect(newAccountPressed, isTrue);
@@ -72,7 +79,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Test Existing Account button
-    await tester.tap(find.text(L10n.useExistingAccount));
+    await tester.tap(find.text(l10n.useExistingAccount));
     await tester.pumpAndSettle();
 
     expect(existingAccountPressed, isTrue);

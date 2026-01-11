@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
@@ -44,6 +44,8 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     ref.listen<ReceiptEditState>(receiptEditViewModelProvider, (
       previous,
       next,
@@ -70,7 +72,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          L10n.verifyScan,
+          l10n.verifyScan,
           style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
       ),
@@ -95,15 +97,15 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        L10n.positions,
-                        style: TextStyle(
+                      Text(
+                        l10n.positions,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        L10n.articles(viewModel.totalQuantity),
+                        l10n.articles(viewModel.totalQuantity),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -116,12 +118,12 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
                     child: Row(
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: ScannedItemRow.colQtyWidth,
                           child: Text(
-                            L10n.amountAbbr,
+                            l10n.amountAbbr,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 9,
                               color: Colors.grey,
                               fontWeight: FontWeight.bold,
@@ -129,9 +131,9 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           ),
                         ),
                         Expanded(
-                          child: const Text(
-                            L10n.brandDescription,
-                            style: TextStyle(
+                          child: Text(
+                            l10n.brandDescription,
+                            style: const TextStyle(
                               fontSize: 9,
                               color: Colors.grey,
                               fontWeight: FontWeight.bold,
@@ -139,12 +141,12 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const SizedBox(
+                        SizedBox(
                           width: ScannedItemRow.colWeightWidth,
                           child: Text(
-                            L10n.weight,
+                            l10n.weight,
                             textAlign: TextAlign.right,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 9,
                               color: Colors.grey,
                               fontWeight: FontWeight.bold,
@@ -152,14 +154,14 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const SizedBox(
+                        SizedBox(
                           width: ScannedItemRow.colPriceWidth,
                           child: Padding(
-                            padding: EdgeInsets.only(right: 28.0),
+                            padding: const EdgeInsets.only(right: 28.0),
                             child: Text(
-                              L10n.price,
+                              l10n.price,
                               textAlign: TextAlign.right,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 9,
                                 color: Colors.grey,
                                 fontWeight: FontWeight.bold,

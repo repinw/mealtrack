@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/auth/presentation/auth_sign_in_screen.dart';
 import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import '../../../mock_firebase_setup.dart';
 
 void main() async {
@@ -12,7 +13,13 @@ void main() async {
 
   testWidgets('AuthSignInScreen renders MySignInScreen', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: AuthSignInScreen())),
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const AuthSignInScreen(),
+        ),
+      ),
     );
 
     expect(find.byType(MySignInScreen), findsOneWidget);

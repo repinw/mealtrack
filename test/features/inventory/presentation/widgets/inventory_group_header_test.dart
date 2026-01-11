@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_group_header.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -40,12 +40,8 @@ void main() {
         fridgeRepositoryProvider.overrideWithValue(mockFridgeRepository),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('de')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: InventoryGroupHeader(header: header)),
       ),
     );

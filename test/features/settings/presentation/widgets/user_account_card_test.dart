@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations_de.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/user_account_card.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,6 +22,7 @@ class MockFirebaseAuthException extends Mock implements FirebaseAuthException {
 void main() {
   late MockFirebaseAuth mockAuth;
   late MockUser mockUser;
+  final l10n = AppLocalizationsDe();
 
   setUp(() {
     mockAuth = MockFirebaseAuth();
@@ -32,6 +34,8 @@ void main() {
     return ProviderScope(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: UserAccountCard(user: user)),
       ),
     );
@@ -111,10 +115,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify confirmation dialog appears
-      expect(find.text(L10n.deleteAccountQuestion), findsOneWidget);
-      expect(find.text(L10n.deleteAccountWarning), findsOneWidget);
-      expect(find.text(L10n.cancel), findsOneWidget);
-      expect(find.text(L10n.delete), findsOneWidget);
+      expect(find.text(l10n.deleteAccountQuestion), findsOneWidget);
+      expect(find.text(l10n.deleteAccountWarning), findsOneWidget);
+      expect(find.text(l10n.cancel), findsOneWidget);
+      expect(find.text(l10n.delete), findsOneWidget);
     });
 
     testWidgets('cancelling dialog does not delete account', (tester) async {
@@ -130,7 +134,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap cancel
-      await tester.tap(find.text(L10n.cancel));
+      await tester.tap(find.text(l10n.cancel));
       await tester.pumpAndSettle();
 
       // Verify delete was NOT called
@@ -151,7 +155,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap confirm (delete)
-      await tester.tap(find.text(L10n.delete));
+      await tester.tap(find.text(l10n.delete));
       await tester.pumpAndSettle();
 
       // Verify delete was called
@@ -174,12 +178,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap confirm (delete)
-      await tester.tap(find.text(L10n.delete));
+      await tester.tap(find.text(l10n.delete));
       await tester.pumpAndSettle();
 
       // Verify error snackbar appears
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.textContaining(L10n.deleteAccountError), findsOneWidget);
+      expect(find.textContaining(l10n.deleteAccountError), findsOneWidget);
     });
 
     testWidgets(
@@ -202,7 +206,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Tap confirm (delete)
-        await tester.tap(find.text(L10n.delete));
+        await tester.tap(find.text(l10n.delete));
         await tester.pumpAndSettle();
 
         // The showReauthenticateDialog is from firebase_ui_auth and will show

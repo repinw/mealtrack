@@ -19,11 +19,10 @@ Future<void> setupFirebase() async {
     await FirebaseAppCheck.instance.activate();
   }
 
+  final googleClientId = GoogleSignInConfig.clientId;
   FirebaseUIAuth.configureProviders([
     EmailAuthProvider(),
-    GoogleProvider(
-      clientId: GoogleSignInConfig.clientId,
-      scopes: ['email', 'profile'],
-    ),
+    if (googleClientId != null)
+      GoogleProvider(clientId: googleClientId, scopes: ['email', 'profile']),
   ]);
 }

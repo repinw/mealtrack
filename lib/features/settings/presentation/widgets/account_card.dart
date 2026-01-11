@@ -6,7 +6,7 @@ import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/user_account_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/link_account_bottom_sheet.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/extensions/user_extension.dart';
 
 class AccountCard extends ConsumerWidget {
@@ -51,6 +51,7 @@ class AccountCard extends ConsumerWidget {
     WidgetRef ref,
     User currentUser,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => MySignInScreen(
@@ -63,7 +64,7 @@ class AccountCard extends ConsumerWidget {
               await _handleAuthSuccess(context, state.user);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(L10n.linkAccountSuccess)),
+                  SnackBar(content: Text(l10n.linkAccountSuccess)),
                 );
               }
             }),
@@ -82,20 +83,21 @@ class AccountCard extends ConsumerWidget {
     BuildContext context,
     User currentUser,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(L10n.warning),
-        content: const Text(L10n.linkAccountExistingWarning),
+        title: Text(l10n.warning),
+        content: Text(l10n.linkAccountExistingWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text(L10n.cancel),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text(L10n.proceed),
+            child: Text(l10n.proceed),
           ),
         ],
       ),

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,7 +19,7 @@ import 'package:uuid/uuid.dart';
 
 List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   if (jsonString.trim().isEmpty) {
-    throw const FormatException(L10n.emptyJsonString);
+    throw const FormatException('EMPTY_JSON');
   }
 
   final pattern = RegExp(r'```(?:json)?\s*(.*?)\s*```', dotAll: true);
@@ -30,7 +29,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       : jsonString.trim();
 
   if (sanitizedJson.isEmpty) {
-    throw const FormatException(L10n.sanitizedJsonEmpty);
+    throw const FormatException('SANITIZED_EMPTY');
   }
 
   dynamic decodedJson;
@@ -38,7 +37,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     decodedJson = jsonDecode(sanitizedJson);
   } catch (e) {
     throw ReceiptAnalysisException(
-      '${L10n.jsonParsingError}$e',
+      'JSON parse error: $e',
       code: 'INVALID_JSON',
       originalException: e,
     );
@@ -74,7 +73,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
     } else if (decodedJson is List) {
       itemsList = decodedJson;
     } else {
-      debugPrint('${L10n.unexpectedJsonFormat}$decodedJson');
+      debugPrint('Unexpected JSON format: $decodedJson');
       return [];
     }
 
@@ -122,8 +121,8 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final isFood = (map['if']) as bool? ?? true;
 
       return FridgeItem.create(
-        name: name.isEmpty ? L10n.jsonParsingError : name,
-        storeName: store.isEmpty ? L10n.jsonParsingError : store,
+        name: name.isEmpty ? 'Unknown' : name,
+        storeName: store.isEmpty ? 'Unknown' : store,
         quantity: quantity,
         unitPrice: unitPrice,
         weight: weight,
@@ -139,7 +138,7 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
   } catch (e, stackTrace) {
     debugPrint('Error parsing JSON: $e');
     debugPrintStack(stackTrace: stackTrace);
-    throw FormatException('${L10n.jsonParsingError}$e');
+    throw FormatException('Parse error: $e');
   }
 }
 

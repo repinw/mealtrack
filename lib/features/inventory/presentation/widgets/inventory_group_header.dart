@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 
@@ -13,6 +13,7 @@ class InventoryGroupHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       color: const Color(0xFFF4F7F9),
@@ -34,7 +35,7 @@ class InventoryGroupHeader extends ConsumerWidget {
           const Spacer(),
           if (header.isFullyConsumed)
             _ArchiveButton(receiptId: header.receiptId),
-          _ItemCountBadge(itemCount: header.itemCount),
+          _ItemCountBadge(itemCount: header.itemCount, l10n: l10n),
         ],
       ),
     );
@@ -48,6 +49,7 @@ class _ArchiveButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
@@ -73,7 +75,7 @@ class _ArchiveButton extends ConsumerWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                L10n.archive,
+                l10n.archive,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -89,9 +91,10 @@ class _ArchiveButton extends ConsumerWidget {
 }
 
 class _ItemCountBadge extends StatelessWidget {
-  const _ItemCountBadge({required this.itemCount});
+  const _ItemCountBadge({required this.itemCount, required this.l10n});
 
   final int itemCount;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +105,7 @@ class _ItemCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        L10n.entries(itemCount),
+        l10n.entries(itemCount),
         style: const TextStyle(fontSize: 10, color: Colors.black54),
       ),
     );

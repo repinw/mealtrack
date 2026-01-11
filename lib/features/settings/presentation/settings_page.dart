@@ -3,18 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/auth/presentation/welcome_page.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
-
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authStateChangesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(L10n.settings)),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: authState.when(
         data: (_) {
           final user = ref.read(firebaseAuthProvider).currentUser;
@@ -32,7 +32,7 @@ class SettingsPage extends ConsumerWidget {
           return AccountCard(user: user);
         },
         error: (error, stackTrace) =>
-            Center(child: Text('${L10n.errorLabel}$error')),
+            Center(child: Text('${l10n.errorLabel}$error')),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
@@ -6,8 +7,8 @@ import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockInventoryFilter extends InventoryFilter {
   final InventoryFilterType initialValue;
@@ -86,11 +87,16 @@ void main() {
               () => MockInventoryFilter(InventoryFilterType.available),
             ),
           ],
-          child: const MaterialApp(home: Scaffold(body: InventoryList())),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: const Scaffold(body: InventoryList()),
+          ),
         ),
       );
 
-      expect(find.text(L10n.noAvailableItems), findsOneWidget);
+      expect(find.text('Keine verfügbaren Artikel'), findsOneWidget);
     },
   );
 
@@ -107,11 +113,16 @@ void main() {
               () => MockInventoryFilter(InventoryFilterType.all),
             ),
           ],
-          child: const MaterialApp(home: Scaffold(body: InventoryList())),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: const Scaffold(body: InventoryList()),
+          ),
         ),
       );
 
-      expect(find.text(L10n.noItemsFound), findsOneWidget);
+      expect(find.text('Keine Artikel gefunden'), findsOneWidget);
     },
   );
 
@@ -141,7 +152,12 @@ void main() {
           ),
           fridgeItemsProvider.overrideWith(() => MockFridgeItems([item1])),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryList())),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
+          home: const Scaffold(body: InventoryList()),
+        ),
       ),
     );
 
@@ -179,13 +195,18 @@ void main() {
             ),
             fridgeItemsProvider.overrideWith(() => mockFridgeItems),
           ],
-          child: const MaterialApp(home: Scaffold(body: InventoryList())),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: const Scaffold(body: InventoryList()),
+          ),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      expect(find.text(L10n.archive), findsOneWidget);
+      expect(find.text('Archivieren'), findsOneWidget);
       expect(find.byIcon(Icons.archive_outlined), findsOneWidget);
     },
   );
@@ -219,13 +240,18 @@ void main() {
           ),
           fridgeItemsProvider.overrideWith(() => mockFridgeItems),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryList())),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
+          home: const Scaffold(body: InventoryList()),
+        ),
       ),
     );
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(L10n.archive));
+    await tester.tap(find.text('Archivieren'));
     await tester.pumpAndSettle();
 
     expect(mockFridgeItems.deletedReceiptIds, contains('receipt-1'));

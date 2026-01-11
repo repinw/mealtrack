@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/config/google_sign_in_config.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class UserAccountCard extends ConsumerWidget {
   const UserAccountCard({super.key, required this.user});
@@ -14,6 +14,7 @@ class UserAccountCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -21,26 +22,26 @@ class UserAccountCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              L10n.userAccount,
+              l10n.userAccount,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.person),
-              title: const Text(L10n.name),
-              subtitle: Text(user.displayName ?? L10n.notAvailable),
+              title: Text(l10n.name),
+              subtitle: Text(user.displayName ?? l10n.notAvailable),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.email),
-              title: const Text(L10n.email),
-              subtitle: Text(user.email ?? L10n.notAvailable),
+              title: Text(l10n.email),
+              subtitle: Text(user.email ?? l10n.notAvailable),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.fingerprint),
-              title: const Text(L10n.id),
+              title: Text(l10n.id),
               subtitle: SelectableText(user.uid),
             ),
             const SizedBox(height: 16),
@@ -52,7 +53,7 @@ class UserAccountCard extends ConsumerWidget {
                     await ref.read(firebaseAuthProvider).signOut();
                   },
                   icon: const Icon(Icons.logout),
-                  label: const Text(L10n.logout),
+                  label: Text(l10n.logout),
                 ),
               ),
             if (!user.isAnonymous) const SizedBox(height: 8),
@@ -64,13 +65,13 @@ class UserAccountCard extends ConsumerWidget {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (dialogContext) => AlertDialog(
-                        title: const Text(L10n.deleteAccountQuestion),
-                        content: const Text(L10n.deleteAccountWarning),
+                        title: Text(l10n.deleteAccountQuestion),
+                        content: Text(l10n.deleteAccountWarning),
                         actions: [
                           TextButton(
                             onPressed: () =>
                                 Navigator.of(dialogContext).pop(false),
-                            child: const Text(L10n.cancel),
+                            child: Text(l10n.cancel),
                           ),
                           FilledButton(
                             onPressed: () =>
@@ -78,18 +79,18 @@ class UserAccountCard extends ConsumerWidget {
                             style: FilledButton.styleFrom(
                               backgroundColor: Colors.red,
                             ),
-                            child: const Text(L10n.delete),
+                            child: Text(l10n.delete),
                           ),
                         ],
                       ),
                     );
                     if (confirmed == true && context.mounted) {
-                      await _deleteAccount(context, user);
+                      await _deleteAccount(context, user, l10n);
                     }
                   },
                   style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
                   icon: const Icon(Icons.delete_forever),
-                  label: const Text(L10n.deleteAccount),
+                  label: Text(l10n.deleteAccount),
                 ),
               ),
           ],
@@ -98,7 +99,11 @@ class UserAccountCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteAccount(BuildContext context, User user) async {
+  Future<void> _deleteAccount(
+    BuildContext context,
+    User user,
+    AppLocalizations l10n,
+  ) async {
     try {
       await user.delete();
     } on FirebaseAuthException catch (e) {
@@ -107,10 +112,11 @@ class UserAccountCard extends ConsumerWidget {
           context: context,
           providers: [
             EmailAuthProvider(),
-            GoogleProvider(
-              clientId: GoogleSignInConfig.clientId,
-              scopes: ['email', 'profile'],
-            ),
+            if (GoogleSignInConfig.clientId != null)
+              GoogleProvider(
+                clientId: GoogleSignInConfig.clientId!,
+                scopes: ['email', 'profile'],
+              ),
           ],
         );
         if (result && context.mounted) {
@@ -119,7 +125,7 @@ class UserAccountCard extends ConsumerWidget {
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${L10n.deleteAccountError}$e')),
+                SnackBar(content: Text('${l10n.deleteAccountError}$e')),
               );
             }
           }
@@ -127,13 +133,13 @@ class UserAccountCard extends ConsumerWidget {
       } else if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('${L10n.deleteAccountError}$e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.deleteAccountError}$e')));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('${L10n.deleteAccountError}$e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.deleteAccountError}$e')));
       }
     }
   }

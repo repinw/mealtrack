@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
@@ -115,7 +114,7 @@ Future<List<MapEntry<String, List<FridgeItem>>>> groupedFridgeItems(
 
 final _loadingItem = FridgeItem(
   id: 'loading',
-  name: L10n.loading,
+  name: '', // Empty string for loading state
   quantity: 0,
   storeName: '',
   entryDate: DateTime(1970),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_tabs.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockInventoryFilterNotifier extends InventoryFilter {
   InventoryFilterType _filter = InventoryFilterType.all;
@@ -33,16 +34,21 @@ void main() {
         overrides: [
           inventoryFilterProvider.overrideWith(() => mockFilterNotifier),
         ],
-        child: const MaterialApp(home: Scaffold(body: InventoryTabs())),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
+          home: const Scaffold(body: InventoryTabs()),
+        ),
       );
     }
 
     testWidgets('renders all three filter tabs', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.text(L10n.filterAll), findsOneWidget);
-      expect(find.text(L10n.filterAvailable), findsOneWidget);
-      expect(find.text(L10n.filterEmpty), findsOneWidget);
+      expect(find.text('Alle'), findsOneWidget);
+      expect(find.text('Vorrat'), findsOneWidget);
+      expect(find.text('Verbraucht'), findsOneWidget);
     });
 
     testWidgets('tapping Available tab calls setFilter with available', (
@@ -50,7 +56,7 @@ void main() {
     ) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(L10n.filterAvailable));
+      await tester.tap(find.text('Vorrat'));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.available);
@@ -59,7 +65,7 @@ void main() {
     testWidgets('tapping Empty tab calls setFilter with empty', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(L10n.filterEmpty));
+      await tester.tap(find.text('Verbraucht'));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.empty);
@@ -68,9 +74,9 @@ void main() {
     testWidgets('tapping All tab calls setFilter with all', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text(L10n.filterAvailable));
+      await tester.tap(find.text('Vorrat'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(L10n.filterAll));
+      await tester.tap(find.text('Alle'));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.all);
@@ -79,23 +85,17 @@ void main() {
     testWidgets('selected tab has bold text', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      final allesText = tester.widget<Text>(
-        find.text(L10n.filterAll),
-      );
+      final allesText = tester.widget<Text>(find.text('Alle'));
       expect(allesText.style?.fontWeight, FontWeight.bold);
     });
 
     testWidgets('unselected tabs have normal weight text', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      final availableText = tester.widget<Text>(
-        find.text(L10n.filterAvailable),
-      );
+      final availableText = tester.widget<Text>(find.text('Vorrat'));
       expect(availableText.style?.fontWeight, FontWeight.normal);
 
-      final emptyText = tester.widget<Text>(
-        find.text(L10n.filterEmpty),
-      );
+      final emptyText = tester.widget<Text>(find.text('Verbraucht'));
       expect(emptyText.style?.fontWeight, FontWeight.normal);
     });
   });

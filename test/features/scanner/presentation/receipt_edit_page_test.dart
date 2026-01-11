@@ -6,6 +6,7 @@ import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -21,6 +22,14 @@ class MockScannerViewModel extends ScannerViewModel {
     state = AsyncData(_items);
     return _items;
   }
+}
+
+Widget buildLocalizedMaterialApp({required Widget home}) {
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  );
 }
 
 void main() {
@@ -56,7 +65,7 @@ void main() {
                 () => MockScannerViewModel(items),
               ),
             ],
-            child: const MaterialApp(home: ReceiptEditPage()),
+            child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
           ),
         );
 
@@ -95,7 +104,7 @@ void main() {
               () => MockScannerViewModel([]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -121,7 +130,7 @@ void main() {
               () => MockScannerViewModel([item]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -143,7 +152,7 @@ void main() {
               () => MockScannerViewModel([item]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -176,7 +185,7 @@ void main() {
               () => MockScannerViewModel([]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -191,7 +200,7 @@ void main() {
               () => MockScannerViewModel([]),
             ),
           ],
-          child: MaterialApp(
+          child: buildLocalizedMaterialApp(
             home: Builder(
               builder: (context) => Scaffold(
                 body: ElevatedButton(
@@ -232,7 +241,7 @@ void main() {
               () => MockScannerViewModel([item]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -268,7 +277,7 @@ void main() {
               () => MockScannerViewModel([item]),
             ),
           ],
-          child: const MaterialApp(home: ReceiptEditPage()),
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
       await tester.pumpAndSettle();
@@ -305,7 +314,7 @@ void main() {
               () => MockScannerViewModel([item]),
             ),
           ],
-          child: MaterialApp(
+          child: buildLocalizedMaterialApp(
             home: Builder(
               builder: (context) => Scaffold(
                 body: ElevatedButton(
@@ -364,7 +373,7 @@ void main() {
               () => MockScannerViewModel([normalItem, depositItem]),
             ),
           ],
-          child: MaterialApp(
+          child: buildLocalizedMaterialApp(
             home: Builder(
               builder: (context) => Scaffold(
                 body: ElevatedButton(
@@ -442,7 +451,7 @@ void main() {
                     MockScannerViewModel([normalItem, discountItem, pfandItem]),
               ),
             ],
-            child: MaterialApp(
+            child: buildLocalizedMaterialApp(
               home: Builder(
                 builder: (context) => Scaffold(
                   body: ElevatedButton(

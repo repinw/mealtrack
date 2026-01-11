@@ -1,9 +1,10 @@
+// coverage:ignore-file
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 class GoogleSignInConfig {
   GoogleSignInConfig._();
-  static String get clientId {
+  static String? get clientId {
     if (kIsWeb) {
       return _webClientId;
     }
@@ -17,9 +18,7 @@ class GoogleSignInConfig {
         return _webClientId;
       case TargetPlatform.linux:
       case TargetPlatform.fuchsia:
-        throw UnsupportedError(
-          'Google Sign-In is not configured for this platform.',
-        );
+        return null;
     }
   }
 

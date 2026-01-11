@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/auth/presentation/welcome_page.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -38,10 +37,11 @@ void main() async {
 
   testWidgets('WelcomePage renders correctly', (tester) async {
     await tester.pumpWidget(buildTestWidget());
+    await tester.pumpAndSettle();
 
-    expect(find.text(L10n.welcomeTitle), findsOneWidget);
-    expect(find.text(L10n.loginBtn), findsOneWidget);
-    expect(find.text(L10n.continueGuestBtn), findsOneWidget);
+    expect(find.text('Willkommen bei MealTrack!'), findsOneWidget);
+    expect(find.text('Einloggen'), findsOneWidget);
+    expect(find.text('Als Gast fortsetzen'), findsOneWidget);
   });
 
   testWidgets('WelcomePage navigates to AuthSignInScreen on login press', (
@@ -50,8 +50,9 @@ void main() async {
     await tester.pumpWidget(
       buildTestWidget(navigatorObservers: [mockObserver]),
     );
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.text(L10n.loginBtn));
+    await tester.tap(find.text('Einloggen'));
     await tester.pump();
 
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
@@ -63,8 +64,9 @@ void main() async {
     await tester.pumpWidget(
       buildTestWidget(navigatorObservers: [mockObserver]),
     );
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.text(L10n.continueGuestBtn));
+    await tester.tap(find.text('Als Gast fortsetzen'));
     await tester.pump();
 
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));

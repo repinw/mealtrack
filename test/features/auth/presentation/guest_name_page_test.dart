@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
@@ -40,41 +41,50 @@ void main() {
     when(() => mockUser.reload()).thenAnswer((_) async {});
   });
 
-  testWidgets('GuestNamePage renders correctly', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: const MaterialApp(home: GuestNamePage()),
+  Widget createWidgetUnderTest({
+    Widget? home,
+    NavigatorObserver? navigatorObserver,
+  }) {
+    return ProviderScope(
+      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: home ?? const GuestNamePage(),
+        navigatorObservers: navigatorObserver != null
+            ? [navigatorObserver]
+            : [],
       ),
     );
+  }
 
-    expect(find.text(L10n.howShouldWeCallYou), findsOneWidget);
+  testWidgets('GuestNamePage renders correctly', (tester) async {
+    await tester.pumpWidget(createWidgetUnderTest());
+
+    // Allow localizations to load
+    await tester.pumpAndSettle();
+
+    expect(find.text('Wie möchtest du genannt werden?'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text(L10n.next), findsOneWidget);
+    expect(find.text('Weiter'), findsOneWidget);
   });
 
   testWidgets('GuestNamePage calls signInAnonymously and navigates', (
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: MaterialApp(
-          home: const GuestNamePage(),
-          navigatorObservers: [mockObserver],
-        ),
-      ),
+      createWidgetUnderTest(navigatorObserver: mockObserver),
     );
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text(L10n.next));
+    await tester.tap(find.text('Weiter'));
     await tester.pump(); // Start async
 
     verify(() => mockAuth.signInAnonymously()).called(1);
     verify(() => mockUser.updateDisplayName('Test Guest')).called(1);
 
     // Check navigation
-    // pushAndRemoveUntil calls didPush (and didRemove)
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
   });
 
@@ -84,19 +94,17 @@ void main() {
     when(() => mockUser.displayName).thenReturn('Old Name');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: MaterialApp(
-          home: GuestNamePage(user: mockUser),
-          navigatorObservers: [mockObserver],
-        ),
+      createWidgetUnderTest(
+        home: GuestNamePage(user: mockUser),
+        navigatorObserver: mockObserver,
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Old Name'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'New Name');
-    await tester.tap(find.text(L10n.next));
+    await tester.tap(find.text('Weiter'));
     await tester.pump();
 
     verifyNever(() => mockAuth.signInAnonymously());
@@ -105,15 +113,11 @@ void main() {
   });
 
   testWidgets('does nothing when name is empty', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: const MaterialApp(home: GuestNamePage()),
-      ),
-    );
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
 
     // Don't enter any text, just tap the button
-    await tester.tap(find.text(L10n.next));
+    await tester.tap(find.text('Weiter'));
     await tester.pump();
 
     // signInAnonymously should NOT be called
@@ -123,16 +127,12 @@ void main() {
   testWidgets('does nothing when name contains only whitespace', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: const MaterialApp(home: GuestNamePage()),
-      ),
-    );
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
 
     // Enter only whitespace
     await tester.enterText(find.byType(TextField), '   ');
-    await tester.tap(find.text(L10n.next));
+    await tester.tap(find.text('Weiter'));
     await tester.pump();
 
     // signInAnonymously should NOT be called
@@ -149,20 +149,50 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-        child: const MaterialApp(home: GuestNamePage()),
-      ),
-    );
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(find.text(L10n.next));
+    await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
 
     // Verify error snackbar is shown
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.textContaining(L10n.errorLabel), findsOneWidget);
+    expect(find.textContaining('Fehler: '), findsOneWidget);
     expect(find.textContaining('A network error occurred.'), findsOneWidget);
+  });
+
+  testWidgets('shows error snackbar when updateDisplayName fails', (
+    tester,
+  ) async {
+    when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {
+      print('Mock updateDisplayName called');
+      throw FirebaseAuthException(
+        code: 'unknown',
+        message: 'Failed to update display name.',
+      );
+    });
+
+    await tester.pumpWidget(
+      createWidgetUnderTest(navigatorObserver: mockObserver),
+    );
+    await tester.pumpAndSettle();
+
+    clearInteractions(mockObserver);
+
+    await tester.enterText(find.byType(TextField), 'Test Guest');
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+
+    // Verify error snackbar is shown
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.textContaining('Fehler: '), findsOneWidget);
+    expect(
+      find.textContaining('Failed to update display name.'),
+      findsOneWidget,
+    );
+
+    // Check that we did NOT navigate away
+    verifyNever(() => mockObserver.didPush(any(), any()));
   });
 }

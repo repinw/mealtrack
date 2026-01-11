@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations_de.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
@@ -19,6 +20,7 @@ class MockUser extends Mock implements User {}
 void main() {
   late MockFirebaseAuth mockAuth;
   late MockUser mockUser;
+  final l10n = AppLocalizationsDe();
 
   setUp(() {
     mockAuth = MockFirebaseAuth();
@@ -43,7 +45,11 @@ void main() {
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: const MaterialApp(home: SettingsPage()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const SettingsPage(),
+        ),
       ),
     );
 
@@ -64,13 +70,17 @@ void main() {
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: const MaterialApp(home: SettingsPage()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const SettingsPage(),
+        ),
       ),
     );
 
     await tester.pumpAndSettle();
 
-    expect(find.textContaining(L10n.errorLabel), findsOneWidget);
+    expect(find.textContaining(l10n.errorLabel), findsOneWidget);
     expect(find.textContaining('Auth service unavailable'), findsOneWidget);
     expect(find.byType(AccountCard), findsNothing);
   });
@@ -89,7 +99,11 @@ void main() {
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: const MaterialApp(home: SettingsPage()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const SettingsPage(),
+        ),
       ),
     );
 

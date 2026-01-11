@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_group_header.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
@@ -13,6 +13,7 @@ class InventoryList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final listAsync = ref.watch(inventoryDisplayListProvider);
     final filter = ref.watch(inventoryFilterProvider);
 
@@ -28,8 +29,8 @@ class InventoryList extends ConsumerWidget {
             data: (items) {
               if (items.isEmpty) {
                 final message = filter == InventoryFilterType.available
-                    ? L10n.noAvailableItems
-                    : L10n.noItemsFound;
+                    ? l10n.noAvailableItems
+                    : l10n.noItemsFound;
                 return Center(
                   child: Text(
                     message,

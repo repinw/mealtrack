@@ -122,21 +122,24 @@ void main() {
       expect(find.byType(WelcomePage), findsOneWidget);
     });
 
-    testWidgets('shows WelcomePage when error occurs', (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          authStateChangesProvider.overrideWith(
-            (ref) => Stream.error('Auth error'),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+    testWidgets(
+      'shows WelcomePage when network error occurs (e.g. offline start)',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            authStateChangesProvider.overrideWith(
+              (ref) => Stream.error('Network error'),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      await tester.pumpWidget(createWidgetUnderTest(container));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createWidgetUnderTest(container));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(WelcomePage), findsOneWidget);
-    });
+        expect(find.byType(WelcomePage), findsOneWidget);
+      },
+    );
 
     testWidgets('shows InventoryPage when user is authenticated', (
       tester,

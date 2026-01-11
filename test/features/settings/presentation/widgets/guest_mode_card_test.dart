@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('GuestModeCard renders correctly', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: GuestModeCard(onLinkAccount: () {})),
       ),
     );
@@ -21,6 +24,8 @@ void main() {
     bool pressed = false;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GuestModeCard(
             onLinkAccount: () {

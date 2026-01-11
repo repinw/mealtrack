@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/l10n.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations_de.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
@@ -19,6 +20,7 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 void main() {
   late MockFirebaseAuth mockAuth;
   late MockUser mockUser;
+  final l10n = AppLocalizationsDe();
 
   setUpAll(() async {
     await mockFirebaseInitialiseApp();
@@ -34,6 +36,8 @@ void main() {
     return ProviderScope(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: AccountCard(user: user)),
       ),
     );
@@ -43,6 +47,8 @@ void main() {
     return ProviderScope(
       overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: UserAccountCard(user: user)),
       ),
     );
@@ -71,7 +77,7 @@ void main() {
 
       expect(find.byType(GuestModeCard), findsOneWidget);
       expect(find.byType(UserAccountCard), findsOneWidget);
-      expect(find.text(L10n.guestMode), findsWidgets);
+      expect(find.text(l10n.guestMode), findsWidgets);
     });
 
     testWidgets('hides GuestModeCard for authenticated user', (tester) async {
@@ -96,12 +102,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the Link Account button in GuestModeCard
-      await tester.tap(find.text(L10n.linkAccount));
+      await tester.tap(find.text(l10n.linkAccount));
       await tester.pumpAndSettle();
 
       expect(find.byType(LinkAccountBottomSheet), findsOneWidget);
-      expect(find.text(L10n.createNewAccount), findsOneWidget);
-      expect(find.text(L10n.useExistingAccount), findsOneWidget);
+      expect(find.text(l10n.createNewAccount), findsOneWidget);
+      expect(find.text(l10n.useExistingAccount), findsOneWidget);
     });
 
     testWidgets('shows warning dialog when Use Existing Account is tapped', (
@@ -114,18 +120,18 @@ void main() {
       await tester.pumpAndSettle();
 
       // Open bottom sheet
-      await tester.tap(find.text(L10n.linkAccount));
+      await tester.tap(find.text(l10n.linkAccount));
       await tester.pumpAndSettle();
 
       // Tap Use Existing Account button
       await tester.tap(
-        find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
+        find.widgetWithText(OutlinedButton, l10n.useExistingAccount),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text(L10n.warning), findsOneWidget);
-      expect(find.text(L10n.linkAccountExistingWarning), findsOneWidget);
+      expect(find.text(l10n.warning), findsOneWidget);
+      expect(find.text(l10n.linkAccountExistingWarning), findsOneWidget);
     });
 
     testWidgets('deletes guest account when confirming Use Existing Account', (
@@ -138,17 +144,17 @@ void main() {
       await tester.pumpAndSettle();
 
       // Open bottom sheet
-      await tester.tap(find.text(L10n.linkAccount));
+      await tester.tap(find.text(l10n.linkAccount));
       await tester.pumpAndSettle();
 
       // Tap Use Existing Account button
       await tester.tap(
-        find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
+        find.widgetWithText(OutlinedButton, l10n.useExistingAccount),
       );
       await tester.pumpAndSettle();
 
       // Tap Proceed (confirm deletion)
-      await tester.tap(find.widgetWithText(FilledButton, L10n.proceed));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.proceed));
       await tester.pumpAndSettle();
 
       verify(() => mockUser.delete()).called(1);
@@ -164,17 +170,17 @@ void main() {
         await tester.pumpAndSettle();
 
         // Open bottom sheet
-        await tester.tap(find.text(L10n.linkAccount));
+        await tester.tap(find.text(l10n.linkAccount));
         await tester.pumpAndSettle();
 
         // Tap Use Existing Account button
         await tester.tap(
-          find.widgetWithText(OutlinedButton, L10n.useExistingAccount),
+          find.widgetWithText(OutlinedButton, l10n.useExistingAccount),
         );
         await tester.pumpAndSettle();
 
         // Tap Cancel
-        await tester.tap(find.widgetWithText(TextButton, L10n.cancel));
+        await tester.tap(find.widgetWithText(TextButton, l10n.cancel));
         await tester.pumpAndSettle();
 
         verifyNever(() => mockUser.delete());
@@ -192,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find and tap the Logout button
-      await tester.tap(find.text(L10n.logout));
+      await tester.tap(find.text(l10n.logout));
       await tester.pumpAndSettle();
 
       verify(() => mockAuth.signOut()).called(1);
@@ -209,12 +215,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find and tap the Delete Account button
-      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.tap(find.text(l10n.deleteAccount));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text(L10n.deleteAccountQuestion), findsOneWidget);
-      expect(find.text(L10n.deleteAccountWarning), findsOneWidget);
+      expect(find.text(l10n.deleteAccountQuestion), findsOneWidget);
+      expect(find.text(l10n.deleteAccountWarning), findsOneWidget);
     });
 
     testWidgets('deletes account when confirming deletion', (tester) async {
@@ -225,11 +231,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap Delete Account button
-      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.tap(find.text(l10n.deleteAccount));
       await tester.pumpAndSettle();
 
       // Tap Delete (red confirmation button)
-      await tester.tap(find.widgetWithText(FilledButton, L10n.delete));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.delete));
       await tester.pumpAndSettle();
 
       verify(() => mockUser.delete()).called(1);
@@ -244,11 +250,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap Delete Account button
-      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.tap(find.text(l10n.deleteAccount));
       await tester.pumpAndSettle();
 
       // Tap Cancel
-      await tester.tap(find.widgetWithText(TextButton, L10n.cancel));
+      await tester.tap(find.widgetWithText(TextButton, l10n.cancel));
       await tester.pumpAndSettle();
 
       verifyNever(() => mockUser.delete());
@@ -265,15 +271,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap Delete Account button
-      await tester.tap(find.text(L10n.deleteAccount));
+      await tester.tap(find.text(l10n.deleteAccount));
       await tester.pumpAndSettle();
 
       // Tap Delete (red confirmation button)
-      await tester.tap(find.widgetWithText(FilledButton, L10n.delete));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.delete));
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.textContaining(L10n.deleteAccountError), findsOneWidget);
+      expect(find.textContaining(l10n.deleteAccountError), findsOneWidget);
     });
   });
 }
