@@ -103,7 +103,9 @@ class FirebaseAiService {
         );
       }
 
-      debugPrint("AI Result: $extractedText", wrapWidth: 1024);
+      if (kDebugMode) {
+        debugPrint("AI Result: $extractedText", wrapWidth: 1024);
+      }
       return extractedText;
     } catch (e) {
       if (e is ReceiptAnalysisException) rethrow;
