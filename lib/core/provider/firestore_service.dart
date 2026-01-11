@@ -12,13 +12,14 @@ FirestoreService firestoreService(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final user = authState.value;
   final profile = ref.watch(userProfileProvider).value;
+  final firestore = ref.watch(firebaseFirestoreProvider);
 
   if (user == null) {
     throw Exception('User not authenticated');
   }
 
   return FirestoreService(
-    FirebaseFirestore.instance,
+    firestore,
     user.uid,
     householdId: profile?.householdId,
   );
@@ -38,15 +39,20 @@ class FirestoreService {
   }) : _householdId = householdId,
        _random = random ?? Random.secure();
 
-  String get _activeHouseholdId => _householdId ?? _userId;
-
   CollectionReference<Map<String, dynamic>> get _inventoryCollection {
-    // Shared inventory: households/{householdId}/inventory
-    // Personal inventory: households/{userId}/inventory
-    return _firestore
-        .collection(householdsCollection)
-        .doc(_activeHouseholdId)
-        .collection(inventoryCollection);
+    if (_householdId != null) {
+      // Shared Inventory
+      return _firestore
+          .collection(householdsCollection)
+          .doc(_householdId)
+          .collection(inventoryCollection);
+    } else {
+      // Personal Inventory (Legacy Support & Default)
+      return _firestore
+          .collection(usersCollection)
+          .doc(_userId)
+          .collection(inventoryCollection);
+    }
   }
 
   Future<List<FridgeItem>> getItems() async {

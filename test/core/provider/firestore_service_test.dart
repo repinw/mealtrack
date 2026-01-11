@@ -207,10 +207,53 @@ void main() {
 
         await firestoreService.addItem(item);
 
+        // Verify it is in the LEGACY path (users collection) because householdId is null
+        final snapshot = await fakeFirestore
+            .collection(usersCollection)
+            .doc(userId)
+            .collection(inventoryCollection)
+            .doc(item.id)
+            .get();
+        expect(snapshot.exists, isTrue);
+
         final items = await firestoreService.getItems();
         expect(items.length, 1);
         expect(items.first.name, 'Milk');
       });
+
+      test(
+        'addItem adds item to household collection when householdId is present',
+        () async {
+          const householdId = 'my-shared-household';
+          final sharedService = FirestoreService(
+            fakeFirestore,
+            userId,
+            householdId: householdId,
+          );
+
+          final item = FridgeItem.create(
+            name: 'Shared Milk',
+            storeName: 'Shop',
+            quantity: 1,
+            now: () => DateTime.now(),
+          );
+
+          await sharedService.addItem(item);
+
+          // Verify it is in the HOUSEHOLD path
+          final snapshot = await fakeFirestore
+              .collection(householdsCollection)
+              .doc(householdId)
+              .collection(inventoryCollection)
+              .doc(item.id)
+              .get();
+          expect(snapshot.exists, isTrue);
+
+          final items = await sharedService.getItems();
+          expect(items.length, 1);
+          expect(items.first.name, 'Shared Milk');
+        },
+      );
 
       test('deleteItem removes item', () async {
         final item = FridgeItem.create(
