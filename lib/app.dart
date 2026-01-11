@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:mealtrack/core/theme/app_theme.dart';
-import 'package:mealtrack/features/startup/presentation/startup_page.dart';
+import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MealTrackApp extends StatelessWidget {
   const MealTrackApp({super.key});
@@ -10,7 +13,14 @@ class MealTrackApp extends StatelessWidget {
     return MaterialApp(
       title: 'MealTrack',
       theme: AppTheme.theme,
-      home: const StartupPage(),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const AuthGate(),
     );
   }
 }

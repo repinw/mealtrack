@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -9,7 +10,10 @@ import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+
+class MockUser extends Mock implements User {}
 
 class MockFirebaseAiService extends Mock implements FirebaseAiService {}
 
@@ -73,9 +77,9 @@ void main() {
         firestoreServiceProvider.overrideWith(
           (ref) => FirestoreService(FakeFirebaseFirestore(), 'test_user'),
         ),
-        appInitializationProvider.overrideWith(
-          (ref) async {},
-        ), // Skip startup logic
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream.value(MockUser()),
+        ),
       ],
     );
     addTearDown(container.dispose);

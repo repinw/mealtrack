@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
@@ -73,12 +72,9 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.theme,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('de', 'DE')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
           home: const InventoryPage(title: 'Test Inventory'),
         ),
       ),
@@ -105,12 +101,9 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.theme,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('de', 'DE')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
           home: const InventoryPage(title: 'Test Inventory'),
         ),
       ),
@@ -139,12 +132,9 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.theme,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('de', 'DE')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
           home: const InventoryPage(title: 'Test Inventory'),
         ),
       ),
@@ -175,19 +165,16 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.theme,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('de', 'DE')],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
             home: const InventoryPage(title: 'Test Inventory'),
           ),
         ),
       );
 
       await tester.pumpAndSettle();
-      expect(find.text(AppLocalizations.noItemsFound), findsOneWidget);
+      expect(find.text('Keine Artikel gefunden'), findsOneWidget);
     },
   );
 
@@ -211,19 +198,16 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.theme,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('de', 'DE')],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
             home: const InventoryPage(title: 'Test Inventory'),
           ),
         ),
       );
 
       await tester.pumpAndSettle();
-      expect(find.text(AppLocalizations.noAvailableItems), findsOneWidget);
+      expect(find.text('Keine verfügbaren Artikel'), findsOneWidget);
     },
   );
 
@@ -247,21 +231,18 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.theme,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('de', 'DE')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
           home: const InventoryPage(title: 'Test Inventory'),
         ),
       ),
     );
 
     await tester.pumpAndSettle();
-    expect(find.text(AppLocalizations.filterAll), findsOneWidget);
+    expect(find.text('Alle'), findsOneWidget);
 
-    await tester.tap(find.text(AppLocalizations.filterAvailable));
+    await tester.tap(find.text('Vorrat'));
     await tester.pumpAndSettle();
   });
 
@@ -294,12 +275,9 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.theme,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('de', 'DE')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
           home: const InventoryPage(title: 'Test Inventory'),
         ),
       ),

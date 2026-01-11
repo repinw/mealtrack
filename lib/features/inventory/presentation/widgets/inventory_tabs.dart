@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class InventoryTabs extends ConsumerWidget {
   const InventoryTabs({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final currentFilter = ref.watch(inventoryFilterProvider);
 
     return Container(
@@ -21,21 +22,21 @@ class InventoryTabs extends ConsumerWidget {
             context,
             ref,
             InventoryFilterType.all,
-            AppLocalizations.filterAll,
+            l10n.filterAll,
             currentFilter == InventoryFilterType.all,
           ),
           _buildTab(
             context,
             ref,
             InventoryFilterType.available,
-            AppLocalizations.filterAvailable,
+            l10n.filterAvailable,
             currentFilter == InventoryFilterType.available,
           ),
           _buildTab(
             context,
             ref,
             InventoryFilterType.empty,
-            AppLocalizations.filterEmpty,
+            l10n.filterEmpty,
             currentFilter == InventoryFilterType.empty,
           ),
         ],

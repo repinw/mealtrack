@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ReceiptFooter extends StatelessWidget {
   final double total;
@@ -9,6 +9,7 @@ class ReceiptFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
       decoration: BoxDecoration(
@@ -31,8 +32,8 @@ class ReceiptFooter extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.total,
-                  style: TextStyle(
+                  l10n.total,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
@@ -53,15 +54,18 @@ class ReceiptFooter extends StatelessWidget {
             ElevatedButton(
               onPressed: onSave,
               style: ElevatedButton.styleFrom(),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    AppLocalizations.save,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    l10n.save,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.check, size: 20),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check, size: 20),
                 ],
               ),
             ),

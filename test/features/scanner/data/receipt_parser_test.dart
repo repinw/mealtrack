@@ -121,7 +121,7 @@ void main() {
             isA<FormatException>().having(
               (e) => e.message,
               'message',
-              'Leerer JSON-String empfangen.',
+              'EMPTY_JSON',
             ),
           ),
         );
@@ -134,7 +134,7 @@ void main() {
             isA<FormatException>().having(
               (e) => e.message,
               'message',
-              'Leerer JSON-String empfangen.',
+              'EMPTY_JSON',
             ),
           ),
         );
@@ -147,7 +147,7 @@ void main() {
             isA<FormatException>().having(
               (e) => e.message,
               'message',
-              'Bereinigter JSON-String ist leer.',
+              'SANITIZED_EMPTY',
             ),
           ),
         );
@@ -221,14 +221,14 @@ void main() {
         const jsonString = '{"i": [{"n": "", "p": 1.0, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
 
-        expect(result.first.name, contains('Parsen'));
+        expect(result.first.name, 'Unknown');
       });
 
       test('uses fallback text when storeName is empty', () {
         const jsonString = '{"i": [{"n": "Test", "s": "", "p": 1.0, "q": 1}]}';
         final result = parseScannedItemsFromJson(jsonString);
 
-        expect(result.first.storeName, contains('Parsen'));
+        expect(result.first.storeName, 'Unknown');
       });
 
       test('returns empty list when JSON object has no items/i key', () {

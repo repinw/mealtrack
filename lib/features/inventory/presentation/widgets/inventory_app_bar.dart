@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 
 class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const InventoryAppBar({super.key, required this.title});
@@ -19,6 +20,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
 
     final currencyFormat = NumberFormat.currency(locale: 'de_DE', symbol: '€');
@@ -47,18 +49,25 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         if (kDebugMode)
           IconButton(
             icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
-            tooltip: AppLocalizations.debugHiveReset,
+            tooltip: l10n.debugHiveReset,
             onPressed: () async {
               await ref.read(fridgeItemsProvider.notifier).deleteAll();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(AppLocalizations.debugDataDeleted),
-                  ),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l10n.debugDataDeleted)));
               }
             },
           ),
+        IconButton(
+          icon: const Icon(Icons.settings, color: Colors.blue),
+          tooltip: l10n.settings,
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          },
+        ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(_bottomHeight),
@@ -72,9 +81,9 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'VORRATSWERT',
-                    style: TextStyle(
+                  Text(
+                    l10n.stockValue,
+                    style: const TextStyle(
                       fontSize: 12,
                       color: labelColor,
                       letterSpacing: 0.5,
@@ -106,7 +115,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        AppLocalizations.purchases(stats.scanCount),
+                        l10n.purchases(stats.scanCount),
                         style: const TextStyle(color: labelColor, fontSize: 13),
                       ),
                     ],
@@ -123,7 +132,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       border: Border.all(color: Colors.white12),
                     ),
                     child: Text(
-                      AppLocalizations.items(stats.articleCount),
+                      l10n.items(stats.articleCount),
                       style: const TextStyle(
                         color: highlightColor,
                         fontWeight: FontWeight.bold,

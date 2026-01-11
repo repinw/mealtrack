@@ -137,7 +137,7 @@ void main() {
 
       final state = container.read(receiptEditViewModelProvider);
 
-      expect(state.initialStoreName, 'Ladenname');
+      expect(state.initialStoreName, '');
     });
 
     test('updateMerchantName updates store name for all items', () {

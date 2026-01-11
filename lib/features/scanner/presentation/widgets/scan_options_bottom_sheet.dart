@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
-import 'package:mealtrack/core/l10n/app_localizations.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 
@@ -20,19 +20,20 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            AppLocalizations.selectOption,
+            l10n.selectOption,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.camera_alt, color: Colors.blueGrey),
-            title: Text(AppLocalizations.imageFromCamera),
+            title: Text(l10n.imageFromCamera),
             onTap: () => _handleAction(
               context,
               ref,
@@ -43,7 +44,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.photo_library, color: Colors.blueGrey),
-            title: Text(AppLocalizations.imageFromGallery),
+            title: Text(l10n.imageFromGallery),
             onTap: () => _handleAction(
               context,
               ref,
@@ -57,7 +58,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
               Icons.picture_as_pdf_rounded,
               color: Colors.blueGrey,
             ),
-            title: Text(AppLocalizations.imageFromPdf),
+            title: Text(l10n.imageFromPdf),
             onTap: () => _handleAction(
               context,
               ref,
@@ -77,6 +78,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
     WidgetRef ref,
     Future<void> Function() action,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final theme = Theme.of(context);
@@ -89,16 +91,14 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
     final state = container.read(scannerViewModelProvider);
 
     if (state.hasError) {
-      _showErrorSnackBar(messenger, theme, state.error!);
+      _showErrorSnackBar(messenger, theme, state.error!, l10n);
       return;
     }
 
     final result = state.value;
 
     if (result == null || result.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text(AppLocalizations.noAvailableProducts)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.noAvailableProducts)));
       return;
     }
 
@@ -111,19 +111,20 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
     ScaffoldMessengerState messenger,
     ThemeData theme,
     Object error,
+    AppLocalizations l10n,
   ) {
     String message = error.toString();
     if (error is ReceiptAnalysisException) {
       if (error.code == 'INVALID_JSON' ||
           error.originalException is FormatException) {
-        message = AppLocalizations.receiptReadErrorFormat;
+        message = l10n.receiptReadErrorFormat;
       } else {
         message = error.message;
       }
     } else if (message.contains('FormatException')) {
-      message = AppLocalizations.receiptReadErrorFormat;
+      message = l10n.receiptReadErrorFormat;
     } else {
-      message = '${AppLocalizations.errorOccurred}$message';
+      message = '${l10n.errorOccurred}$message';
     }
 
     messenger.showSnackBar(

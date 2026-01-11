@@ -1,4 +1,3 @@
-import 'package:mealtrack/core/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -14,7 +13,7 @@ class ReceiptEditState {
     try {
       return items.firstWhere((item) => item.storeName.isNotEmpty).storeName;
     } catch (e) {
-      return AppLocalizations.defaultStoreName;
+      return ''; // Empty string as fallback, UI will handle display
     }
   }
 

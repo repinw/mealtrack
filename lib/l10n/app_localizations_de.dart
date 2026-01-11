@@ -1,0 +1,287 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for German (`de`).
+class AppLocalizationsDe extends AppLocalizations {
+  AppLocalizationsDe([String locale = 'de']) : super(locale);
+
+  @override
+  String get noAvailableProducts => 'Keine Produkte erkannt';
+
+  @override
+  String get addReceipt => 'Kassenbon hinzufügen';
+
+  @override
+  String get selectOption => 'Option wählen';
+
+  @override
+  String purchases(int count) {
+    return '$count Einkäufe';
+  }
+
+  @override
+  String items(int count) {
+    return '$count Teile';
+  }
+
+  @override
+  String get archive => 'Archivieren';
+
+  @override
+  String entries(int count) {
+    return '$count Einträge';
+  }
+
+  @override
+  String get filterAll => 'Alle';
+
+  @override
+  String get filterAvailable => 'Vorrat';
+
+  @override
+  String get filterEmpty => 'Verbraucht';
+
+  @override
+  String get verifyScan => 'SCAN ÜBERPRÜFEN';
+
+  @override
+  String get positions => 'POSITIONEN';
+
+  @override
+  String articles(int count) {
+    return '$count Artikel';
+  }
+
+  @override
+  String get amountAbbr => 'ANZ';
+
+  @override
+  String get brandDescription => 'MARKE / BESCHREIBUNG';
+
+  @override
+  String get weight => 'GEWICHT';
+
+  @override
+  String get price => 'PREIS';
+
+  @override
+  String get save => 'Speichern';
+
+  @override
+  String get total => 'GESAMT';
+
+  @override
+  String get noAvailableItems => 'Keine verfügbaren Artikel';
+
+  @override
+  String get noItemsFound => 'Keine Artikel gefunden';
+
+  @override
+  String get debugHiveReset => 'Debug: Hive Reset';
+
+  @override
+  String get debugDataDeleted => 'Debug: Alle Daten gelöscht';
+
+  @override
+  String get imageUploading => 'Bild wird hochgeladen und analysiert...';
+
+  @override
+  String get noTextFromAi => 'Kein Text von der KI erhalten.';
+
+  @override
+  String get aiResult => 'KI Ergebnis: ';
+
+  @override
+  String get aiRequestError => 'Fehler bei der KI-Anfrage: ';
+
+  @override
+  String get emptyJsonString => 'Leerer JSON-String empfangen.';
+
+  @override
+  String get sanitizedJsonEmpty => 'Bereinigter JSON-String ist leer.';
+
+  @override
+  String get unexpectedJsonFormat => 'Unerwartetes JSON-Format empfangen: ';
+
+  @override
+  String get jsonParsingError => 'Fehler beim Parsen des JSON: ';
+
+  @override
+  String get unknownStorename => 'Unbekannter Laden';
+
+  @override
+  String get unknownArticle => 'Unbekannter Artikel';
+
+  @override
+  String get defaultStoreName => 'Ladenname';
+
+  @override
+  String get pleaseSelectPdf => 'Bitte wähle eine PDF-Datei.';
+
+  @override
+  String get digitalFridge => 'Digitaler Kühlschrank';
+
+  @override
+  String get imageFromGallery => 'Bild aus Galerie';
+
+  @override
+  String get imageFromCamera => 'Bild aufnehmen';
+
+  @override
+  String get imageFromPdf => 'Aus PDF';
+
+  @override
+  String get receiptReadErrorFormat =>
+      'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).';
+
+  @override
+  String get errorOccurred => 'Ein Fehler ist aufgetreten: ';
+
+  @override
+  String get quantityUpdateFailed =>
+      'Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.';
+
+  @override
+  String get loading => 'Lädt...';
+
+  @override
+  String get initializingApp => 'App wird initialisiert...';
+
+  @override
+  String errorInitializing(Object error) {
+    return 'Fehler beim Initialisieren der App: $error';
+  }
+
+  @override
+  String get retry => 'Erneut versuchen';
+
+  @override
+  String get guestMode => 'Gast-Modus';
+
+  @override
+  String get guestModeDescription =>
+      'Sie nutzen die App derzeit als Gast. Verknüpfen Sie Ihr Konto mit einer E-Mail oder Google, um Ihre Daten zu sichern und auf mehreren Geräten zu synchronisieren.';
+
+  @override
+  String get linkAccount => 'Konto verknüpfen';
+
+  @override
+  String get createNewAccount => 'Neues Konto erstellen';
+
+  @override
+  String get useExistingAccount => 'Bestehendes Konto nutzen';
+
+  @override
+  String get linkAccountSuccess => 'Konto erfolgreich verknüpft!';
+
+  @override
+  String get warning => 'Achtung';
+
+  @override
+  String get linkAccountExistingWarning =>
+      'Wenn Sie sich mit einem bestehenden Konto anmelden möchten, werden alle Daten Ihres aktuellen Gast-Kontos gelöscht.\n\nSie werden zur Startseite weitergeleitet, wo Sie sich einloggen können.';
+
+  @override
+  String get proceed => 'Fortfahren';
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get delete => 'Löschen';
+
+  @override
+  String get userAccount => 'Benutzerkonto';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get email => 'E-Mail';
+
+  @override
+  String get id => 'ID';
+
+  @override
+  String get notAvailable => 'Nicht verfügbar';
+
+  @override
+  String get logout => 'Abmelden';
+
+  @override
+  String get deleteAccount => 'Account löschen';
+
+  @override
+  String get deleteAccountQuestion => 'Account löschen?';
+
+  @override
+  String get deleteAccountWarning =>
+      'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.\n\nMöchten Sie Ihren Account wirklich löschen?';
+
+  @override
+  String get deleteAccountError => 'Fehler beim Löschen: ';
+
+  @override
+  String get howShouldWeCallYou => 'Wie möchtest du genannt werden?';
+
+  @override
+  String get yourName => 'Dein Name';
+
+  @override
+  String get next => 'Weiter';
+
+  @override
+  String get errorLabel => 'Fehler: ';
+
+  @override
+  String get welcomeTitle => 'Willkommen bei MealTrack!';
+
+  @override
+  String get welcomeSubtitle => 'Behalte den Überblick über deine Lebensmittel';
+
+  @override
+  String get loginBtn => 'Einloggen';
+
+  @override
+  String get continueGuestBtn => 'Als Gast fortsetzen';
+
+  @override
+  String get existingAccountFound => 'Bestehendes Konto gefunden';
+
+  @override
+  String get existingAccountFoundDescription =>
+      'Dieses Konto ist bereits registriert. Wenn Sie fortfahren, gehen alle Daten Ihres aktuellen Gast-Kontos verloren.\n\nMöchten Sie sich trotzdem mit dem bestehenden Konto anmelden?';
+
+  @override
+  String get signedInWithExistingAccount =>
+      'Sie wurden mit Ihrem bestehenden Konto angemeldet.';
+
+  @override
+  String get signInErrorPrefix => 'Fehler bei der Anmeldung: ';
+
+  @override
+  String get signInSubtitle => 'Bitte melden Sie sich an, um fortzufahren.';
+
+  @override
+  String get signUpSubtitle => 'Bitte erstellen Sie ein Konto, um fortzufahren';
+
+  @override
+  String get signInAction => 'anmelden';
+
+  @override
+  String get signUpAction => 'registrieren';
+
+  @override
+  String tosDisclaimer(String action) {
+    return 'Durch $action stimmen Sie unseren Nutzungsbedingungen zu.';
+  }
+
+  @override
+  String get settings => 'Einstellungen';
+
+  @override
+  String get stockValue => 'VORRATSWERT';
+}
