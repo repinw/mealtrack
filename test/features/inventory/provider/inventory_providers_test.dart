@@ -193,7 +193,7 @@ void main() {
       ).thenAnswer((_) => Stream.value([item1, item2]));
 
       final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, __) {});
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       final available = await container.read(
         availableFridgeItemsProvider.future,
@@ -231,7 +231,7 @@ void main() {
       ).thenAnswer((_) => Stream.value([item1, item2, item3, item4]));
 
       final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, __) {});
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       final grouped = await container.read(groupedFridgeItemsProvider.future);
 
@@ -261,7 +261,7 @@ void main() {
       });
 
       final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, __) {});
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -287,7 +287,7 @@ void main() {
       ).thenThrow(Exception('Fail'));
 
       final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, __) {});
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 

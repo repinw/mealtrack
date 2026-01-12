@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/features/sharing/presentation/widgets/sharing_card.dart';
+import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
@@ -63,15 +63,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           onPressed: () {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => Scaffold(
-                  appBar: AppBar(title: Text(l10n.sharing)),
-                  body: ListView(
-                    padding: const EdgeInsets.only(top: 8),
-                    children: const [SharingCard()],
-                  ),
-                ),
-              ),
+              MaterialPageRoute(builder: (context) => const SharingPage()),
             );
           },
           icon: const Icon(Icons.people_outline),

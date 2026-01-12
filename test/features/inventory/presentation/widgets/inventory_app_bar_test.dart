@@ -148,5 +148,19 @@ void main() {
       expect(find.textContaining('1'), findsWidgets);
       expect(find.textContaining('5'), findsWidgets);
     });
+
+    testWidgets('displays sharing button with people icon', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.people_outline), findsOneWidget);
+    });
+
+    testWidgets('displays settings button with settings icon', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+    });
   });
 }

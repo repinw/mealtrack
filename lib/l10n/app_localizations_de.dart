@@ -364,4 +364,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shoppinglist => 'Einkaufsliste';
+
+  @override
+  String get calories => 'Kalorien';
+
+  @override
+  String get statistics => 'Statistik';
+
+  @override
+  String get featureInProgress => 'Diese Funktion ist noch in Arbeit 🚧';
+
+  @override
+  String get addItemNotImplemented => 'Hinzufügen - Noch nicht implementiert';
 }

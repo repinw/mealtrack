@@ -158,5 +158,9 @@
   "leave": "Verlassen",
   
   "inventory": "Vorrat",
-  "shoppinglist": "Einkaufsliste"
+  "shoppinglist": "Einkaufsliste",
+  "calories": "Kalorien",
+  "statistics": "Statistik",
+  "featureInProgress": "Diese Funktion ist noch in Arbeit 🚧",
+  "addItemNotImplemented": "Hinzufügen - Noch nicht implementiert"
 }

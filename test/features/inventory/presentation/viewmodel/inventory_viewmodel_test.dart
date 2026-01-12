@@ -85,7 +85,7 @@ void main() {
       ).thenAnswer((_) => Stream.value([item1, item2]));
 
       final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, __) {});
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -136,7 +136,7 @@ void main() {
         ).thenAnswer((_) => Stream.value([item1, item2, item3]));
 
         final container = makeContainer();
-        container.listen(fridgeItemsProvider, (_, __) {});
+        container.listen(fridgeItemsProvider, (_, _) {});
 
         await container.read(fridgeItemsProvider.future);
 

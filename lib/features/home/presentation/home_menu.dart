@@ -20,9 +20,10 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
     if (_selectedIndex == 0) {
       ScanOptionsBottomSheet.show(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add Item - Not implemented yet')),
-      );
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.addItemNotImplemented)));
     }
   }
 
@@ -56,7 +57,9 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: pages),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
+        padding: EdgeInsets.only(
+          bottom: 20.0 + MediaQuery.of(context).viewPadding.bottom,
+        ),
         child: SizedBox(
           width: 48,
           height: 48,
@@ -107,14 +110,14 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
                   index: 2,
                   icon: Icons.local_fire_department_outlined,
                   selectedIcon: Icons.local_fire_department,
-                  label: 'Kalorien',
+                  label: l10n.calories,
                   isComingSoon: true,
                 ),
                 _buildNavItem(
                   index: 3,
                   icon: Icons.bar_chart_outlined,
                   selectedIcon: Icons.bar_chart,
-                  label: 'Statistik',
+                  label: l10n.statistics,
                   isComingSoon: true,
                 ),
               ],
@@ -135,10 +138,11 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
     if (isComingSoon) {
       return InkWell(
         onTap: () {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Diese Funktion ist noch in Arbeit 🚧'),
-              duration: Duration(seconds: 1),
+            SnackBar(
+              content: Text(l10n.featureInProgress),
+              duration: const Duration(seconds: 1),
             ),
           );
         },
