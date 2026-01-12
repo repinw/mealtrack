@@ -5,10 +5,16 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_app_bar.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
+
+class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
+class FakeRoute extends Fake implements Route<dynamic> {}
 
 class MockFridgeItemsNotifier extends FridgeItems {
   final List<FridgeItem> mockItems;
@@ -46,11 +52,18 @@ class MockFridgeItemsNotifier extends FridgeItems {
 void main() {
   late MockFridgeRepository mockRepository;
 
+  setUpAll(() {
+    registerFallbackValue(FakeRoute());
+  });
+
   setUp(() {
     mockRepository = MockFridgeRepository();
   });
 
-  Widget buildTestWidget({List<FridgeItem>? items}) {
+  Widget buildTestWidget({
+    List<FridgeItem>? items,
+    NavigatorObserver? navigatorObserver,
+  }) {
     return ProviderScope(
       overrides: [
         fridgeRepositoryProvider.overrideWithValue(mockRepository),
@@ -58,10 +71,13 @@ void main() {
           () => MockFridgeItemsNotifier(items ?? []),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
+        navigatorObservers: navigatorObserver != null
+            ? [navigatorObserver]
+            : [],
+        home: const Scaffold(
           appBar: InventoryAppBar(title: 'Test Title'),
           body: SizedBox.shrink(),
         ),
@@ -161,6 +177,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.settings), findsOneWidget);
+    });
+
+    testWidgets('tapping sharing button pushes SharingPage', (tester) async {
+      final mockObserver = MockNavigatorObserver();
+
+      await tester.pumpWidget(buildTestWidget(navigatorObserver: mockObserver));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.people_outline));
+      await tester.pumpAndSettle();
+
+      verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
+      expect(find.byType(SharingPage), findsOneWidget);
+    });
+
+    testWidgets('tapping settings button pushes SettingsPage', (tester) async {
+      final mockObserver = MockNavigatorObserver();
+
+      await tester.pumpWidget(buildTestWidget(navigatorObserver: mockObserver));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+
+      verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
+      expect(find.byType(SettingsPage), findsOneWidget);
     });
   });
 }

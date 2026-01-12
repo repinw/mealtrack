@@ -251,5 +251,24 @@ void main() {
 
       expect(find.byType(Container), findsWidgets);
     });
+
+    testWidgets('layout remains stable when keyboard is open', (tester) async {
+      // Simulate keyboard open with viewInsets.bottom
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(() => tester.view.resetViewInsets());
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Verify no overflow - layout should remain stable
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.text(l10n.inventory), findsAtLeastNWidgets(1));
+
+      // Verify bottom nav bar is still visible (not pushed off screen)
+      expect(find.byType(SafeArea), findsWidgets);
+
+      // No exceptions should be thrown (would indicate overflow)
+      expect(tester.takeException(), isNull);
+    });
   });
 }

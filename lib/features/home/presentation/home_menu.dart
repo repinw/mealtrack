@@ -14,6 +14,8 @@ class HomeMenu extends ConsumerStatefulWidget {
 }
 
 class _HomeMenuState extends ConsumerState<HomeMenu> {
+  static const List<Widget> _pages = [InventoryPage(title: 'MealTrack')];
+
   int _selectedIndex = 0;
 
   void _onFabPressed() {
@@ -47,12 +49,10 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    final pages = [const InventoryPage(title: 'MealTrack')];
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: pages),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       floatingActionButton: Padding(
         padding: EdgeInsets.only(
           bottom: 20.0 + MediaQuery.of(context).viewPadding.bottom,
