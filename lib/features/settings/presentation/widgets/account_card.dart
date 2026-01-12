@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/auth/presentation/my_sign_in_screen.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/guest_mode_card.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/user_account_card.dart';
@@ -16,15 +17,25 @@ class AccountCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListView(
-      padding: const EdgeInsets.all(16.0),
+    final profile = ref.watch(userProfileProvider).value;
+    final isGuest = profile?.isAnonymous ?? user.isAnonymous;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        if (user.isAnonymous)
-          GuestModeCard(
-            onLinkAccount: () => _showLinkAccountOptions(context, ref, user),
+        if (isGuest)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GuestModeCard(
+              onLinkAccount: () => _showLinkAccountOptions(context, ref, user),
+            ),
           ),
-        if (user.isAnonymous) const SizedBox(height: 16),
-        UserAccountCard(user: user),
+        if (isGuest) const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: UserAccountCard(user: user),
+        ),
       ],
     );
   }
@@ -56,9 +67,6 @@ class AccountCard extends ConsumerWidget {
       MaterialPageRoute(
         builder: (context) => MySignInScreen(
           showInventoryPageOnSuccess: false,
-          mfaAction: AuthStateChangeAction<MFARequired>(
-            (context, state) async {},
-          ),
           actions: [
             AuthStateChangeAction<CredentialLinked>((context, state) async {
               await _handleAuthSuccess(context, state.user);

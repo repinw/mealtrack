@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/l10n/app_localizations_de.dart';
+import 'package:mealtrack/core/models/user_profile.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/user_account_card.dart';
 import 'package:mocktail/mocktail.dart';
@@ -31,8 +32,18 @@ void main() {
   });
 
   Widget createSubject(User user) {
+    final mockProfile = UserProfile(
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      isAnonymous: user.isAnonymous,
+    );
+
     return ProviderScope(
-      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(mockAuth),
+        userProfileProvider.overrideWith((_) => Stream.value(mockProfile)),
+      ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -49,6 +60,7 @@ void main() {
       when(() => mockUser.isAnonymous).thenReturn(false);
 
       await tester.pumpWidget(createSubject(mockUser));
+      await tester.pumpAndSettle(); // Wait for stream to emit
 
       expect(find.text('Test User'), findsOneWidget);
       expect(find.text('test@example.com'), findsOneWidget);

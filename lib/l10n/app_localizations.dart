@@ -609,6 +609,144 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'VORRATSWERT'**
   String get stockValue;
+
+  /// No description provided for @sharing.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get sharing;
+
+  /// No description provided for @invite.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladen'**
+  String get invite;
+
+  /// No description provided for @join.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitreten'**
+  String get join;
+
+  /// No description provided for @generateCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Code generieren'**
+  String get generateCode;
+
+  /// No description provided for @sharingCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Sharing-Code'**
+  String get sharingCode;
+
+  /// No description provided for @sharingCodeDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile diesen Code, um deine Vorräte gemeinsam mit anderen zu verwalten.'**
+  String get sharingCodeDescription;
+
+  /// No description provided for @enterSharingCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Sharing-Code eingeben'**
+  String get enterSharingCode;
+
+  /// No description provided for @joinHousehold.
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt beitreten'**
+  String get joinHousehold;
+
+  /// No description provided for @invalidCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger Code'**
+  String get invalidCode;
+
+  /// No description provided for @codeExpired.
+  ///
+  /// In de, this message translates to:
+  /// **'Code abgelaufen'**
+  String get codeExpired;
+
+  /// No description provided for @codeValidDuration.
+  ///
+  /// In de, this message translates to:
+  /// **'Code ist für 24 Stunden gültig'**
+  String get codeValidDuration;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In de, this message translates to:
+  /// **'Code kopieren'**
+  String get copyCode;
+
+  /// No description provided for @codeCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Code kopiert!'**
+  String get codeCopied;
+
+  /// No description provided for @convertAccountToShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte verknüpfen Sie Ihr Konto, um einen Haushalt erstellen zu können.'**
+  String get convertAccountToShare;
+
+  /// No description provided for @householdMembers.
+  ///
+  /// In de, this message translates to:
+  /// **'Haushaltsmitglieder'**
+  String get householdMembers;
+
+  /// No description provided for @you.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get you;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied entfernen'**
+  String get removeMember;
+
+  /// No description provided for @removeMemberConfirmation.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie dieses Mitglied wirklich aus dem Haushalt entfernen?'**
+  String get removeMemberConfirmation;
+
+  /// No description provided for @remove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get remove;
+
+  /// No description provided for @cannotJoinOwnHousehold.
+  ///
+  /// In de, this message translates to:
+  /// **'Sie können nicht Ihrem eigenen Haushalt beitreten.'**
+  String get cannotJoinOwnHousehold;
+
+  /// No description provided for @leaveHousehold.
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt verlassen'**
+  String get leaveHousehold;
+
+  /// No description provided for @leaveHouseholdConfirmation.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchten Sie den Haushalt wirklich verlassen?'**
+  String get leaveHouseholdConfirmation;
+
+  /// No description provided for @leave.
+  ///
+  /// In de, this message translates to:
+  /// **'Verlassen'**
+  String get leave;
 }
 
 class _AppLocalizationsDelegate

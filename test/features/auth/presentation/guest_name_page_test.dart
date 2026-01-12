@@ -1,3 +1,4 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -37,6 +38,9 @@ void main() {
       () => mockAuth.signInAnonymously(),
     ).thenAnswer((_) async => mockUserCredential);
     when(() => mockAuth.currentUser).thenReturn(mockUser);
+    when(() => mockUser.uid).thenReturn('test_uid');
+    when(() => mockUser.email).thenReturn('test@example.com');
+    when(() => mockUser.isAnonymous).thenReturn(true);
     when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
     when(() => mockUser.reload()).thenAnswer((_) async {});
   });
@@ -46,7 +50,10 @@ void main() {
     NavigatorObserver? navigatorObserver,
   }) {
     return ProviderScope(
-      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(mockAuth),
+        firebaseFirestoreProvider.overrideWithValue(FakeFirebaseFirestore()),
+      ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

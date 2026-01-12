@@ -1,3 +1,4 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/extensions/user_extension.dart';
@@ -10,10 +11,16 @@ class MockUserInfo extends Mock implements UserInfo {}
 void main() {
   late MockUser mockUser;
   late MockUserInfo mockUserInfo;
+  late FakeFirebaseFirestore fakeFirestore;
 
   setUp(() {
     mockUser = MockUser();
     mockUserInfo = MockUserInfo();
+    fakeFirestore = FakeFirebaseFirestore();
+
+    when(() => mockUser.uid).thenReturn('test-uid');
+    when(() => mockUser.email).thenReturn('test@example.com');
+    when(() => mockUser.isAnonymous).thenReturn(false);
   });
 
   group('UserExtension', () {
@@ -22,7 +29,7 @@ void main() {
       () async {
         when(() => mockUser.displayName).thenReturn('Existing Name');
 
-        await mockUser.updateDisplayNameFromProvider();
+        await mockUser.updateDisplayNameFromProvider(firestore: fakeFirestore);
 
         verifyNever(() => mockUser.updateDisplayName(any()));
         verifyNever(() => mockUser.reload());
@@ -38,7 +45,7 @@ void main() {
         when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
         when(() => mockUser.reload()).thenAnswer((_) async {});
 
-        await mockUser.updateDisplayNameFromProvider();
+        await mockUser.updateDisplayNameFromProvider(firestore: fakeFirestore);
 
         verify(() => mockUser.updateDisplayName('Provider Name')).called(1);
         verify(() => mockUser.reload()).called(1);
@@ -54,7 +61,7 @@ void main() {
         when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
         when(() => mockUser.reload()).thenAnswer((_) async {});
 
-        await mockUser.updateDisplayNameFromProvider();
+        await mockUser.updateDisplayNameFromProvider(firestore: fakeFirestore);
 
         verify(() => mockUser.updateDisplayName('Provider Name')).called(1);
         verify(() => mockUser.reload()).called(1);
@@ -68,7 +75,7 @@ void main() {
         when(() => mockUserInfo.displayName).thenReturn(null);
         when(() => mockUser.providerData).thenReturn([mockUserInfo]);
 
-        await mockUser.updateDisplayNameFromProvider();
+        await mockUser.updateDisplayNameFromProvider(firestore: fakeFirestore);
 
         verifyNever(() => mockUser.updateDisplayName(any()));
       },
@@ -81,7 +88,7 @@ void main() {
         when(() => mockUserInfo.displayName).thenReturn('');
         when(() => mockUser.providerData).thenReturn([mockUserInfo]);
 
-        await mockUser.updateDisplayNameFromProvider();
+        await mockUser.updateDisplayNameFromProvider(firestore: fakeFirestore);
 
         verifyNever(() => mockUser.updateDisplayName(any()));
       },

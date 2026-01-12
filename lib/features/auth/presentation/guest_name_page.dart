@@ -40,6 +40,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
 
     try {
       final auth = ref.read(firebaseAuthProvider);
+      final firestore = ref.read(firebaseFirestoreProvider);
       User? user = widget.user;
 
       if (user == null) {
@@ -47,7 +48,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
         user = userCredential.user;
       }
 
-      await user!.updateDisplayNameAndReload(name);
+      await user!.updateDisplayNameAndReload(name, firestore: firestore);
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(

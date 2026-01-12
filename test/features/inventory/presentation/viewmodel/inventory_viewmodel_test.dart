@@ -11,21 +11,25 @@ class MockFridgeRepository extends Mock implements FridgeRepository {}
 
 void main() {
   late MockFridgeRepository mockRepository;
-  late ProviderContainer container;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
-    container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
-    );
+    when(
+      () => mockRepository.watchItems(),
+    ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
   });
 
-  tearDown(() {
-    container.dispose();
-  });
+  ProviderContainer makeContainer() {
+    final container = ProviderContainer(
+      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
 
   group('InventoryViewModel', () {
     test('initial state is AsyncData(null)', () {
+      final container = makeContainer();
       final state = container.read(inventoryViewModelProvider);
       expect(state, const AsyncData<void>(null));
     });
@@ -37,14 +41,20 @@ void main() {
         quantity: 1,
         now: () => DateTime.now(),
       );
+
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [initialItem]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([initialItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
       when(() => mockRepository.deleteAllItems()).thenAnswer((_) async {});
-      when(() => mockRepository.getItems()).thenAnswer((_) async => []);
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([]));
 
       await container
           .read(inventoryViewModelProvider.notifier)
@@ -71,13 +81,18 @@ void main() {
       );
 
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, __) {});
 
       await container.read(fridgeItemsProvider.future);
 
       when(() => mockRepository.deleteItem(item1.id)).thenAnswer((_) async {});
-      when(() => mockRepository.getItems()).thenAnswer((_) async => [item2]);
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item2]));
 
       await container
           .read(inventoryViewModelProvider.notifier)
@@ -117,8 +132,11 @@ void main() {
       'returns grouped items including consumed ones when filter is disabled',
       () async {
         when(
-          () => mockRepository.getItems(),
-        ).thenAnswer((_) async => [item1, item2, item3]);
+          () => mockRepository.watchItems(),
+        ).thenAnswer((_) => Stream.value([item1, item2, item3]));
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, __) {});
 
         await container.read(fridgeItemsProvider.future);
 
@@ -145,8 +163,11 @@ void main() {
 
     test('returns only available items when filter is enabled', () async {
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2, item3]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2, item3]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       container
           .read(inventoryFilterProvider.notifier)
@@ -174,8 +195,11 @@ void main() {
 
     test('returns only empty items when filter is empty', () async {
       when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [item1, item2, item3]);
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2, item3]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       container
           .read(inventoryFilterProvider.notifier)
@@ -203,21 +227,12 @@ void main() {
     test(
       'does not generate header if all items in group are filtered out',
       () async {
-        // Setup:
-        // Group A: item1 (available), item2 (empty)
-        // Group B: item3 (available)
-
-        // Scenario 1: Filter Available
-        // Group A should show header + item1. item2 hidden.
-        // Group B should show header + item3.
-
-        // Scenario 2: Filter Empty
-        // Group A should show header + item2. item1 hidden.
-        // Group B should show NOTHING (header hidden too because item3 is hidden).
-
         when(
-          () => mockRepository.getItems(),
-        ).thenAnswer((_) async => [item1, item2, item3]);
+          () => mockRepository.watchItems(),
+        ).thenAnswer((_) => Stream.value([item1, item2, item3]));
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
 
         // Set to Empty filter
         container
@@ -228,9 +243,6 @@ void main() {
 
         final displayListAsync = container.read(inventoryDisplayListProvider);
         final displayList = displayListAsync.value!;
-
-        // We expect only Group A (Store A) to be present with item2.
-        // Group B (Store B) has only item3 which is NOT empty, so it should be completely gone.
 
         final storeNames = displayList
             .whereType<InventoryHeaderItem>()
@@ -243,7 +255,8 @@ void main() {
     );
 
     test('returns empty list when no items exist', () async {
-      when(() => mockRepository.getItems()).thenAnswer((_) async => []);
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -268,7 +281,7 @@ void main() {
           storeName: 'Local Shop',
           quantity: 1,
           now: () => fixedDate,
-        ); // receiptId is null by default
+        );
         final itemWithReceipt = FridgeItem.create(
           name: 'Apple',
           storeName: 'Supermarket',
@@ -276,13 +289,16 @@ void main() {
           now: () => fixedDate,
         ).copyWith(receiptId: 'receipt-abc');
 
-        when(() => mockRepository.getItems()).thenAnswer(
-          (_) async => [
+        when(() => mockRepository.watchItems()).thenAnswer(
+          (_) => Stream.value([
             itemWithNullReceipt1,
             itemWithNullReceipt2,
             itemWithReceipt,
-          ],
+          ]),
         );
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
 
         await container.read(fridgeItemsProvider.future);
 
@@ -320,9 +336,12 @@ void main() {
         now: () => fixedDate,
       ).copyWith(receiptId: '');
 
-      when(
-        () => mockRepository.getItems(),
-      ).thenAnswer((_) async => [itemWithNullReceipt, itemWithEmptyReceipt]);
+      when(() => mockRepository.watchItems()).thenAnswer(
+        (_) => Stream.value([itemWithNullReceipt, itemWithEmptyReceipt]),
+      );
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 

@@ -35,7 +35,7 @@ final class ScannerViewModelProvider
   ScannerViewModel create() => ScannerViewModel();
 }
 
-String _$scannerViewModelHash() => r'a474c1255f2d8765f74bc1a0afec5b7fafb92523';
+String _$scannerViewModelHash() => r'bb1333a280d0e052efbd120b781e15864ef83c3b';
 
 abstract class _$ScannerViewModel extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();
