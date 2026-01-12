@@ -114,6 +114,9 @@ void main() {
           .doc('test_uid')
           .set(existingProfile.toJson());
 
+      // Ensure Mock User matches so NO sync happens
+      when(() => mockUser.displayName).thenReturn('Old Name');
+
       final authController = StreamController<User?>();
       addTearDown(authController.close);
 
@@ -144,6 +147,68 @@ void main() {
 
       expect(profile, isNotNull);
       expect(profile.displayName, 'Old Name');
+    });
+
+    test('updates existing profile if critical data changed', () async {
+      const existingProfile = UserProfile(
+        uid: 'test_uid',
+        email: 'test@example.com',
+        displayName: 'Old Name',
+        isAnonymous: true, // Initially anonymous
+      );
+      await fakeFirestore
+          .collection(usersCollection)
+          .doc('test_uid')
+          .set(existingProfile.toJson());
+
+      // Setup user with NEW data (converted to permanent)
+      when(() => mockUser.isAnonymous).thenReturn(false);
+      when(() => mockUser.displayName).thenReturn('New Name');
+      when(() => mockUser.email).thenReturn('new@example.com');
+
+      final authController = StreamController<User?>();
+      addTearDown(authController.close);
+
+      final container = ProviderContainer(
+        overrides: [
+          firebaseAuthProvider.overrideWithValue(mockFirebaseAuth),
+          firebaseFirestoreProvider.overrideWithValue(fakeFirestore),
+          authStateChangesProvider.overrideWith((ref) => authController.stream),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final completer = Completer<UserProfile>();
+      final subscription = container.listen<AsyncValue<UserProfile?>>(
+        userProfileProvider,
+        (_, next) {
+          if (next.hasValue && next.value != null) {
+            final p = next.value!;
+            // Wait until it reflects the update
+            if (p.isAnonymous == false && p.displayName == 'New Name') {
+              if (!completer.isCompleted) completer.complete(p);
+            }
+          }
+        },
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      authController.add(mockUser);
+
+      final profile = await completer.future;
+
+      expect(profile.isAnonymous, isFalse);
+      expect(profile.displayName, 'New Name');
+      expect(profile.email, 'new@example.com');
+
+      // Verify Firestore update
+      final doc = await fakeFirestore
+          .collection(usersCollection)
+          .doc('test_uid')
+          .get();
+      expect(doc.data()!['isAnonymous'], isFalse);
+      expect(doc.data()!['displayName'], 'New Name');
     });
   });
 

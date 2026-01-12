@@ -130,7 +130,7 @@ final class AuthStateChangesProvider
   }
 }
 
-String _$authStateChangesHash() => r'7e2230d665098f97101510d80be5c9dd82d44903';
+String _$authStateChangesHash() => r'c7af77d8677dab52fbf7e97ba783186b3b67e1ee';
 
 @ProviderFor(userProfile)
 const userProfileProvider = UserProfileProvider._();
@@ -169,7 +169,7 @@ final class UserProfileProvider
   }
 }
 
-String _$userProfileHash() => r'860657a198db1778b084855f850f8e418c2e439f';
+String _$userProfileHash() => r'9d9804e22dc3c75dd474d9a2f6d83b4da822fbe8';
 
 @ProviderFor(householdMembers)
 const householdMembersProvider = HouseholdMembersProvider._();

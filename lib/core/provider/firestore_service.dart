@@ -40,19 +40,12 @@ class FirestoreService {
        _random = random ?? Random.secure();
 
   CollectionReference<Map<String, dynamic>> get _inventoryCollection {
-    if (_householdId != null) {
-      // Shared Inventory
-      return _firestore
-          .collection(householdsCollection)
-          .doc(_householdId)
-          .collection(inventoryCollection);
-    } else {
-      // Personal Inventory (Legacy Support & Default)
-      return _firestore
-          .collection(usersCollection)
-          .doc(_userId)
-          .collection(inventoryCollection);
-    }
+    final targetUid = _householdId ?? _userId;
+
+    return _firestore
+        .collection(usersCollection)
+        .doc(targetUid)
+        .collection(inventoryCollection);
   }
 
   Future<List<FridgeItem>> getItems() async {

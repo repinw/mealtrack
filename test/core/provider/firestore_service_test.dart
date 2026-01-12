@@ -240,9 +240,9 @@ void main() {
 
           await sharedService.addItem(item);
 
-          // Verify it is in the HOUSEHOLD path
+          // Verify it is in the HOUSEHOLD path (which is mapped to users collection now)
           final snapshot = await fakeFirestore
-              .collection(householdsCollection)
+              .collection(usersCollection)
               .doc(householdId)
               .collection(inventoryCollection)
               .doc(item.id)

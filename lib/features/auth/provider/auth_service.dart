@@ -18,7 +18,7 @@ FirebaseFirestore firebaseFirestore(Ref ref) {
 
 @riverpod
 Stream<User?> authStateChanges(Ref ref) {
-  return ref.watch(firebaseAuthProvider).authStateChanges();
+  return ref.watch(firebaseAuthProvider).userChanges();
 }
 
 @riverpod
@@ -42,7 +42,24 @@ Stream<UserProfile?> userProfile(Ref ref) {
       await docRef.set(profile.toJson(), SetOptions(merge: true));
       return profile;
     }
-    return UserProfile.fromJson(snapshot.data()!);
+
+    final data = snapshot.data()!;
+    final profile = UserProfile.fromJson(data);
+
+    // Sync if critical internal state changed (e.g. anonymous -> permanent)
+    if (profile.isAnonymous != user.isAnonymous ||
+        profile.email != user.email ||
+        profile.displayName != user.displayName) {
+      final updatedProfile = profile.copyWith(
+        isAnonymous: user.isAnonymous,
+        email: user.email,
+        displayName: user.displayName,
+      );
+      await docRef.set(updatedProfile.toJson(), SetOptions(merge: true));
+      return updatedProfile;
+    }
+
+    return profile;
   });
 }
 

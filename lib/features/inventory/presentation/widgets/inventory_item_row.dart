@@ -87,7 +87,7 @@ class InventoryItemRow extends ConsumerWidget {
 
                     const Spacer(),
                     Text(
-                      '${item.totalPrice.toStringAsFixed(2)}€ / Stk',
+                      '${item.unitPrice.toStringAsFixed(2)}€ / Stk',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade400,

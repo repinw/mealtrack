@@ -55,4 +55,4 @@ final class FirestoreServiceProvider
   }
 }
 
-String _$firestoreServiceHash() => r'f474e0882b28605363b5bb236d02f2d48441b423';
+String _$firestoreServiceHash() => r'91259af74f5423f6079bcca2952a971736dfeacf';
