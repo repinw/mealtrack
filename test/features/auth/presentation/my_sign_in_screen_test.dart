@@ -38,11 +38,11 @@ void main() async {
 
   testWidgets('MySignInScreen renders SignInScreen', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: const MySignInScreen()),
+          home: Scaffold(body: MySignInScreen()),
         ),
       ),
     );

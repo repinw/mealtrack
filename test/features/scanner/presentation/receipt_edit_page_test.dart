@@ -47,7 +47,7 @@ void main() {
           storeName: 'Test Store',
           unitPrice: 9.0,
           quantity: 1,
-          discounts: {'D1': 1.0},
+          discounts: const {'D1': 1.0},
         );
 
         final item2 = FridgeItem.create(

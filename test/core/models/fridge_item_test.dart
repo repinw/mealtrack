@@ -719,7 +719,7 @@ void main() {
           name: 'Item',
           storeName: 'Store',
           unitPrice: 10.0,
-          discounts: {'Discount': -2.0},
+          discounts: const {'Discount': -2.0},
         );
         expect(item.effectiveUnitPrice, 8.0);
       });
@@ -730,7 +730,7 @@ void main() {
           storeName: 'Store',
           unitPrice: 10.0,
           quantity: 3,
-          discounts: {'Discount': -2.0},
+          discounts: const {'Discount': -2.0},
         );
         expect(item.effectiveUnitPrice, 8.0);
         expect(item.totalPrice, 24.0);
@@ -742,7 +742,7 @@ void main() {
           storeName: 'Store',
           unitPrice: 10.0,
           quantity: 2,
-          discounts: {'D1': -1.0, 'D2': -0.5},
+          discounts: const {'D1': -1.0, 'D2': -0.5},
         );
         expect(item.effectiveUnitPrice, 8.5);
         expect(item.totalPrice, 17.0);

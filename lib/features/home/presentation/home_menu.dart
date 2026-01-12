@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_options_bottom_sheet.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -47,10 +47,7 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    final pages = [
-      const InventoryPage(title: 'MealTrack'),
-      const ShoppingListPage(),
-    ];
+    final pages = [const InventoryPage(title: 'MealTrack')];
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -80,11 +77,11 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
           child: Container(
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppTheme.navBarBackground,
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: AppTheme.shadowLight,
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),

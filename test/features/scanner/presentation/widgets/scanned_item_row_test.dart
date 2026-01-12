@@ -231,7 +231,7 @@ void main() {
         quantity: 1,
         unitPrice: 10.0,
         entryDate: DateTime.now(),
-        discounts: {'Rabatt': 2.50},
+        discounts: const {'Rabatt': 2.50},
       );
 
       await tester.pumpWidget(
@@ -257,7 +257,7 @@ void main() {
         quantity: 1,
         unitPrice: 10.0,
         entryDate: DateTime.now(),
-        discounts: {'Sonderrabatt': 2.50},
+        discounts: const {'Sonderrabatt': 2.50},
       );
 
       await tester.pumpWidget(
@@ -290,7 +290,7 @@ void main() {
         quantity: 1,
         unitPrice: 10.0,
         entryDate: DateTime.now(),
-        discounts: {'Rabatt': 2.50},
+        discounts: const {'Rabatt': 2.50},
       );
 
       await tester.pumpWidget(

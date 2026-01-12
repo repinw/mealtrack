@@ -12,6 +12,7 @@ import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
 
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
@@ -26,7 +27,6 @@ void main() {
     mockAuth = MockFirebaseAuth();
     mockUser = MockUser();
 
-    // Default stubs
     when(() => mockAuth.currentUser).thenReturn(mockUser);
     when(() => mockUser.uid).thenReturn('123');
     when(() => mockUser.isAnonymous).thenReturn(false);
@@ -34,26 +34,31 @@ void main() {
     when(() => mockUser.email).thenReturn('test@test.com');
   });
 
+  Widget buildTestWidget({required List<Override> overrides}) {
+    return ProviderScope(
+      overrides: overrides,
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SettingsPage(),
+      ),
+    );
+  }
+
   testWidgets('SettingsPage shows AccountCard when user is logged in', (
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(
+      buildTestWidget(
         overrides: [
           authStateChangesProvider.overrideWith(
             (ref) => Stream.value(mockUser),
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const SettingsPage(),
-        ),
       ),
     );
 
-    // Initial load
     await tester.pump();
 
     expect(find.byType(AccountCard), findsOneWidget);
@@ -63,18 +68,13 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(
+      buildTestWidget(
         overrides: [
           authStateChangesProvider.overrideWith(
             (ref) => Stream.error(Exception('Auth service unavailable')),
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const SettingsPage(),
-        ),
       ),
     );
 
@@ -88,22 +88,16 @@ void main() {
   testWidgets('SettingsPage shows loading indicator while waiting for auth', (
     tester,
   ) async {
-    // Use a stream that never emits to simulate loading state
     final neverCompleteController = StreamController<User?>();
 
     await tester.pumpWidget(
-      ProviderScope(
+      buildTestWidget(
         overrides: [
           authStateChangesProvider.overrideWith(
             (ref) => neverCompleteController.stream,
           ),
           firebaseAuthProvider.overrideWithValue(mockAuth),
         ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const SettingsPage(),
-        ),
       ),
     );
 
@@ -112,7 +106,6 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.byType(AccountCard), findsNothing);
 
-    // Clean up
     neverCompleteController.close();
   });
 }

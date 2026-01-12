@@ -58,10 +58,10 @@ void main() {
           () => MockFridgeItemsNotifier(items ?? []),
         ),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(
+        home: Scaffold(
           appBar: InventoryAppBar(title: 'Test Title'),
           body: SizedBox.shrink(),
         ),

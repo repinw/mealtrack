@@ -86,11 +86,11 @@ void main() {
         firebaseAuthProvider.overrideWithValue(mockAuth),
         ...additionalOverrides,
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
-        home: const HomeMenu(),
+        locale: Locale('de'),
+        home: HomeMenu(),
       ),
     );
   }

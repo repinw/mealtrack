@@ -25,11 +25,11 @@ void main() {
         firebaseFirestoreProvider.overrideWithValue(fakeFirestore),
         firebaseAuthProvider.overrideWithValue(mockAuth),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
-        home: const SharingPage(),
+        locale: Locale('de'),
+        home: SharingPage(),
       ),
     );
   }

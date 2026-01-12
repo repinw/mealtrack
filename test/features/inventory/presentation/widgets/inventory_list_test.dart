@@ -48,11 +48,11 @@ void main() {
   Widget createWidgetUnderTest({List<Override> overrides = const []}) {
     return ProviderScope(
       overrides: overrides,
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
-        home: const Scaffold(body: InventoryList()),
+        locale: Locale('de'),
+        home: Scaffold(body: InventoryList()),
       ),
     );
   }
@@ -76,7 +76,7 @@ void main() {
       createWidgetUnderTest(
         overrides: [
           inventoryDisplayListProvider.overrideWith(
-            (ref) => AsyncValue.error('Failed', StackTrace.empty),
+            (ref) => const AsyncValue.error('Failed', StackTrace.empty),
           ),
         ],
       ),
@@ -134,7 +134,7 @@ void main() {
         receiptId: '1',
         isFullyConsumed: false,
       ),
-      InventoryProductItem('1'),
+      const InventoryProductItem('1'),
       const InventorySpacerItem(),
     ];
 
@@ -171,7 +171,7 @@ void main() {
           receiptId: 'receipt-1',
           isFullyConsumed: true,
         ),
-        InventoryProductItem('1'),
+        const InventoryProductItem('1'),
         const InventorySpacerItem(),
       ];
 
@@ -210,7 +210,7 @@ void main() {
         receiptId: 'receipt-1',
         isFullyConsumed: true,
       ),
-      InventoryProductItem('1'),
+      const InventoryProductItem('1'),
       const InventorySpacerItem(),
     ];
 
@@ -249,7 +249,7 @@ void main() {
         receiptId: 'receipt-1',
         isFullyConsumed: false,
       ),
-      InventoryProductItem('1'),
+      const InventoryProductItem('1'),
       const InventorySpacerItem(),
     ];
 
