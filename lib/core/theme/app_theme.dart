@@ -8,7 +8,7 @@ class AppTheme {
   static const Color actionButtonColor = Color(0xFF0B1426);
   static const Color white = Colors.white;
   static const Color error = Colors.redAccent;
-  static const Color navBarBackground = Color(0xFFE0E0E0); // Colors.grey[300]
+  static const Color navBarBackground = Color(0xFFE0E0E0);
   static Color get shadowLight => Colors.black.withValues(alpha: 0.1);
 
   static ThemeData get theme {
