@@ -155,5 +155,8 @@
   "cannotJoinOwnHousehold": "Sie können nicht Ihrem eigenen Haushalt beitreten.",
   "leaveHousehold": "Haushalt verlassen",
   "leaveHouseholdConfirmation": "Möchten Sie den Haushalt wirklich verlassen?",
-  "leave": "Verlassen"
+  "leave": "Verlassen",
+  
+  "inventory": "Vorrat",
+  "shoppinglist": "Einkaufsliste"
 }

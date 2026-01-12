@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF0B1426); 
-  static const Color secondaryColor = Color(0xFF1E2A3B); 
-  static const Color accentColor = Color(0xFF4CAF50); 
-  static const Color scaffoldBackgroundColor = Color(0xFFF5F5F5); 
-  static const Color actionButtonColor = Color(0xFF0B1426); 
+  static const Color primaryColor = Color(0xFF0B1426);
+  static const Color secondaryColor = Color(0xFF1E2A3B);
+  static const Color accentColor = Color(0xFF4CAF50);
+  static const Color scaffoldBackgroundColor = Color(0xFFF5F5F5);
+  static const Color actionButtonColor = Color(0xFF0B1426);
   static const Color white = Colors.white;
   static const Color error = Colors.redAccent;
 
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: scaffoldBackgroundColor,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         primary: primaryColor,
@@ -22,7 +23,6 @@ class AppTheme {
         onSecondary: white,
         onSurface: Colors.black87,
       ),
-      scaffoldBackgroundColor: scaffoldBackgroundColor,
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: white,
@@ -30,7 +30,7 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: accentColor,
-          fontSize: 16, 
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),

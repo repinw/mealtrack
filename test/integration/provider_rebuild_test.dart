@@ -61,7 +61,7 @@ void main() {
         now: () => DateTime.now(),
       );
       await fakeFirestore
-          .collection(householdsCollection)
+          .collection(usersCollection)
           .doc(householdId)
           .collection(inventoryCollection)
           .doc(sharedItem.id)

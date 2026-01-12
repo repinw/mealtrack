@@ -358,4 +358,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get leave => 'Verlassen';
+
+  @override
+  String get inventory => 'Vorrat';
+
+  @override
+  String get shoppinglist => 'Einkaufsliste';
 }

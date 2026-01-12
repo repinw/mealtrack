@@ -747,6 +747,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verlassen'**
   String get leave;
+
+  /// No description provided for @inventory.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorrat'**
+  String get inventory;
+
+  /// No description provided for @shoppinglist.
+  ///
+  /// In de, this message translates to:
+  /// **'Einkaufsliste'**
+  String get shoppinglist;
 }
 
 class _AppLocalizationsDelegate

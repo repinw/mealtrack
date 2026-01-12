@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/auth/presentation/welcome_page.dart';
 import 'package:mealtrack/features/settings/presentation/widgets/account_card.dart';
-import 'package:mealtrack/features/sharing/presentation/widgets/sharing_card.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -31,10 +30,7 @@ class SettingsPage extends ConsumerWidget {
           }
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            children: [
-              AccountCard(user: user),
-              const SharingCard(),
-            ],
+            children: [AccountCard(user: user)],
           );
         },
         error: (error, stackTrace) =>
