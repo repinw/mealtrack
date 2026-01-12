@@ -747,6 +747,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verlassen'**
   String get leave;
+
+  /// No description provided for @inventory.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorrat'**
+  String get inventory;
+
+  /// No description provided for @shoppinglist.
+  ///
+  /// In de, this message translates to:
+  /// **'Einkaufsliste'**
+  String get shoppinglist;
+
+  /// No description provided for @calories.
+  ///
+  /// In de, this message translates to:
+  /// **'Kalorien'**
+  String get calories;
+
+  /// No description provided for @statistics.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistik'**
+  String get statistics;
+
+  /// No description provided for @featureInProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Funktion ist noch in Arbeit 🚧'**
+  String get featureInProgress;
+
+  /// No description provided for @addItemNotImplemented.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen - Noch nicht implementiert'**
+  String get addItemNotImplemented;
 }
 
 class _AppLocalizationsDelegate

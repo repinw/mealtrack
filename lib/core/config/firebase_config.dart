@@ -12,8 +12,8 @@ Future<void> setupFirebase() async {
 
   if (kDebugMode) {
     await FirebaseAppCheck.instance.activate(
-      providerAndroid: AndroidDebugProvider(),
-      providerApple: AppleDebugProvider(),
+      providerAndroid: const AndroidDebugProvider(),
+      providerApple: const AppleDebugProvider(),
     );
   } else {
     await FirebaseAppCheck.instance.activate();

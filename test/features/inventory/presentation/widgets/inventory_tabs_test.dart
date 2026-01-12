@@ -33,11 +33,11 @@ void main() {
         overrides: [
           inventoryFilterProvider.overrideWith(() => mockFilterNotifier),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('de'),
-          home: const Scaffold(body: InventoryTabs()),
+          locale: Locale('de'),
+          home: Scaffold(body: InventoryTabs()),
         ),
       );
     }
