@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/presentation/auth_forgot_password_screen.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MySignInScreen extends ConsumerWidget {
@@ -99,10 +99,7 @@ class MySignInScreen extends ConsumerWidget {
 
               if (user != null) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const InventoryPage(title: 'MealTrack'),
-                  ),
+                  MaterialPageRoute(builder: (context) => const AuthGate()),
                   (route) => false,
                 );
               }

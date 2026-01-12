@@ -52,6 +52,7 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: pages),
       floatingActionButton: Padding(
@@ -69,54 +70,58 @@ class _HomeMenuState extends ConsumerState<HomeMenu> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
-              child: Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+      bottomNavigationBar: SafeArea(
+        maintainBottomViewPadding: true,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavItem(
-                      index: 0,
-                      icon: Icons.inventory_2_outlined,
-                      selectedIcon: Icons.inventory_2,
-                      label: l10n.inventory,
-                    ),
-                    _buildNavItem(
-                      index: 1,
-                      icon: Icons.shopping_bag_outlined,
-                      selectedIcon: Icons.shopping_bag,
-                      label: l10n.shoppinglist,
-                    ),
-                    _buildNavItem(
-                      index: 2,
-                      icon: Icons.local_fire_department_outlined,
-                      selectedIcon: Icons.local_fire_department,
-                      label: 'Kalorien',
-                      isComingSoon: true,
-                    ),
-                    _buildNavItem(
-                      index: 3,
-                      icon: Icons.bar_chart_outlined,
-                      selectedIcon: Icons.bar_chart,
-                      label: 'Statistik',
-                      isComingSoon: true,
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  index: 0,
+                  icon: Icons.inventory_2_outlined,
+                  selectedIcon: Icons.inventory_2,
+                  label: l10n.inventory,
+                ),
+                _buildNavItem(
+                  index: 1,
+                  icon: Icons.shopping_bag_outlined,
+                  selectedIcon: Icons.shopping_bag,
+                  label: l10n.shoppinglist,
+                  isComingSoon: true,
+                ),
+                _buildNavItem(
+                  index: 2,
+                  icon: Icons.local_fire_department_outlined,
+                  selectedIcon: Icons.local_fire_department,
+                  label: 'Kalorien',
+                  isComingSoon: true,
+                ),
+                _buildNavItem(
+                  index: 3,
+                  icon: Icons.bar_chart_outlined,
+                  selectedIcon: Icons.bar_chart,
+                  label: 'Statistik',
+                  isComingSoon: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

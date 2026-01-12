@@ -3,7 +3,7 @@ import 'package:mealtrack/core/extensions/user_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
-import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class GuestNamePage extends ConsumerStatefulWidget {
@@ -52,9 +52,7 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const InventoryPage(title: 'MealTrack'),
-          ),
+          MaterialPageRoute(builder: (context) => const AuthGate()),
           (route) => false,
         );
       }
