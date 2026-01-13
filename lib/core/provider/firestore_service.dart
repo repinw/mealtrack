@@ -77,6 +77,14 @@ class FirestoreService {
     await _inventoryCollection.doc(item.id).update(item.toJson());
   }
 
+  Future<void> updateItemsBatch(List<FridgeItem> items) async {
+    final batch = _firestore.batch();
+    for (final item in items) {
+      batch.update(_inventoryCollection.doc(item.id), item.toJson());
+    }
+    await batch.commit();
+  }
+
   Future<void> deleteItem(String id) async {
     await _inventoryCollection.doc(id).delete();
   }

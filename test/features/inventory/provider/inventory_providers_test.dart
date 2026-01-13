@@ -413,4 +413,72 @@ void main() {
       expect(stats.scanCount, 2); // R1 and R2
     });
   });
+
+  group('archiveReceipt and unarchiveReceipt state persistence', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('preserves expanded state when archiving and unarchiving', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+      container.listen(savedReceiptExpansionStateProvider, (_, _) {});
+
+      // Ensure data is loaded
+      await container.read(fridgeItemsProvider.future);
+
+      // 1. Initially Expanded (not in collapsed set)
+      expect(
+        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        isFalse,
+      );
+
+      // 2. Archive
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+      await container.pump(); // Pump to propagate state changes
+
+      // Check item state updated
+      final archivedItem = container.read(fridgeItemsProvider).value!.first;
+      expect(archivedItem.isArchived, isTrue);
+      // Check saved expansion state
+      expect(
+        container.read(
+          savedReceiptExpansionStateProvider,
+        )[archivedItem.receiptId],
+        isTrue,
+      );
+
+      // Check UI collapsed
+      expect(
+        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        isTrue,
+      );
+
+      // 3. Unarchive
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+      await container.pump();
+
+      // Check item state restored
+      final unarchivedItem = container.read(fridgeItemsProvider).value!.first;
+      expect(unarchivedItem.isArchived, isFalse);
+
+      // Check UI expanded (restored)
+      expect(
+        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        isFalse,
+      );
+    });
+  });
 }

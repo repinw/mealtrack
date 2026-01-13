@@ -74,6 +74,149 @@ class FridgeItems extends _$FridgeItems {
     ref.invalidateSelf();
     // coverage:ignore-end
   }
+
+  /// Archives all items with the given [receiptId] by setting isArchived to true.
+  void archiveReceipt(String receiptId) {
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    // Check if the group is currently expanded
+    final collapsedGroups = ref.read(collapsedReceiptGroupsProvider);
+    print(
+      'DEBUG: archiveReceipt($receiptId) - collapsedGroups: $collapsedGroups',
+    );
+    final isExpanded = !collapsedGroups.contains(receiptId);
+    print('DEBUG: archiveReceipt($receiptId) - isExpanded: $isExpanded');
+
+    // Optimistic update - update UI immediately
+    final updatedList = [
+      for (final item in previousList)
+        if (item.receiptId == receiptId)
+          item.copyWith(isArchived: true)
+        else
+          item,
+    ];
+    state = AsyncValue.data(updatedList);
+
+    // Save current expansion state before collapsing
+    print('DEBUG: Saving state: $isExpanded');
+    ref
+        .read(savedReceiptExpansionStateProvider.notifier)
+        .saveState(receiptId, isExpanded);
+
+    // Collapse the group in UI
+    if (isExpanded) {
+      print('DEBUG: Collapsing group');
+      ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
+    } else {
+      print('DEBUG: Group already collapsed');
+    }
+
+    // Sync to database in background using batch update (single atomic operation)
+    final repository = ref.read(fridgeRepositoryProvider);
+    final archivedItems = previousList
+        .where((i) => i.receiptId == receiptId)
+        .map((item) => item.copyWith(isArchived: true))
+        .toList();
+
+    repository.updateItemsBatch(archivedItems).catchError((e) {
+      // Rollback on error
+      state = AsyncValue.data(previousList);
+      // Restore collapsed state if we changed it
+      if (isExpanded) {
+        ref
+            .read(collapsedReceiptGroupsProvider.notifier)
+            .toggle(receiptId); // Toggle back to expanded
+      }
+      return null;
+    });
+  }
+
+  /// Unarchives all items with the given [receiptId] by setting isArchived to false.
+  void unarchiveReceipt(String receiptId) {
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    // Check if we should expand the group based on saved state
+    final savedState = ref.read(savedReceiptExpansionStateProvider);
+    final wasExpandedOnArchive = savedState[receiptId] ?? false;
+
+    // Optimistic update - update UI immediately
+    final updatedList = [
+      for (final item in previousList)
+        if (item.receiptId == receiptId)
+          item.copyWith(isArchived: false)
+        else
+          item,
+    ];
+    state = AsyncValue.data(updatedList);
+
+    // Restore expansion state in UI
+    if (wasExpandedOnArchive) {
+      // Remove from collapsed set to expand it
+      ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
+    } else {
+      // Ensure it is collapsed if it wasn't expanded
+      ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
+    }
+
+    // Sync to database in background using batch update (single atomic operation)
+    final repository = ref.read(fridgeRepositoryProvider);
+    final unarchivedItems = previousList
+        .where((i) => i.receiptId == receiptId)
+        .map((item) => item.copyWith(isArchived: false))
+        .toList();
+
+    repository.updateItemsBatch(unarchivedItems).catchError((e) {
+      // Rollback on error
+      state = AsyncValue.data(previousList);
+      return null;
+    });
+  }
+}
+
+@riverpod
+class ArchivedItemsExpanded extends _$ArchivedItemsExpanded {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
+@Riverpod(keepAlive: true)
+class SavedReceiptExpansionState extends _$SavedReceiptExpansionState {
+  @override
+  Map<String, bool> build() => {};
+
+  void saveState(String receiptId, bool wasExpanded) {
+    state = {...state, receiptId: wasExpanded};
+  }
+}
+
+@riverpod
+class CollapsedReceiptGroups extends _$CollapsedReceiptGroups {
+  @override
+  Set<String> build() => {};
+
+  void toggle(String receiptId) {
+    if (state.contains(receiptId)) {
+      state = {...state}..remove(receiptId);
+    } else {
+      state = {...state, receiptId};
+    }
+  }
+
+  void collapse(String receiptId) {
+    if (!state.contains(receiptId)) {
+      state = {...state, receiptId};
+    }
+  }
+
+  void expand(String receiptId) {
+    if (state.contains(receiptId)) {
+      state = {...state}..remove(receiptId);
+    }
+  }
 }
 
 @riverpod

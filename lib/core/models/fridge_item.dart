@@ -24,6 +24,7 @@ class FridgeItem extends Equatable {
     this.discounts = const {},
     this.isDeposit = false,
     this.isDiscount = false,
+    this.isArchived = false,
   });
 
   /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
@@ -44,6 +45,7 @@ class FridgeItem extends Equatable {
     DateTime Function()? now,
     bool isDeposit = false,
     bool isDiscount = false,
+    bool isArchived = false,
   }) {
     if (name.trim().isEmpty) {
       throw ArgumentError.value(name, 'name', 'must not be empty');
@@ -73,6 +75,7 @@ class FridgeItem extends Equatable {
       consumptionEvents: const [],
       isDeposit: isDeposit,
       isDiscount: isDiscount,
+      isArchived: isArchived,
     );
   }
 
@@ -113,6 +116,8 @@ class FridgeItem extends Equatable {
 
   final bool isDiscount;
 
+  final bool isArchived;
+
   double get effectiveUnitPrice {
     if (discounts.isEmpty) return unitPrice;
     final totalDiscount = discounts.values.fold(
@@ -143,6 +148,7 @@ class FridgeItem extends Equatable {
     initialQuantity,
     isDeposit,
     isDiscount,
+    isArchived,
   ];
 
   @override
@@ -189,6 +195,7 @@ class FridgeItem extends Equatable {
           json['initialQuantity'] as int? ?? json['quantity'] as int,
       isDeposit: json['isDeposit'] as bool? ?? false,
       isDiscount: json['isDiscount'] as bool? ?? false,
+      isArchived: json['isArchived'] as bool? ?? false,
     );
   }
 
@@ -215,6 +222,7 @@ class FridgeItem extends Equatable {
       'initialQuantity': initialQuantity,
       'isDeposit': isDeposit,
       'isDiscount': isDiscount,
+      'isArchived': isArchived,
     };
   }
 
@@ -280,6 +288,7 @@ class FridgeItem extends Equatable {
     int? initialQuantity,
     bool? isDeposit,
     bool? isDiscount,
+    bool? isArchived,
   }) {
     return FridgeItem(
       id: id ?? this.id,
@@ -299,6 +308,7 @@ class FridgeItem extends Equatable {
       initialQuantity: initialQuantity ?? this.initialQuantity,
       isDeposit: isDeposit ?? this.isDeposit,
       isDiscount: isDiscount ?? this.isDiscount,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 }

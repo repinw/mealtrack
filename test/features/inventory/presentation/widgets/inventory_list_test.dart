@@ -6,6 +6,8 @@ import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list
 
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
+
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -31,7 +33,7 @@ FridgeItem createItem(String id, {int quantity = 1}) => FridgeItem(
 
 class MockFridgeItems extends FridgeItems {
   final List<FridgeItem> items;
-  List<String> deletedReceiptIds = [];
+  List<String> archivedReceiptIds = [];
 
   MockFridgeItems(this.items);
 
@@ -39,8 +41,8 @@ class MockFridgeItems extends FridgeItems {
   Stream<List<FridgeItem>> build() => Stream.value(items);
 
   @override
-  Future<void> deleteItemsByReceipt(String receiptId) async {
-    deletedReceiptIds.add(receiptId);
+  Future<void> archiveReceipt(String receiptId) async {
+    archivedReceiptIds.add(receiptId);
   }
 }
 
@@ -196,9 +198,7 @@ void main() {
     },
   );
 
-  testWidgets('Tapping archive button calls deleteItemsByReceipt', (
-    tester,
-  ) async {
+  testWidgets('Tapping archive button calls archiveReceipt', (tester) async {
     final entryDate = DateTime(2023, 1, 1);
     final item1 = createItem('1', quantity: 0);
     final mockFridgeItems = MockFridgeItems([item1]);
@@ -233,7 +233,7 @@ void main() {
     await tester.tap(find.text('Archivieren'));
     await tester.pumpAndSettle();
 
-    expect(mockFridgeItems.deletedReceiptIds, contains('receipt-1'));
+    expect(mockFridgeItems.archivedReceiptIds, contains('receipt-1'));
   });
 
   testWidgets('Archive button is not shown when items are not fully consumed', (

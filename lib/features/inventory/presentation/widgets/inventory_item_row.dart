@@ -43,6 +43,7 @@ class InventoryItemRow extends ConsumerWidget {
     }
 
     final isOutOfStock = item.quantity == 0;
+    final isArchived = item.isArchived;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -76,7 +77,7 @@ class InventoryItemRow extends ConsumerWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         overflow: TextOverflow.ellipsis,
-                        color: isOutOfStock
+                        color: isOutOfStock || isArchived
                             ? Colors.grey.shade400
                             : const Color(0xFF2D3142),
                         decoration: isOutOfStock
@@ -105,9 +106,10 @@ class InventoryItemRow extends ConsumerWidget {
             quantity: item.quantity,
             initialQuantity: item.initialQuantity,
             isOutOfStock: isOutOfStock,
-            canIncrease: item.quantity < item.initialQuantity,
-            onUpdate: (delta) =>
-                _handleQuantityUpdate(context, ref, item, delta),
+            canIncrease: !isArchived && item.quantity < item.initialQuantity,
+            onUpdate: isArchived
+                ? null
+                : (delta) => _handleQuantityUpdate(context, ref, item, delta),
           ),
         ],
       ),

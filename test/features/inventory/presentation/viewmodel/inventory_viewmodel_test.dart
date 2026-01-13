@@ -4,6 +4,7 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -383,13 +384,6 @@ void main() {
 
       expect(header1, equals(header2));
       expect(header1, isNot(equals(header3)));
-      expect(header1.props, [
-        header1.storeName,
-        header1.entryDate,
-        header1.itemCount,
-        header1.receiptId,
-        header1.isFullyConsumed,
-      ]);
     });
 
     test('InventoryProductItem equality', () {

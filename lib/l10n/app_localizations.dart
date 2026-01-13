@@ -130,6 +130,24 @@ abstract class AppLocalizations {
   /// **'Archivieren'**
   String get archive;
 
+  /// No description provided for @archived.
+  ///
+  /// In de, this message translates to:
+  /// **'Archiviert'**
+  String get archived;
+
+  /// No description provided for @archivedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} archivierte Kassenbons'**
+  String archivedCount(int count);
+
+  /// No description provided for @unarchive.
+  ///
+  /// In de, this message translates to:
+  /// **'Reaktivieren'**
+  String get unarchive;
+
   /// No description provided for @entries.
   ///
   /// In de, this message translates to:

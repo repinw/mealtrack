@@ -129,7 +129,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final CounterPill counterPill = tester.widget(find.byType(CounterPill));
-      counterPill.onUpdate(1);
+      counterPill.onUpdate!(1);
 
       expect(mockNotifier.updateQuantityCalls.length, 1);
       expect(mockNotifier.updateQuantityCalls.first.$2, 1);
