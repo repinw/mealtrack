@@ -161,5 +161,52 @@ void main() {
       );
       expect(inkWell.onTap, isNull);
     });
+
+    testWidgets('buttons are disabled/not clickable when onUpdate is null', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CounterPill(
+              quantity: 5,
+              initialQuantity: 10,
+              isOutOfStock: false,
+              onUpdate: null, // Simulate archived/read-only state
+            ),
+          ),
+        ),
+      );
+
+      // Verify Minus Button
+      final minusInkWell = tester.widget<InkWell>(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (w) => w is ActionButton && w.icon == Icons.remove,
+          ),
+          matching: find.byType(InkWell),
+        ),
+      );
+      expect(
+        minusInkWell.onTap,
+        isNull,
+        reason: 'Minus button should be disabled',
+      );
+
+      // Verify Plus Button
+      final plusInkWell = tester.widget<InkWell>(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (w) => w is ActionButton && w.icon == Icons.add,
+          ),
+          matching: find.byType(InkWell),
+        ),
+      );
+      expect(
+        plusInkWell.onTap,
+        isNull,
+        reason: 'Plus button should be disabled',
+      );
+    });
   });
 }
