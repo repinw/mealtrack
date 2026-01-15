@@ -17,7 +17,6 @@ class InventoryList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final listAsync = ref.watch(inventoryDisplayListProvider);
     final filter = ref.watch(inventoryFilterProvider);
-    ref.watch(savedReceiptExpansionStateProvider); // Keep alive
 
     return Column(
       children: [

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
@@ -81,7 +82,8 @@ class FridgeItems extends _$FridgeItems {
     if (previousList == null) return;
 
     // Check if the group is currently expanded
-    final collapsedGroups = ref.read(collapsedReceiptGroupsProvider);
+    final collapsedGroups =
+        ref.read(collapsedReceiptGroupsProvider).asData?.value ?? <String>{};
 
     final isExpanded = !collapsedGroups.contains(receiptId);
 
@@ -95,18 +97,10 @@ class FridgeItems extends _$FridgeItems {
     ];
     state = AsyncValue.data(updatedList);
 
-    // Save current expansion state before collapsing
-
-    ref
-        .read(savedReceiptExpansionStateProvider.notifier)
-        .saveState(receiptId, isExpanded);
-
-    // Collapse the group in UI
     if (isExpanded) {
       ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
     }
 
-    // Sync to database in background using batch update (single atomic operation)
     final repository = ref.read(fridgeRepositoryProvider);
     final archivedItems = previousList
         .where((i) => i.receiptId == receiptId)
@@ -114,28 +108,15 @@ class FridgeItems extends _$FridgeItems {
         .toList();
 
     repository.updateItemsBatch(archivedItems).catchError((e) {
-      // Rollback on error
       state = AsyncValue.data(previousList);
-      // Restore collapsed state if we changed it
-      if (isExpanded) {
-        ref
-            .read(collapsedReceiptGroupsProvider.notifier)
-            .toggle(receiptId); // Toggle back to expanded
-      }
       return null;
     });
   }
 
-  /// Unarchives all items with the given [receiptId] by setting isArchived to false.
   void unarchiveReceipt(String receiptId) {
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
-    // Check if we should expand the group based on saved state
-    final savedState = ref.read(savedReceiptExpansionStateProvider);
-    final wasExpandedOnArchive = savedState[receiptId] ?? false;
-
-    // Optimistic update - update UI immediately
     final updatedList = [
       for (final item in previousList)
         if (item.receiptId == receiptId)
@@ -145,16 +126,8 @@ class FridgeItems extends _$FridgeItems {
     ];
     state = AsyncValue.data(updatedList);
 
-    // Restore expansion state in UI
-    if (wasExpandedOnArchive) {
-      // Remove from collapsed set to expand it
-      ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
-    } else {
-      // Ensure it is collapsed if it wasn't expanded
-      ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
-    }
+    ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
 
-    // Sync to database in background using batch update (single atomic operation)
     final repository = ref.read(fridgeRepositoryProvider);
     final unarchivedItems = previousList
         .where((i) => i.receiptId == receiptId)
@@ -162,7 +135,6 @@ class FridgeItems extends _$FridgeItems {
         .toList();
 
     repository.updateItemsBatch(unarchivedItems).catchError((e) {
-      // Rollback on error
       state = AsyncValue.data(previousList);
       return null;
     });
@@ -177,39 +149,47 @@ class ArchivedItemsExpanded extends _$ArchivedItemsExpanded {
   void toggle() => state = !state;
 }
 
-@Riverpod(keepAlive: true)
-class SavedReceiptExpansionState extends _$SavedReceiptExpansionState {
-  @override
-  Map<String, bool> build() => {};
-
-  void saveState(String receiptId, bool wasExpanded) {
-    state = {...state, receiptId: wasExpanded};
-  }
-}
-
 @riverpod
 class CollapsedReceiptGroups extends _$CollapsedReceiptGroups {
+  static const _storageKey = 'collapsed_receipt_groups';
+
   @override
-  Set<String> build() => {};
+  Future<Set<String>> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    final storedList = prefs.getStringList(_storageKey);
+    return storedList?.toSet() ?? {};
+  }
 
-  void toggle(String receiptId) {
-    if (state.contains(receiptId)) {
-      state = {...state}..remove(receiptId);
-    } else {
-      state = {...state, receiptId};
+  Future<void> toggle(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    final newState = currentState.contains(receiptId)
+        ? ({...currentState}..remove(receiptId))
+        : ({...currentState, receiptId});
+    state = AsyncValue.data(newState);
+    await _persistState(newState);
+  }
+
+  Future<void> collapse(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    if (!currentState.contains(receiptId)) {
+      final newState = {...currentState, receiptId};
+      state = AsyncValue.data(newState);
+      await _persistState(newState);
     }
   }
 
-  void collapse(String receiptId) {
-    if (!state.contains(receiptId)) {
-      state = {...state, receiptId};
+  Future<void> expand(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    if (currentState.contains(receiptId)) {
+      final newState = {...currentState}..remove(receiptId);
+      state = AsyncValue.data(newState);
+      await _persistState(newState);
     }
   }
 
-  void expand(String receiptId) {
-    if (state.contains(receiptId)) {
-      state = {...state}..remove(receiptId);
-    }
+  Future<void> _persistState(Set<String> newState) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setStringList(_storageKey, newState.toList());
   }
 }
 

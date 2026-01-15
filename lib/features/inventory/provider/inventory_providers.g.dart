@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'f74daf36e683ffe11a8f70a3df858936c975c017';
+String _$fridgeItemsHash() => r'a1983fff9603bf1a98a3c851c937c4a6e30f2090';
 
 abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
   Stream<List<FridgeItem>> build();
@@ -111,67 +111,11 @@ abstract class _$ArchivedItemsExpanded extends $Notifier<bool> {
   }
 }
 
-@ProviderFor(SavedReceiptExpansionState)
-const savedReceiptExpansionStateProvider =
-    SavedReceiptExpansionStateProvider._();
-
-final class SavedReceiptExpansionStateProvider
-    extends $NotifierProvider<SavedReceiptExpansionState, Map<String, bool>> {
-  const SavedReceiptExpansionStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'savedReceiptExpansionStateProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$savedReceiptExpansionStateHash();
-
-  @$internal
-  @override
-  SavedReceiptExpansionState create() => SavedReceiptExpansionState();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(Map<String, bool> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<Map<String, bool>>(value),
-    );
-  }
-}
-
-String _$savedReceiptExpansionStateHash() =>
-    r'085d74d8292a673191fdffbb484da0ac4e4de383';
-
-abstract class _$SavedReceiptExpansionState
-    extends $Notifier<Map<String, bool>> {
-  Map<String, bool> build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final created = build();
-    final ref = this.ref as $Ref<Map<String, bool>, Map<String, bool>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<Map<String, bool>, Map<String, bool>>,
-              Map<String, bool>,
-              Object?,
-              Object?
-            >;
-    element.handleValue(ref, created);
-  }
-}
-
 @ProviderFor(CollapsedReceiptGroups)
 const collapsedReceiptGroupsProvider = CollapsedReceiptGroupsProvider._();
 
 final class CollapsedReceiptGroupsProvider
-    extends $NotifierProvider<CollapsedReceiptGroups, Set<String>> {
+    extends $AsyncNotifierProvider<CollapsedReceiptGroups, Set<String>> {
   const CollapsedReceiptGroupsProvider._()
     : super(
         from: null,
@@ -189,31 +133,23 @@ final class CollapsedReceiptGroupsProvider
   @$internal
   @override
   CollapsedReceiptGroups create() => CollapsedReceiptGroups();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(Set<String> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<Set<String>>(value),
-    );
-  }
 }
 
 String _$collapsedReceiptGroupsHash() =>
-    r'80d66e0920e48d05df95d2ddf9a9c9b02ad04340';
+    r'09713369449228ecf2bab9c3d4f2490da6ebc7bf';
 
-abstract class _$CollapsedReceiptGroups extends $Notifier<Set<String>> {
-  Set<String> build();
+abstract class _$CollapsedReceiptGroups extends $AsyncNotifier<Set<String>> {
+  FutureOr<Set<String>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<Set<String>, Set<String>>;
+    final ref = this.ref as $Ref<AsyncValue<Set<String>>, Set<String>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<Set<String>, Set<String>>,
-              Set<String>,
+              AnyNotifier<AsyncValue<Set<String>>, Set<String>>,
+              AsyncValue<Set<String>>,
               Object?,
               Object?
             >;

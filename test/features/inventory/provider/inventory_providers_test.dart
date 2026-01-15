@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
@@ -8,12 +10,16 @@ import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
+class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 void main() {
   late MockFridgeRepository mockRepository;
+  late MockSharedPreferences mockSharedPreferences;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
-    // Default stub for watchItems() - FridgeItems.build() uses this stream
+    mockSharedPreferences = MockSharedPreferences();
+
     when(
       () => mockRepository.watchItems(),
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
@@ -21,11 +27,21 @@ void main() {
     registerFallbackValue(
       FridgeItem.create(name: 'fallback', storeName: 'fallback'),
     );
+
+    when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
+    when(
+      () => mockSharedPreferences.setStringList(any(), any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer() {
     final container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+      overrides: [
+        fridgeRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWith(
+          (ref) => Future.value(mockSharedPreferences),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -423,7 +439,7 @@ void main() {
       now: () => fixedDate,
     );
 
-    test('preserves expanded state when archiving and unarchiving', () async {
+    test('always collapses on archive and expands on unarchive', () async {
       when(
         () => mockRepository.watchItems(),
       ).thenAnswer((_) => Stream.value([item]));
@@ -434,14 +450,18 @@ void main() {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(collapsedReceiptGroupsProvider, (_, _) {});
-      container.listen(savedReceiptExpansionStateProvider, (_, _) {});
 
       // Ensure data is loaded
       await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
 
       // 1. Initially Expanded (not in collapsed set)
       expect(
-        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
         isFalse,
       );
 
@@ -452,17 +472,14 @@ void main() {
       // Check item state updated
       final archivedItem = container.read(fridgeItemsProvider).value!.first;
       expect(archivedItem.isArchived, isTrue);
-      // Check saved expansion state
-      expect(
-        container.read(
-          savedReceiptExpansionStateProvider,
-        )[archivedItem.receiptId],
-        isTrue,
-      );
 
-      // Check UI collapsed
+      // Check UI collapsed - Should simplify logic to always collapse
       expect(
-        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
         isTrue,
       );
 
@@ -474,9 +491,13 @@ void main() {
       final unarchivedItem = container.read(fridgeItemsProvider).value!.first;
       expect(unarchivedItem.isArchived, isFalse);
 
-      // Check UI expanded (restored)
+      // Check UI expanded (restored) - Should simplify logic to always expand
       expect(
-        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
         isFalse,
       );
     });
@@ -502,38 +523,32 @@ void main() {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(collapsedReceiptGroupsProvider, (_, _) {});
-      container.listen(savedReceiptExpansionStateProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
 
-      // Verify initial state: not collapsed (expanded)
       expect(
-        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
         isFalse,
       );
 
-      // Trigger archive
       container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
 
-      // Optimistic update happens immediately (we can verify this if we don't await pump probably,
-      // but the key is verifying the ROLLBACK after the error propagates)
-
-      // Wait for error handling to complete
       await container.pump();
 
-      // Verify rollback:
-      // 1. Item should NOT be archived
       final currentItem = container.read(fridgeItemsProvider).value!.first;
       expect(currentItem.isArchived, isFalse);
-
-      // 2. Group should still be Expanded (toggle called in catchError)
-      // The logic in catchError calls toggle().
-      // If we started expanded, we saved expanded.
-      // We collapsed it.
-      // On error, we call toggle() -> which should remove it from collapsed set (expand it back).
       expect(
-        container.read(collapsedReceiptGroupsProvider).contains('R1'),
-        isFalse,
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isTrue,
       );
     });
   });

@@ -44,7 +44,7 @@ AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
       _buildGroupList(
         items: nonArchivedItems,
         areArchived: false,
-        collapsedGroups: collapsedGroups,
+        collapsedGroups: collapsedGroups.asData?.value ?? <String>{},
         filterType: filterType,
       ),
     );
@@ -66,7 +66,7 @@ AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
           _buildGroupList(
             items: archivedItems,
             areArchived: true,
-            collapsedGroups: collapsedGroups,
+            collapsedGroups: collapsedGroups.asData?.value ?? <String>{},
             filterType: filterType,
           ),
         );
