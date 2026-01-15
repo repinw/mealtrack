@@ -108,22 +108,89 @@ void main() {
       container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
       await container.pump();
 
-      // Verify repository call
       final captured =
           verify(
                 () => mockRepository.updateItemsBatch(captureAny()),
               ).captured.single
               as List<FridgeItem>;
 
-      // Should contain both items (or at least the active one depending on implementation,
-      // but usually bulk update includes all matching receiptId for safety/simplicity)
-      // Our implementation filters by receiptId and sets isArchived: true
       expect(captured.length, 2);
       expect(captured.every((i) => i.isArchived), isTrue);
 
-      // Verify state in memory
       final items = container.read(fridgeItemsProvider).value!;
       expect(items.every((i) => i.isArchived), isTrue);
+    });
+
+    test('reverts state on Firestore permission-denied error', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async => throw Exception('permission-denied'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      // Perform action
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+      await container.pump();
+
+      // Verify Rollback
+      final items = container.read(fridgeItemsProvider).value!;
+      expect(items.first.isArchived, isFalse);
+
+      // Verify Collapsed State Rollback
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isFalse,
+      );
+    });
+
+    test('handles rapid toggle race conditions', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem]));
+
+      // Delays to simulate network latency
+      when(() => mockRepository.updateItemsBatch(any())).thenAnswer((_) async {
+        await Future.delayed(const Duration(milliseconds: 50));
+      });
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      // 1. Archive (Optimistic: Archived)
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+
+      // 2. Unarchive immediately (Optimistic: Active)
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+
+      await container.pump(); // Pump synchronous updates
+
+      // Checks state immediately after sync updates
+      final itemsImmediate = container.read(fridgeItemsProvider).value!;
+      expect(itemsImmediate.first.isArchived, isFalse);
+
+      // Wait for async operations
+      await Future.delayed(const Duration(milliseconds: 100));
+      await container.pump();
+
+      // Final state should remain unarchived (Active)
+      final itemsFinal = container.read(fridgeItemsProvider).value!;
+      expect(itemsFinal.first.isArchived, isFalse);
     });
   });
 }

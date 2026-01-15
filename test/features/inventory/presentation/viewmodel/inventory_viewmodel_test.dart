@@ -579,8 +579,48 @@ void main() {
           isFalse,
           reason: 'Archived section should be hidden when filter is consumed',
         );
+
+        // Also verify the archived item is NOT in the main list
+        final productItems = displayList.whereType<InventoryProductItem>();
+        expect(
+          productItems.any((i) => i.itemId == archivedItem.id),
+          isFalse,
+          reason: 'Archived item should not appear in main list',
+        );
       },
     );
+
+    test('hides archived section when last archived item is removed', () async {
+      // Start with one archived item
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.any((i) => i is InventoryArchivedSectionItem), isTrue);
+
+      // Update stream to have NO items (simulating unarchive or delete)
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([]));
+
+      // Trigger reload/update
+      await container.read(fridgeItemsProvider.notifier).reload();
+      await container.read(fridgeItemsProvider.future);
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(
+        displayList.any((i) => i is InventoryArchivedSectionItem),
+        isFalse,
+      );
+    });
   });
 
   group('Equatable display items', () {
