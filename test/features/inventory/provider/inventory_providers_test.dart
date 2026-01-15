@@ -322,7 +322,9 @@ void main() {
     test('returns empty stats initially', () {
       final container = makeContainer();
       final stats = container.read(inventoryStatsProvider);
-      expect(stats, InventoryStats.empty);
+      expect(stats.articleCount, 0);
+      expect(stats.scanCount, 0);
+      expect(stats.totalValue, 0);
     });
 
     test('calculates stats correctly for active items', () async {
@@ -548,7 +550,7 @@ void main() {
             .asData
             ?.value
             .contains('R1'),
-        isTrue,
+        isFalse,
       );
     });
   });

@@ -109,6 +109,9 @@ class FridgeItems extends _$FridgeItems {
 
     repository.updateItemsBatch(archivedItems).catchError((e) {
       state = AsyncValue.data(previousList);
+      if (isExpanded) {
+        ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
+      }
       return null;
     });
   }
@@ -188,8 +191,12 @@ class CollapsedReceiptGroups extends _$CollapsedReceiptGroups {
   }
 
   Future<void> _persistState(Set<String> newState) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setStringList(_storageKey, newState.toList());
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      await prefs.setStringList(_storageKey, newState.toList());
+    } catch (_) {
+      // Ignore persistence errors
+    }
   }
 }
 

@@ -8,21 +8,39 @@ import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_di
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class MockFridgeRepository extends Mock implements FridgeRepository {}
+
+class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 void main() {
   late MockFridgeRepository mockRepository;
+  late MockSharedPreferences mockSharedPreferences;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
+    mockSharedPreferences = MockSharedPreferences();
+
     when(
       () => mockRepository.watchItems(),
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
+
+    when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
+    when(
+      () => mockSharedPreferences.setStringList(any(), any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer() {
     final container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+      overrides: [
+        fridgeRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWith(
+          (ref) => Future.value(mockSharedPreferences),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -392,6 +410,7 @@ void main() {
       container.listen(collapsedReceiptGroupsProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
 
       // Collapse the group
       container.read(collapsedReceiptGroupsProvider.notifier).collapse('R1');
@@ -450,6 +469,8 @@ void main() {
       // Trigger update
       await container.read(fridgeItemsProvider.notifier).reload();
       await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
       await container.pump();
 
       displayList = container.read(inventoryDisplayListProvider).value!;
@@ -468,6 +489,7 @@ void main() {
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(archivedItemsExpandedProvider, (_, _) {});
       await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
 
       // Initially collapsed (default)
       var displayList = container.read(inventoryDisplayListProvider).value!;
