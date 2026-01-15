@@ -481,4 +481,131 @@ void main() {
       );
     });
   });
+
+  group('archiveReceipt error handling', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('rolls back state and restores collapsed state on error', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async => throw Exception('Network Error'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+      container.listen(savedReceiptExpansionStateProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Verify initial state: not collapsed (expanded)
+      expect(
+        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        isFalse,
+      );
+
+      // Trigger archive
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+
+      // Optimistic update happens immediately (we can verify this if we don't await pump probably,
+      // but the key is verifying the ROLLBACK after the error propagates)
+
+      // Wait for error handling to complete
+      await container.pump();
+
+      // Verify rollback:
+      // 1. Item should NOT be archived
+      final currentItem = container.read(fridgeItemsProvider).value!.first;
+      expect(currentItem.isArchived, isFalse);
+
+      // 2. Group should still be Expanded (toggle called in catchError)
+      // The logic in catchError calls toggle().
+      // If we started expanded, we saved expanded.
+      // We collapsed it.
+      // On error, we call toggle() -> which should remove it from collapsed set (expand it back).
+      expect(
+        container.read(collapsedReceiptGroupsProvider).contains('R1'),
+        isFalse,
+      );
+    });
+  });
+
+  group('unarchiveReceipt error handling', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    ).copyWith(isArchived: true);
+
+    test('rolls back state on error', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async => throw Exception('Network Error'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Trigger unarchive
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+
+      await container.pump();
+
+      // Verify rollback:
+      final currentItem = container.read(fridgeItemsProvider).value!.first;
+      expect(currentItem.isArchived, isTrue);
+    });
+
+    test('verifies batch update call contains all items', () async {
+      final item1 = FridgeItem.create(
+        name: 'A',
+        storeName: 'S',
+        receiptId: 'R1',
+      ).copyWith(isArchived: true);
+      final item2 = FridgeItem.create(
+        name: 'B',
+        storeName: 'S',
+        receiptId: 'R1',
+      ).copyWith(isArchived: true);
+
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+      await container.pump();
+
+      final captured =
+          verify(
+                () => mockRepository.updateItemsBatch(captureAny()),
+              ).captured.single
+              as List<FridgeItem>;
+      expect(captured.length, 2);
+      expect(captured[0].id, item1.id);
+      expect(captured[1].id, item2.id);
+      expect(captured[0].isArchived, isFalse);
+      expect(captured[1].isArchived, isFalse);
+    });
+  });
 }

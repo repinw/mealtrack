@@ -11,10 +11,10 @@ class InventoryGroupHeader extends ConsumerWidget {
   final InventoryHeaderItem header;
 
   Color get _headerColor =>
-      header.isArchived ? Colors.grey.shade100 : const Color(0xFFF4F7F9);
+      header.isArchived ? Colors.grey.shade100 : Colors.blueGrey.shade50;
 
   Color get _headerTextColor =>
-      header.isArchived ? Colors.grey.shade500 : const Color(0xFF455A64);
+      header.isArchived ? Colors.grey.shade500 : Colors.blueGrey.shade700;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

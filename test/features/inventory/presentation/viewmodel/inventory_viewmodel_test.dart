@@ -357,6 +357,136 @@ void main() {
     });
   });
 
+  group('Collapsing Logic', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item1 = FridgeItem.create(
+      name: 'Item 1',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+    final item2 = FridgeItem.create(
+      name: 'Item 2',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('collapsed group shows only header and spacer', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Collapse the group
+      container.read(collapsedReceiptGroupsProvider.notifier).collapse('R1');
+      await container.pump();
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
+
+      // Header + Spacer (Items are hidden)
+      expect(
+        displayList.length,
+        2,
+        reason: 'Expected 2 items, got ${displayList.length}',
+      );
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      final header = displayList[0] as InventoryHeaderItem;
+      expect(header.receiptId, 'R1');
+      expect(header.isCollapsed, isTrue);
+      expect(displayList[1], isA<InventorySpacerItem>());
+    });
+  });
+
+  group('Archived Section Visibility', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final activeItem = FridgeItem.create(
+      name: 'Active',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+    final archivedItem = FridgeItem.create(
+      name: 'Archived',
+      storeName: 'Store',
+      receiptId: 'R2',
+      now: () => fixedDate,
+    ).copyWith(isArchived: true);
+
+    test('shows archived section only when archived items exist', () async {
+      // Case 1: Active and Archived items
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem, archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.any((i) => i is InventoryArchivedSectionItem), isTrue);
+
+      // Case 2: Only Active items
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem]));
+      // Trigger update
+      await container.read(fridgeItemsProvider.notifier).reload();
+      await container.read(fridgeItemsProvider.future);
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(
+        displayList.any((i) => i is InventoryArchivedSectionItem),
+        isFalse,
+      );
+    });
+
+    test('archived section contents shown only when expanded', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      // Initially collapsed (default)
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.length, 1);
+      expect(displayList[0], isA<InventoryArchivedSectionItem>());
+      expect(
+        (displayList[0] as InventoryArchivedSectionItem).isExpanded,
+        isFalse,
+      );
+
+      // Expand
+      container.read(archivedItemsExpandedProvider.notifier).toggle();
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      // Section Item + Header + Item + Spacer
+      expect(
+        displayList.length,
+        4,
+        reason:
+            'Expected 4 items, got ${displayList.map((e) => e.runtimeType).toList()}',
+      );
+      expect(displayList[0], isA<InventoryArchivedSectionItem>());
+      expect(
+        (displayList[0] as InventoryArchivedSectionItem).isExpanded,
+        isTrue,
+      );
+      expect(displayList[1], isA<InventoryHeaderItem>());
+      expect((displayList[1] as InventoryHeaderItem).isArchived, isTrue);
+    });
+  });
+
   group('Equatable display items', () {
     test('InventoryHeaderItem equality', () {
       final date = DateTime(2023, 1, 1);

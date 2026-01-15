@@ -82,11 +82,8 @@ class FridgeItems extends _$FridgeItems {
 
     // Check if the group is currently expanded
     final collapsedGroups = ref.read(collapsedReceiptGroupsProvider);
-    print(
-      'DEBUG: archiveReceipt($receiptId) - collapsedGroups: $collapsedGroups',
-    );
+
     final isExpanded = !collapsedGroups.contains(receiptId);
-    print('DEBUG: archiveReceipt($receiptId) - isExpanded: $isExpanded');
 
     // Optimistic update - update UI immediately
     final updatedList = [
@@ -99,17 +96,14 @@ class FridgeItems extends _$FridgeItems {
     state = AsyncValue.data(updatedList);
 
     // Save current expansion state before collapsing
-    print('DEBUG: Saving state: $isExpanded');
+
     ref
         .read(savedReceiptExpansionStateProvider.notifier)
         .saveState(receiptId, isExpanded);
 
     // Collapse the group in UI
     if (isExpanded) {
-      print('DEBUG: Collapsing group');
       ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
-    } else {
-      print('DEBUG: Group already collapsed');
     }
 
     // Sync to database in background using batch update (single atomic operation)
