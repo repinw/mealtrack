@@ -46,6 +46,11 @@ class MockFridgeItems extends FridgeItems {
   }
 }
 
+class MockCollapsedReceiptGroups extends CollapsedReceiptGroups {
+  @override
+  Future<Set<String>> build() async => {};
+}
+
 void main() {
   Widget createWidgetUnderTest({List<Override> overrides = const []}) {
     return ProviderScope(
@@ -271,5 +276,56 @@ void main() {
 
     expect(find.text('Archivieren'), findsNothing);
     expect(find.byIcon(Icons.archive_outlined), findsNothing);
+  });
+
+  testWidgets('Tapping archived section header toggles expansion state', (
+    tester,
+  ) async {
+    final archivedItem = createItem('archived-1', quantity: 0).copyWith(
+      isArchived: true,
+      receiptId: 'receipt-1',
+      storeName: 'Archived Store',
+    );
+    final mockFridgeItems = MockFridgeItems([archivedItem]);
+
+    await tester.pumpWidget(
+      createWidgetUnderTest(
+        overrides: [
+          fridgeItemsProvider.overrideWith(() => mockFridgeItems),
+          inventoryFilterProvider.overrideWith(
+            () => MockInventoryFilter(InventoryFilterType.all),
+          ),
+          fridgeItemProvider('archived-1').overrideWithValue(archivedItem),
+          collapsedReceiptGroupsProvider.overrideWith(
+            () => MockCollapsedReceiptGroups(),
+          ),
+        ],
+      ),
+    );
+
+    // Initial state: Header visible, Item hidden (default collapsed)
+    // "1 archivierte Kassenbons" or similar.
+    expect(find.byIcon(Icons.archive_outlined), findsOneWidget);
+    expect(find.text('Item archived-1'), findsNothing);
+
+    // Tap header
+    final headerIcon = find.byIcon(Icons.archive_outlined);
+    final headerInkWell = find.ancestor(
+      of: headerIcon,
+      matching: find.byType(InkWell),
+    );
+
+    await tester.tap(headerInkWell);
+    await tester.pumpAndSettle();
+
+    // Verification: Item should now be visible
+    expect(find.text('Item archived-1'), findsOneWidget);
+
+    // Tap header again to collapse
+    await tester.tap(headerInkWell);
+    await tester.pumpAndSettle();
+
+    // Verification: Item should be hidden again
+    expect(find.text('Item archived-1'), findsNothing);
   });
 }

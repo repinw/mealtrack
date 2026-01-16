@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
@@ -207,6 +208,79 @@ void main() {
       );
 
       expect(find.text('Out of Stock Item'), findsOneWidget);
+    });
+
+    testWidgets('CounterPill is read-only when item is archived', (
+      WidgetTester tester,
+    ) async {
+      final archivedItem = FridgeItem(
+        id: 'archived-1',
+        name: 'Archived Item',
+        quantity: 2,
+        storeName: 'Store',
+        entryDate: DateTime.now(),
+        initialQuantity: 5,
+        isArchived: true,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fridgeItemProvider(archivedItem.id).overrideWithValue(archivedItem),
+            fridgeItemsProvider.overrideWith(() => mockNotifier),
+          ],
+          child: MaterialApp(
+            home: Scaffold(body: InventoryItemRow(itemId: archivedItem.id)),
+          ),
+        ),
+      );
+
+      // find CounterPill
+      final counterPillFinder = find.byType(CounterPill);
+      expect(counterPillFinder, findsOneWidget);
+
+      final CounterPill counterPill = tester.widget(counterPillFinder);
+      expect(
+        counterPill.onUpdate,
+        isNull,
+        reason: 'onUpdate should be null for archived items',
+      );
+
+      // Verify visual disabled state via helper validation or button check
+      // We know from counter_pill_test that null onUpdate disables buttons.
+      // We can optionally verify the buttons are disabled explicitly if we want to be thorough.
+
+      final minusButton = find.descendant(
+        of: counterPillFinder,
+        matching: find.byIcon(Icons.remove),
+      );
+      final plusButton = find.descendant(
+        of: counterPillFinder,
+        matching: find.byIcon(Icons.add),
+      );
+
+      // InkWell onTap should be null
+      final minusInkWell = tester.widget<InkWell>(
+        find.descendant(
+          of: find.ancestor(
+            of: minusButton,
+            matching: find.byType(ActionButton),
+          ),
+          matching: find.byType(InkWell),
+        ),
+      );
+      final plusInkWell = tester.widget<InkWell>(
+        find.descendant(
+          of: find.ancestor(
+            of: plusButton,
+            matching: find.byType(ActionButton),
+          ),
+          matching: find.byType(InkWell),
+        ),
+      );
+
+      expect(minusInkWell.onTap, isNull);
+      expect(plusInkWell.onTap, isNull);
     });
   });
 }
