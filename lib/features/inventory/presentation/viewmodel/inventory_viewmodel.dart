@@ -35,8 +35,16 @@ AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
       return [];
     }
 
-    final nonArchivedItems = items.where((item) => !item.isArchived).toList();
-    final archivedItems = items.where((item) => item.isArchived).toList();
+    final nonArchivedItems = <FridgeItem>[];
+    final archivedItems = <FridgeItem>[];
+
+    for (final item in items) {
+      if (item.isArchived) {
+        archivedItems.add(item);
+      } else {
+        nonArchivedItems.add(item);
+      }
+    }
 
     final displayList = <InventoryDisplayItem>[];
 

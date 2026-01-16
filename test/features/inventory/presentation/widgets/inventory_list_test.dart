@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
@@ -319,13 +320,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verification: Item should now be visible
-    expect(find.text('Item archived-1'), findsOneWidget);
+    expect(find.byType(InventoryItemRow), findsOneWidget);
 
     // Tap header again to collapse
     await tester.tap(headerInkWell);
     await tester.pumpAndSettle();
 
     // Verification: Item should be hidden again
-    expect(find.text('Item archived-1'), findsNothing);
+    expect(find.byType(InventoryItemRow), findsNothing);
   });
 }
