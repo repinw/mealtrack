@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'package:equatable/equatable.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 
 part 'inventory_viewmodel.g.dart';
 
@@ -22,104 +23,125 @@ class InventoryViewModel extends _$InventoryViewModel {
   }
 }
 
-sealed class InventoryDisplayItem extends Equatable {
-  const InventoryDisplayItem();
-}
-
-class InventoryHeaderItem extends InventoryDisplayItem {
-  final String storeName;
-  final DateTime entryDate;
-  final int itemCount;
-  final String receiptId;
-  final bool isFullyConsumed;
-
-  const InventoryHeaderItem({
-    required this.storeName,
-    required this.entryDate,
-    required this.itemCount,
-    required this.receiptId,
-    required this.isFullyConsumed,
-  });
-
-  @override
-  List<Object?> get props => [
-    storeName,
-    entryDate,
-    itemCount,
-    receiptId,
-    isFullyConsumed,
-  ];
-}
-
-class InventoryProductItem extends InventoryDisplayItem {
-  final String itemId;
-  const InventoryProductItem(this.itemId);
-
-  @override
-  List<Object?> get props => [itemId];
-}
-
-class InventorySpacerItem extends InventoryDisplayItem {
-  const InventorySpacerItem();
-
-  @override
-  List<Object?> get props => [];
-}
-
 @riverpod
 AsyncValue<List<InventoryDisplayItem>> inventoryDisplayList(Ref ref) {
   final filterType = ref.watch(inventoryFilterProvider);
   final fridgeState = ref.watch(fridgeItemsProvider);
+  final isArchivedExpanded = ref.watch(archivedItemsExpandedProvider);
+  final collapsedGroups = ref.watch(collapsedReceiptGroupsProvider);
 
   return fridgeState.whenData((items) {
     if (items.isEmpty && filterType == InventoryFilterType.all) {
       return [];
     }
 
-    final allGroups = <String, List<FridgeItem>>{};
+    final nonArchivedItems = <FridgeItem>[];
+    final archivedItems = <FridgeItem>[];
+
     for (final item in items) {
-      final key = item.receiptId ?? '';
-      allGroups.putIfAbsent(key, () => []).add(item);
+      if (item.isArchived) {
+        archivedItems.add(item);
+      } else {
+        nonArchivedItems.add(item);
+      }
     }
 
     final displayList = <InventoryDisplayItem>[];
-    final sortedKeys = allGroups.keys.toList();
 
-    for (final key in sortedKeys) {
-      final fullGroup = allGroups[key]!;
+    displayList.addAll(
+      _buildGroupList(
+        items: nonArchivedItems,
+        areArchived: false,
+        collapsedGroups: collapsedGroups.asData?.value ?? <String>{},
+        filterType: filterType,
+      ),
+    );
 
-      final isFullyConsumed = fullGroup.every((item) => item.quantity == 0);
-
-      final displayItems = fullGroup.where((item) {
-        switch (filterType) {
-          case InventoryFilterType.all:
-            return true;
-          case InventoryFilterType.available:
-            return item.quantity > 0;
-          case InventoryFilterType.consumed:
-            return item.quantity < item.initialQuantity;
-        }
-      }).toList();
-
-      if (displayItems.isEmpty) continue;
-
-      final first = fullGroup.first;
+    if (filterType == InventoryFilterType.all && archivedItems.isNotEmpty) {
+      final archivedReceiptIds = archivedItems
+          .map((item) => item.receiptId ?? '')
+          .toSet();
 
       displayList.add(
-        InventoryHeaderItem(
-          storeName: first.storeName,
-          entryDate: first.entryDate,
-          itemCount: displayItems.length,
-          receiptId: key,
-          isFullyConsumed: isFullyConsumed,
+        InventoryArchivedSectionItem(
+          archivedReceiptCount: archivedReceiptIds.length,
+          isExpanded: isArchivedExpanded,
         ),
       );
-      displayList.addAll(
-        displayItems.map((item) => InventoryProductItem(item.id)),
-      );
-      displayList.add(const InventorySpacerItem());
+
+      if (isArchivedExpanded) {
+        displayList.addAll(
+          _buildGroupList(
+            items: archivedItems,
+            areArchived: true,
+            collapsedGroups: collapsedGroups.asData?.value ?? <String>{},
+            filterType: filterType,
+          ),
+        );
+      }
     }
 
     return displayList;
   });
+}
+
+List<InventoryDisplayItem> _buildGroupList({
+  required List<FridgeItem> items,
+  required bool areArchived,
+  required Set<String> collapsedGroups,
+  required InventoryFilterType filterType,
+}) {
+  final displayList = <InventoryDisplayItem>[];
+  final groups = <String, List<FridgeItem>>{};
+  for (final item in items) {
+    final key = item.receiptId ?? '';
+    groups.putIfAbsent(key, () => []).add(item);
+  }
+
+  final sortedKeys = groups.keys.toList();
+
+  for (final key in sortedKeys) {
+    final group = groups[key]!;
+    final first = group.first;
+    final isCollapsed = collapsedGroups.contains(key);
+
+    final displayItems = group.where((item) {
+      if (areArchived) {
+        return true;
+      }
+
+      switch (filterType) {
+        case InventoryFilterType.all:
+          return true;
+        case InventoryFilterType.available:
+          return item.quantity > 0;
+        case InventoryFilterType.consumed:
+          return item.quantity < item.initialQuantity;
+      }
+    }).toList();
+
+    if (displayItems.isEmpty && !areArchived) continue;
+
+    final isFullyConsumed = group.every((item) => item.quantity == 0);
+
+    displayList.add(
+      InventoryHeaderItem(
+        storeName: first.storeName,
+        entryDate: first.entryDate,
+        itemCount: group.length,
+        receiptId: key,
+        isFullyConsumed: isFullyConsumed,
+        isArchived: areArchived,
+        isCollapsed: isCollapsed,
+      ),
+    );
+
+    if (!isCollapsed) {
+      displayList.addAll(
+        displayItems.map((item) => InventoryProductItem(item.id)),
+      );
+    }
+    displayList.add(const InventorySpacerItem());
+  }
+  return displayList;
 }

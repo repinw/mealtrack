@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_group_header.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -13,25 +14,22 @@ class MockFridgeRepository extends Mock implements FridgeRepository {}
 
 void main() {
   late MockFridgeRepository mockFridgeRepository;
-  late bool deleteItemsByReceiptCalled;
+  late bool archiveReceiptCalled;
   late String? calledReceiptId;
 
   setUp(() {
     mockFridgeRepository = MockFridgeRepository();
-    deleteItemsByReceiptCalled = false;
+    archiveReceiptCalled = false;
     calledReceiptId = null;
   });
 
-  Widget createWidget({
-    required InventoryHeaderItem header,
-    void Function(String receiptId)? onDeleteItemsByReceipt,
-  }) {
+  Widget createWidget({required InventoryHeaderItem header}) {
     return ProviderScope(
       overrides: [
         fridgeItemsProvider.overrideWith(() {
           final mock = _TrackingMockFridgeItems(
-            onDeleteItemsByReceipt: (receiptId) {
-              deleteItemsByReceiptCalled = true;
+            onArchiveReceipt: (receiptId) {
+              archiveReceiptCalled = true;
               calledReceiptId = receiptId;
             },
           );
@@ -92,9 +90,7 @@ void main() {
     expect(find.byIcon(Icons.archive_outlined), findsOneWidget);
   });
 
-  testWidgets('Tapping archive button calls deleteItemsByReceipt', (
-    tester,
-  ) async {
+  testWidgets('Tapping archive button calls archiveReceipt', (tester) async {
     final header = InventoryHeaderItem(
       storeName: 'B',
       entryDate: DateTime.now(),
@@ -108,21 +104,21 @@ void main() {
     await tester.tap(find.byIcon(Icons.archive_outlined));
     await tester.pump();
 
-    expect(deleteItemsByReceiptCalled, isTrue);
+    expect(archiveReceiptCalled, isTrue);
     expect(calledReceiptId, 'receipt_123');
   });
 }
 
 class _TrackingMockFridgeItems extends FridgeItems {
-  final void Function(String receiptId) onDeleteItemsByReceipt;
+  final void Function(String receiptId) onArchiveReceipt;
 
-  _TrackingMockFridgeItems({required this.onDeleteItemsByReceipt});
+  _TrackingMockFridgeItems({required this.onArchiveReceipt});
 
   @override
   Stream<List<FridgeItem>> build() => Stream.value([]);
 
   @override
-  Future<void> deleteItemsByReceipt(String receiptId) async {
-    onDeleteItemsByReceipt(receiptId);
+  Future<void> archiveReceipt(String receiptId) async {
+    onArchiveReceipt(receiptId);
   }
 }

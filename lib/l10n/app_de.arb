@@ -17,6 +17,14 @@
     }
   },
   "archive": "Archivieren",
+  "archived": "Archiviert",
+  "archivedCount": "{count} archivierte Kassenbons",
+  "@archivedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "unarchive": "Reaktivieren",
   "entries": "{count} Einträge",
   "@entries": {
     "placeholders": {

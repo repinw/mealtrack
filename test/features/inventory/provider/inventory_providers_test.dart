@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
@@ -8,12 +10,16 @@ import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
+class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 void main() {
   late MockFridgeRepository mockRepository;
+  late MockSharedPreferences mockSharedPreferences;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
-    // Default stub for watchItems() - FridgeItems.build() uses this stream
+    mockSharedPreferences = MockSharedPreferences();
+
     when(
       () => mockRepository.watchItems(),
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
@@ -21,11 +27,21 @@ void main() {
     registerFallbackValue(
       FridgeItem.create(name: 'fallback', storeName: 'fallback'),
     );
+
+    when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
+    when(
+      () => mockSharedPreferences.setStringList(any(), any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer() {
     final container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+      overrides: [
+        fridgeRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWith(
+          (ref) => Future.value(mockSharedPreferences),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -306,7 +322,9 @@ void main() {
     test('returns empty stats initially', () {
       final container = makeContainer();
       final stats = container.read(inventoryStatsProvider);
-      expect(stats, InventoryStats.empty);
+      expect(stats.articleCount, 0);
+      expect(stats.scanCount, 0);
+      expect(stats.totalValue, 0);
     });
 
     test('calculates stats correctly for active items', () async {
@@ -411,6 +429,200 @@ void main() {
       final stats = container.read(inventoryStatsProvider);
 
       expect(stats.scanCount, 2); // R1 and R2
+    });
+  });
+
+  group('archiveReceipt and unarchiveReceipt state persistence', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('always collapses on archive and expands on unarchive', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+
+      // Ensure data is loaded
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      // 1. Initially Expanded (not in collapsed set)
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isFalse,
+      );
+
+      // 2. Archive
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+      await container.pump(); // Pump to propagate state changes
+
+      // Check item state updated
+      final archivedItem = container.read(fridgeItemsProvider).value!.first;
+      expect(archivedItem.isArchived, isTrue);
+
+      // Check UI collapsed - Should simplify logic to always collapse
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isTrue,
+      );
+
+      // 3. Unarchive
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+      await container.pump();
+
+      // Check item state restored
+      final unarchivedItem = container.read(fridgeItemsProvider).value!.first;
+      expect(unarchivedItem.isArchived, isFalse);
+
+      // Check UI expanded (restored) - Should simplify logic to always expand
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isFalse,
+      );
+    });
+  });
+
+  group('archiveReceipt error handling', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('rolls back state and restores collapsed state on error', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async => throw Exception('Network Error'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isFalse,
+      );
+
+      container.read(fridgeItemsProvider.notifier).archiveReceipt('R1');
+
+      await container.pump();
+
+      final currentItem = container.read(fridgeItemsProvider).value!.first;
+      expect(currentItem.isArchived, isFalse);
+      expect(
+        container
+            .read(collapsedReceiptGroupsProvider)
+            .asData
+            ?.value
+            .contains('R1'),
+        isFalse,
+      );
+    });
+  });
+
+  group('unarchiveReceipt error handling', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item = FridgeItem.create(
+      name: 'Item',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    ).copyWith(isArchived: true);
+
+    test('rolls back state on error', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async => throw Exception('Network Error'));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      // Trigger unarchive
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+
+      await container.pump();
+
+      // Verify rollback:
+      final currentItem = container.read(fridgeItemsProvider).value!.first;
+      expect(currentItem.isArchived, isTrue);
+    });
+
+    test('verifies batch update call contains all items', () async {
+      final item1 = FridgeItem.create(
+        name: 'A',
+        storeName: 'S',
+        receiptId: 'R1',
+      ).copyWith(isArchived: true);
+      final item2 = FridgeItem.create(
+        name: 'B',
+        storeName: 'S',
+        receiptId: 'R1',
+      ).copyWith(isArchived: true);
+
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+      when(
+        () => mockRepository.updateItemsBatch(any()),
+      ).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      container.read(fridgeItemsProvider.notifier).unarchiveReceipt('R1');
+      await container.pump();
+
+      final captured =
+          verify(
+                () => mockRepository.updateItemsBatch(captureAny()),
+              ).captured.single
+              as List<FridgeItem>;
+      expect(captured.length, 2);
+      expect(captured[0].id, item1.id);
+      expect(captured[1].id, item2.id);
+      expect(captured[0].isArchived, isFalse);
+      expect(captured[1].isArchived, isFalse);
     });
   });
 }

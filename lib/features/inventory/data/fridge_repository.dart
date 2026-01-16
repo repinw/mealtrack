@@ -49,6 +49,15 @@ class FridgeRepository {
     }
   }
 
+  Future<void> updateItemsBatch(List<FridgeItem> items) async {
+    try {
+      await _firestoreService.updateItemsBatch(items);
+    } catch (e) {
+      debugPrint('Error batch updating items in repository: $e');
+      rethrow;
+    }
+  }
+
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     try {
       await _firestoreService.updateItem(item.adjustQuantity(delta));

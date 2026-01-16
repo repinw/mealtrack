@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
@@ -73,6 +74,129 @@ class FridgeItems extends _$FridgeItems {
     }
     ref.invalidateSelf();
     // coverage:ignore-end
+  }
+
+  /// Archives all items with the given [receiptId] by setting isArchived to true.
+  void archiveReceipt(String receiptId) {
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    // Check if the group is currently expanded
+    final collapsedGroups =
+        ref.read(collapsedReceiptGroupsProvider).asData?.value ?? <String>{};
+
+    final isExpanded = !collapsedGroups.contains(receiptId);
+
+    // Optimistic update - update UI immediately
+    final updatedList = [
+      for (final item in previousList)
+        if (item.receiptId == receiptId)
+          item.copyWith(isArchived: true)
+        else
+          item,
+    ];
+    state = AsyncValue.data(updatedList);
+
+    if (isExpanded) {
+      ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
+    }
+
+    final repository = ref.read(fridgeRepositoryProvider);
+    final archivedItems = previousList
+        .where((i) => i.receiptId == receiptId)
+        .map((item) => item.copyWith(isArchived: true))
+        .toList();
+
+    repository.updateItemsBatch(archivedItems).catchError((e) {
+      state = AsyncValue.data(previousList);
+      if (isExpanded) {
+        ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
+      }
+      return null;
+    });
+  }
+
+  void unarchiveReceipt(String receiptId) {
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    final updatedList = [
+      for (final item in previousList)
+        if (item.receiptId == receiptId)
+          item.copyWith(isArchived: false)
+        else
+          item,
+    ];
+    state = AsyncValue.data(updatedList);
+
+    ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
+
+    final repository = ref.read(fridgeRepositoryProvider);
+    final unarchivedItems = previousList
+        .where((i) => i.receiptId == receiptId)
+        .map((item) => item.copyWith(isArchived: false))
+        .toList();
+
+    repository.updateItemsBatch(unarchivedItems).catchError((e) {
+      state = AsyncValue.data(previousList);
+      return null;
+    });
+  }
+}
+
+@riverpod
+class ArchivedItemsExpanded extends _$ArchivedItemsExpanded {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
+@riverpod
+class CollapsedReceiptGroups extends _$CollapsedReceiptGroups {
+  static const _storageKey = 'collapsed_receipt_groups';
+
+  @override
+  Future<Set<String>> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    final storedList = prefs.getStringList(_storageKey);
+    return storedList?.toSet() ?? {};
+  }
+
+  Future<void> toggle(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    final newState = currentState.contains(receiptId)
+        ? ({...currentState}..remove(receiptId))
+        : ({...currentState, receiptId});
+    state = AsyncValue.data(newState);
+    await _persistState(newState);
+  }
+
+  Future<void> collapse(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    if (!currentState.contains(receiptId)) {
+      final newState = {...currentState, receiptId};
+      state = AsyncValue.data(newState);
+      await _persistState(newState);
+    }
+  }
+
+  Future<void> expand(String receiptId) async {
+    final currentState = state.asData?.value ?? <String>{};
+    if (currentState.contains(receiptId)) {
+      final newState = {...currentState}..remove(receiptId);
+      state = AsyncValue.data(newState);
+      await _persistState(newState);
+    }
+  }
+
+  Future<void> _persistState(Set<String> newState) async {
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      await prefs.setStringList(_storageKey, newState.toList());
+    } catch (_) {
+      // Ignore persistence errors
+    }
   }
 }
 

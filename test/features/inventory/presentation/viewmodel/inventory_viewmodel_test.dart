@@ -4,24 +4,43 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
+import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class MockFridgeRepository extends Mock implements FridgeRepository {}
+
+class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 void main() {
   late MockFridgeRepository mockRepository;
+  late MockSharedPreferences mockSharedPreferences;
 
   setUp(() {
     mockRepository = MockFridgeRepository();
+    mockSharedPreferences = MockSharedPreferences();
+
     when(
       () => mockRepository.watchItems(),
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
+
+    when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
+    when(
+      () => mockSharedPreferences.setStringList(any(), any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer() {
     final container = ProviderContainer(
-      overrides: [fridgeRepositoryProvider.overrideWithValue(mockRepository)],
+      overrides: [
+        fridgeRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWith(
+          (ref) => Future.value(mockSharedPreferences),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -48,6 +67,7 @@ void main() {
 
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -86,6 +106,7 @@ void main() {
 
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -137,6 +158,7 @@ void main() {
 
         final container = makeContainer();
         container.listen(fridgeItemsProvider, (_, _) {});
+        container.listen(archivedItemsExpandedProvider, (_, _) {});
 
         await container.read(fridgeItemsProvider.future);
 
@@ -168,6 +190,7 @@ void main() {
 
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       container
           .read(inventoryFilterProvider.notifier)
@@ -200,6 +223,7 @@ void main() {
 
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       container
           .read(inventoryFilterProvider.notifier)
@@ -233,6 +257,7 @@ void main() {
 
         final container = makeContainer();
         container.listen(fridgeItemsProvider, (_, _) {});
+        container.listen(archivedItemsExpandedProvider, (_, _) {});
 
         // Set to Empty filter
         container
@@ -257,6 +282,7 @@ void main() {
     test('returns empty list when no items exist', () async {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -299,6 +325,7 @@ void main() {
 
         final container = makeContainer();
         container.listen(fridgeItemsProvider, (_, _) {});
+        container.listen(archivedItemsExpandedProvider, (_, _) {});
 
         await container.read(fridgeItemsProvider.future);
 
@@ -342,6 +369,7 @@ void main() {
 
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
 
       await container.read(fridgeItemsProvider.future);
 
@@ -353,6 +381,245 @@ void main() {
       expect(displayList[1], isA<InventoryProductItem>());
       expect(displayList[2], isA<InventoryProductItem>());
       expect(displayList[3], isA<InventorySpacerItem>());
+    });
+  });
+
+  group('Collapsing Logic', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final item1 = FridgeItem.create(
+      name: 'Item 1',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+    final item2 = FridgeItem.create(
+      name: 'Item 2',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+
+    test('collapsed group shows only header and spacer', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([item1, item2]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
+      container.listen(collapsedReceiptGroupsProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      // Collapse the group
+      container.read(collapsedReceiptGroupsProvider.notifier).collapse('R1');
+      await container.pump();
+
+      final displayListAsync = container.read(inventoryDisplayListProvider);
+      final displayList = displayListAsync.value!;
+
+      // Header + Spacer (Items are hidden)
+      expect(
+        displayList.length,
+        2,
+        reason: 'Expected 2 items, got ${displayList.length}',
+      );
+      expect(displayList[0], isA<InventoryHeaderItem>());
+      final header = displayList[0] as InventoryHeaderItem;
+      expect(header.receiptId, 'R1');
+      expect(header.isCollapsed, isTrue);
+      expect(displayList[1], isA<InventorySpacerItem>());
+    });
+  });
+
+  group('Archived Section Visibility', () {
+    final fixedDate = DateTime(2023, 1, 1);
+    final activeItem = FridgeItem.create(
+      name: 'Active',
+      storeName: 'Store',
+      receiptId: 'R1',
+      now: () => fixedDate,
+    );
+    final archivedItem = FridgeItem.create(
+      name: 'Archived',
+      storeName: 'Store',
+      receiptId: 'R2',
+      now: () => fixedDate,
+    ).copyWith(isArchived: true);
+
+    test('shows archived section only when archived items exist', () async {
+      // Case 1: Active and Archived items
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem, archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.any((i) => i is InventoryArchivedSectionItem), isTrue);
+
+      // Case 2: Only Active items
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([activeItem]));
+      // Trigger update
+      await container.read(fridgeItemsProvider.notifier).reload();
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(
+        displayList.any((i) => i is InventoryArchivedSectionItem),
+        isFalse,
+      );
+    });
+
+    test('archived section contents shown only when expanded', () async {
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+      await container.read(collapsedReceiptGroupsProvider.future);
+
+      // Initially collapsed (default)
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.length, 1);
+      expect(displayList[0], isA<InventoryArchivedSectionItem>());
+      expect(
+        (displayList[0] as InventoryArchivedSectionItem).isExpanded,
+        isFalse,
+      );
+
+      // Expand
+      container.read(archivedItemsExpandedProvider.notifier).toggle();
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      // Section Item + Header + Item + Spacer
+      expect(
+        displayList.length,
+        4,
+        reason:
+            'Expected 4 items, got ${displayList.map((e) => e.runtimeType).toList()}',
+      );
+      expect(displayList[0], isA<InventoryArchivedSectionItem>());
+      expect(
+        (displayList[0] as InventoryArchivedSectionItem).isExpanded,
+        isTrue,
+      );
+      expect(displayList[1], isA<InventoryHeaderItem>());
+      expect((displayList[1] as InventoryHeaderItem).isArchived, isTrue);
+    });
+
+    test(
+      'does not show archived section when filter is available even if archived items exist',
+      () async {
+        when(
+          () => mockRepository.watchItems(),
+        ).thenAnswer((_) => Stream.value([activeItem, archivedItem]));
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
+        container.listen(archivedItemsExpandedProvider, (_, _) {});
+        container.listen(inventoryFilterProvider, (_, _) {});
+
+        // Set Filter to Available
+        container
+            .read(inventoryFilterProvider.notifier)
+            .setFilter(InventoryFilterType.available);
+
+        expect(
+          container.read(inventoryFilterProvider),
+          InventoryFilterType.available,
+        );
+
+        await container.read(fridgeItemsProvider.future);
+
+        var displayList = container.read(inventoryDisplayListProvider).value!;
+        expect(
+          displayList.any((i) => i is InventoryArchivedSectionItem),
+          isFalse,
+          reason: 'Archived section should be hidden when filter is available',
+        );
+      },
+    );
+
+    test(
+      'does not show archived section when filter is consumed even if archived items exist',
+      () async {
+        when(
+          () => mockRepository.watchItems(),
+        ).thenAnswer((_) => Stream.value([activeItem, archivedItem]));
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
+        container.listen(archivedItemsExpandedProvider, (_, _) {});
+        container.listen(inventoryFilterProvider, (_, _) {});
+
+        // Set Filter to Consumed
+        container
+            .read(inventoryFilterProvider.notifier)
+            .setFilter(InventoryFilterType.consumed);
+
+        await container.read(fridgeItemsProvider.future);
+
+        var displayList = container.read(inventoryDisplayListProvider).value!;
+        expect(
+          displayList.any((i) => i is InventoryArchivedSectionItem),
+          isFalse,
+          reason: 'Archived section should be hidden when filter is consumed',
+        );
+
+        // Also verify the archived item is NOT in the main list
+        final productItems = displayList.whereType<InventoryProductItem>();
+        expect(
+          productItems.any((i) => i.itemId == archivedItem.id),
+          isFalse,
+          reason: 'Archived item should not appear in main list',
+        );
+      },
+    );
+
+    test('hides archived section when last archived item is removed', () async {
+      // Start with one archived item
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([archivedItem]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      container.listen(archivedItemsExpandedProvider, (_, _) {});
+
+      await container.read(fridgeItemsProvider.future);
+
+      var displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(displayList.any((i) => i is InventoryArchivedSectionItem), isTrue);
+
+      // Update stream to have NO items (simulating unarchive or delete)
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([]));
+
+      // Trigger reload/update
+      await container.read(fridgeItemsProvider.notifier).reload();
+      await container.read(fridgeItemsProvider.future);
+      await container.pump();
+
+      displayList = container.read(inventoryDisplayListProvider).value!;
+      expect(
+        displayList.any((i) => i is InventoryArchivedSectionItem),
+        isFalse,
+      );
     });
   });
 
@@ -383,13 +650,6 @@ void main() {
 
       expect(header1, equals(header2));
       expect(header1, isNot(equals(header3)));
-      expect(header1.props, [
-        header1.storeName,
-        header1.entryDate,
-        header1.itemCount,
-        header1.receiptId,
-        header1.isFullyConsumed,
-      ]);
     });
 
     test('InventoryProductItem equality', () {

@@ -66,15 +66,19 @@ class FirestoreService {
   }
 
   Future<void> addItemsBatch(List<FridgeItem> items) async {
-    final batch = _firestore.batch();
-    for (final item in items) {
+    await _processInBatches(items, (batch, item) {
       batch.set(_inventoryCollection.doc(item.id), item.toJson());
-    }
-    await batch.commit();
+    });
   }
 
   Future<void> updateItem(FridgeItem item) async {
     await _inventoryCollection.doc(item.id).update(item.toJson());
+  }
+
+  Future<void> updateItemsBatch(List<FridgeItem> items) async {
+    await _processInBatches(items, (batch, item) {
+      batch.update(_inventoryCollection.doc(item.id), item.toJson());
+    });
   }
 
   Future<void> deleteItem(String id) async {
@@ -82,12 +86,27 @@ class FirestoreService {
   }
 
   Future<void> deleteAllItems() async {
-    final batch = _firestore.batch();
     final snapshot = await _inventoryCollection.get();
-    for (var doc in snapshot.docs) {
+    await _processInBatches(snapshot.docs, (batch, doc) {
       batch.delete(doc.reference);
+    });
+  }
+
+  Future<void> _processInBatches<T>(
+    List<T> items,
+    void Function(WriteBatch batch, T item) action,
+  ) async {
+    const batchSize = 500;
+    for (var i = 0; i < items.length; i += batchSize) {
+      final batch = _firestore.batch();
+      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
+      final chunk = items.sublist(i, end);
+
+      for (final item in chunk) {
+        action(batch, item);
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 
   Future<String> generateInviteCode() async {

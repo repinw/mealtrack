@@ -31,6 +31,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get archive => 'Archivieren';
 
   @override
+  String get archived => 'Archiviert';
+
+  @override
+  String archivedCount(int count) {
+    return '$count archivierte Kassenbons';
+  }
+
+  @override
+  String get unarchive => 'Reaktivieren';
+
+  @override
   String entries(int count) {
     return '$count Einträge';
   }

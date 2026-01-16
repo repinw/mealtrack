@@ -386,6 +386,7 @@ void main() {
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
+          'isArchived': false
         });
       });
 
@@ -411,6 +412,7 @@ void main() {
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
+          'isArchived': false
         });
       });
 
