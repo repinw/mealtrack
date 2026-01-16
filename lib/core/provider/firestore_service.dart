@@ -66,17 +66,9 @@ class FirestoreService {
   }
 
   Future<void> addItemsBatch(List<FridgeItem> items) async {
-    const batchSize = 500;
-    for (var i = 0; i < items.length; i += batchSize) {
-      final batch = _firestore.batch();
-      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
-      final chunk = items.sublist(i, end);
-
-      for (final item in chunk) {
-        batch.set(_inventoryCollection.doc(item.id), item.toJson());
-      }
-      await batch.commit();
-    }
+    await _processInBatches(items, (batch, item) {
+      batch.set(_inventoryCollection.doc(item.id), item.toJson());
+    });
   }
 
   Future<void> updateItem(FridgeItem item) async {
@@ -84,17 +76,9 @@ class FirestoreService {
   }
 
   Future<void> updateItemsBatch(List<FridgeItem> items) async {
-    const batchSize = 500;
-    for (var i = 0; i < items.length; i += batchSize) {
-      final batch = _firestore.batch();
-      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
-      final chunk = items.sublist(i, end);
-
-      for (final item in chunk) {
-        batch.update(_inventoryCollection.doc(item.id), item.toJson());
-      }
-      await batch.commit();
-    }
+    await _processInBatches(items, (batch, item) {
+      batch.update(_inventoryCollection.doc(item.id), item.toJson());
+    });
   }
 
   Future<void> deleteItem(String id) async {
@@ -103,16 +87,23 @@ class FirestoreService {
 
   Future<void> deleteAllItems() async {
     final snapshot = await _inventoryCollection.get();
-    final docs = snapshot.docs;
+    await _processInBatches(snapshot.docs, (batch, doc) {
+      batch.delete(doc.reference);
+    });
+  }
+
+  Future<void> _processInBatches<T>(
+    List<T> items,
+    void Function(WriteBatch batch, T item) action,
+  ) async {
     const batchSize = 500;
-
-    for (var i = 0; i < docs.length; i += batchSize) {
+    for (var i = 0; i < items.length; i += batchSize) {
       final batch = _firestore.batch();
-      final end = (i + batchSize < docs.length) ? i + batchSize : docs.length;
-      final chunk = docs.sublist(i, end);
+      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
+      final chunk = items.sublist(i, end);
 
-      for (final doc in chunk) {
-        batch.delete(doc.reference);
+      for (final item in chunk) {
+        action(batch, item);
       }
       await batch.commit();
     }
