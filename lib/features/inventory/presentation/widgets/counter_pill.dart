@@ -14,19 +14,28 @@ class CounterPill extends StatelessWidget {
     required this.initialQuantity,
     required this.isOutOfStock,
     this.canIncrease = true,
-    required this.onUpdate,
+    this.onUpdate,
   });
 
-  Color get _badgeColor =>
-      isOutOfStock ? Colors.grey.shade200 : const Color(0xFFE0F2F1);
+  Color _getBadgeColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return isOutOfStock
+        ? colorScheme.surfaceContainerHighest
+        : colorScheme.secondaryContainer;
+  }
 
-  Color get _badgeTextColor => isOutOfStock ? Colors.grey : Colors.teal;
+  Color _getBadgeTextColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return isOutOfStock
+        ? colorScheme.onSurfaceVariant
+        : colorScheme.onSecondaryContainer;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _badgeColor,
+        color: _getBadgeColor(context),
         borderRadius: BorderRadius.circular(24),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -34,7 +43,7 @@ class CounterPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildMinusButton(),
-          _buildQuantityText(),
+          _buildQuantityText(context),
           _buildPlusButton(),
         ],
       ),
@@ -55,14 +64,14 @@ class CounterPill extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantityText() {
+  Widget _buildQuantityText(BuildContext context) {
     return SizedBox(
       width: 40,
       child: Center(
         child: Text(
           '$quantity / $initialQuantity',
           style: TextStyle(
-            color: _badgeTextColor,
+            color: _getBadgeTextColor(context),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),

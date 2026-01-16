@@ -24,9 +24,19 @@ void main() {
       expect(find.text('42 / 100'), findsOneWidget);
     });
 
-    testWidgets('displays teal text when in stock', (tester) async {
+    testWidgets('displays theme-based text color when in stock', (
+      tester,
+    ) async {
+      final theme = ThemeData.light().copyWith(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue).copyWith(
+          onSecondaryContainer: Colors.red, // Distinct color for verify
+          secondaryContainer: Colors.blue,
+        ),
+      );
+
       await tester.pumpWidget(
         MaterialApp(
+          theme: theme,
           home: Scaffold(
             body: CounterPill(
               quantity: 5,
@@ -39,12 +49,31 @@ void main() {
       );
 
       final text = tester.widget<Text>(find.text('5 / 10'));
-      expect(text.style?.color, Colors.teal);
+      expect(text.style?.color, theme.colorScheme.onSecondaryContainer);
+
+      final container = tester.widget<Container>(
+        find.ancestor(
+          of: find.text('5 / 10'),
+          matching: find.byType(Container),
+        ),
+      );
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, theme.colorScheme.secondaryContainer);
     });
 
-    testWidgets('displays grey text when out of stock', (tester) async {
+    testWidgets('displays theme-based text color when out of stock', (
+      tester,
+    ) async {
+      final theme = ThemeData.light().copyWith(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue).copyWith(
+          onSurfaceVariant: Colors.purple, // Distinct color for verify
+          surfaceContainerHighest: Colors.grey,
+        ),
+      );
+
       await tester.pumpWidget(
         MaterialApp(
+          theme: theme,
           home: Scaffold(
             body: CounterPill(
               quantity: 0,
@@ -57,7 +86,16 @@ void main() {
       );
 
       final text = tester.widget<Text>(find.text('0 / 10'));
-      expect(text.style?.color, Colors.grey);
+      expect(text.style?.color, theme.colorScheme.onSurfaceVariant);
+
+      final container = tester.widget<Container>(
+        find.ancestor(
+          of: find.text('0 / 10'),
+          matching: find.byType(Container),
+        ),
+      );
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, theme.colorScheme.surfaceContainerHighest);
     });
 
     testWidgets('plus button is disabled when canIncrease is false', (
