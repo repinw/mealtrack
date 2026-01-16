@@ -30,7 +30,7 @@ The project is actively being developed. The following features are planned for 
 - [ ] **Integrated Shopping List**
       Items that run low in the inventory will be automatically suggested for the shopping list.
 
-- [ ] **Shared Households (Collaboration)**
+- [x] **Shared Households (Collaboration)**
       Implementation of "Family Mode" using Firebase's real-time capabilities. Multiple users can invite each other to manage a single inventory (e.g., for flatmates or families).
 
 - [ ] **Open Food Facts Integration**
