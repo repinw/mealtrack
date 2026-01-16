@@ -66,11 +66,17 @@ class FirestoreService {
   }
 
   Future<void> addItemsBatch(List<FridgeItem> items) async {
-    final batch = _firestore.batch();
-    for (final item in items) {
-      batch.set(_inventoryCollection.doc(item.id), item.toJson());
+    const batchSize = 500;
+    for (var i = 0; i < items.length; i += batchSize) {
+      final batch = _firestore.batch();
+      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
+      final chunk = items.sublist(i, end);
+
+      for (final item in chunk) {
+        batch.set(_inventoryCollection.doc(item.id), item.toJson());
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 
   Future<void> updateItem(FridgeItem item) async {
@@ -78,11 +84,17 @@ class FirestoreService {
   }
 
   Future<void> updateItemsBatch(List<FridgeItem> items) async {
-    final batch = _firestore.batch();
-    for (final item in items) {
-      batch.update(_inventoryCollection.doc(item.id), item.toJson());
+    const batchSize = 500;
+    for (var i = 0; i < items.length; i += batchSize) {
+      final batch = _firestore.batch();
+      final end = (i + batchSize < items.length) ? i + batchSize : items.length;
+      final chunk = items.sublist(i, end);
+
+      for (final item in chunk) {
+        batch.update(_inventoryCollection.doc(item.id), item.toJson());
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 
   Future<void> deleteItem(String id) async {
@@ -90,12 +102,20 @@ class FirestoreService {
   }
 
   Future<void> deleteAllItems() async {
-    final batch = _firestore.batch();
     final snapshot = await _inventoryCollection.get();
-    for (var doc in snapshot.docs) {
-      batch.delete(doc.reference);
+    final docs = snapshot.docs;
+    const batchSize = 500;
+
+    for (var i = 0; i < docs.length; i += batchSize) {
+      final batch = _firestore.batch();
+      final end = (i + batchSize < docs.length) ? i + batchSize : docs.length;
+      final chunk = docs.sublist(i, end);
+
+      for (final doc in chunk) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 
   Future<String> generateInviteCode() async {
