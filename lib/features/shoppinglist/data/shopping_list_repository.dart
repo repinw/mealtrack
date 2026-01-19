@@ -5,6 +5,7 @@ import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/utils/firestore_utils.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 
 part 'shopping_list_repository.g.dart';
 
@@ -23,18 +24,15 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
 }
 
 class ShoppingListRepository {
-  static const String _usersCollection = 'users';
-  static const String _collectionName = 'shopping_list';
-
   final FirebaseFirestore _firestore;
   final String _uid;
 
   ShoppingListRepository(this._firestore, this._uid);
 
   CollectionReference<Map<String, dynamic>> get _collection => _firestore
-      .collection(_usersCollection)
+      .collection(usersCollection)
       .doc(_uid)
-      .collection(_collectionName);
+      .collection(shoppingListCollection);
 
   Future<void> addItem(ShoppingListItem item) async {
     try {

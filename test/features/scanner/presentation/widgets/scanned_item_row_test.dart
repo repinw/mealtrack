@@ -409,4 +409,35 @@ void main() {
       },
     );
   });
+
+  testWidgets('Edge Case: Quantity 0 defaults to 1', (tester) async {
+    final item = FridgeItem.create(
+      name: 'Test Item',
+      storeName: 'Store',
+      quantity: 5,
+      unitPrice: 10.0,
+    );
+    FridgeItem? updatedItem;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: ScannedItemRow(
+            item: item,
+            onDelete: () {},
+            onChanged: (val) => updatedItem = val,
+          ),
+        ),
+      ),
+    );
+
+    final qtyFinder = find.byKey(const Key('quantityField'));
+    await tester.enterText(qtyFinder, '0');
+    await tester.pump();
+
+    // Verify logic enforces 1
+    expect(updatedItem?.quantity, 1);
+  });
 }

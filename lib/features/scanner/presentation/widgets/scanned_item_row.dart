@@ -137,7 +137,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final weightText = _weightController.text;
     final brandText = _brandController.text;
 
-    final quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
+    var quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
+    if (quantity < 1) quantity = 1;
+
     final totalPrice =
         double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
     final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;

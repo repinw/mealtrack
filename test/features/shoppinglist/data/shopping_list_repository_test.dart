@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 
 void main() {
   late ShoppingListRepository repository;
@@ -20,9 +21,9 @@ void main() {
       await repository.addItem(item);
 
       final snapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .doc(item.id)
           .get();
 
@@ -43,9 +44,9 @@ void main() {
       await repository.updateItem(updatedItem);
 
       final snapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .doc(item.id)
           .get();
 
@@ -61,9 +62,9 @@ void main() {
       await repository.deleteItem(item.id);
 
       final snapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .doc(item.id)
           .get();
 
@@ -79,9 +80,9 @@ void main() {
       await repository.clearList();
 
       final snapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .get();
 
       expect(snapshot.docs.isEmpty, isTrue);
@@ -113,18 +114,18 @@ void main() {
       }
 
       final beforeSnapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .get();
       expect(beforeSnapshot.docs.length, 501);
 
       await repository.clearList();
 
       final afterSnapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .get();
       expect(afterSnapshot.docs.isEmpty, isTrue);
     });
@@ -135,9 +136,9 @@ void main() {
 
       // Manually add a field to Firestore that is not in the model
       await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .doc(item.id)
           .set({'extra_field': 'preserve_me'}, SetOptions(merge: true));
 
@@ -145,9 +146,9 @@ void main() {
       await repository.updateItem(updatedItem);
 
       final snapshot = await fakeFirestore
-          .collection('users')
+          .collection(usersCollection)
           .doc(testUid)
-          .collection('shopping_list')
+          .collection(shoppingListCollection)
           .doc(item.id)
           .get();
 
