@@ -8,6 +8,8 @@ import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.d
 import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 
 class MockFridgeItems extends FridgeItems with Mock {
   final List<(FridgeItem, int)> updateQuantityCalls = [];
@@ -42,11 +44,18 @@ class MockFridgeItems extends FridgeItems with Mock {
 
 class FakeFridgeItem extends Fake implements FridgeItem {}
 
+class MockShoppingListRepository extends Mock
+    implements ShoppingListRepository {
+  @override
+  Stream<List<ShoppingListItem>> watchItems() => Stream.value([]);
+}
+
 void main() {
   late MockFridgeItems mockNotifier;
 
   setUpAll(() {
     registerFallbackValue(FakeFridgeItem());
+    registerFallbackValue(const ShoppingListItem(id: '1', name: 'dummy'));
   });
 
   final testItem = FridgeItem(
@@ -115,6 +124,8 @@ void main() {
             fridgeItemsProvider.overrideWith(() => mockNotifier),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: InventoryItemRow(itemId: 'some-id')),
           ),
         ),
@@ -202,6 +213,8 @@ void main() {
             fridgeItemsProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: InventoryItemRow(itemId: outOfStockItem.id)),
           ),
         ),
@@ -230,6 +243,8 @@ void main() {
             fridgeItemsProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: InventoryItemRow(itemId: archivedItem.id)),
           ),
         ),
@@ -281,6 +296,70 @@ void main() {
 
       expect(minusInkWell.onTap, isNull);
       expect(plusInkWell.onTap, isNull);
+    });
+
+    testWidgets('swiping right adds item to shopping list', (
+      WidgetTester tester,
+    ) async {
+      final mockShoppingListRepo = MockShoppingListRepository();
+      when(() => mockShoppingListRepo.addItem(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+            fridgeItemsProvider.overrideWith(() => mockNotifier),
+            shoppingListRepositoryProvider.overrideWithValue(
+              mockShoppingListRepo,
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
+          ),
+        ),
+      );
+
+      // Swipe right
+      await tester.drag(find.byType(InventoryItemRow), const Offset(500, 0));
+      await tester.pumpAndSettle();
+
+      // Verify addItem was called
+      verify(() => mockShoppingListRepo.addItem(any())).called(1);
+    });
+
+    testWidgets('long press adds item to shopping list', (
+      WidgetTester tester,
+    ) async {
+      final mockShoppingListRepo = MockShoppingListRepository();
+      when(() => mockShoppingListRepo.addItem(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
+            fridgeItemsProvider.overrideWith(() => mockNotifier),
+            shoppingListRepositoryProvider.overrideWithValue(
+              mockShoppingListRepo,
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
+          ),
+        ),
+      );
+
+      // Long press
+      await tester.longPress(find.byType(InventoryItemRow));
+      await tester.pumpAndSettle();
+
+      // Verify addItem was called
+      verify(() => mockShoppingListRepo.addItem(any())).called(1);
     });
   });
 }

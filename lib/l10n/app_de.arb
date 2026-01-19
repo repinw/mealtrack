@@ -170,5 +170,29 @@
   "calories": "Kalorien",
   "statistics": "Statistik",
   "featureInProgress": "Diese Funktion ist noch in Arbeit 🚧",
-  "addItemNotImplemented": "Hinzufügen - Noch nicht implementiert"
+  "addItemNotImplemented": "Hinzufügen - Noch nicht implementiert",
+  "itemAddedToShoppingList": "{name} zur Einkaufsliste hinzugefügt",
+  "@itemAddedToShoppingList": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "unitPriceLabel": "{price}€ / Stk",
+  "@unitPriceLabel": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  },
+  "shoppingListEmpty": "Keine Einträge",
+  "shoppingListClearTitle": "Liste leeren?",
+  "shoppingListClearConfirmation": "Möchtest du wirklich alle Einträge löschen?",
+  "errorDisplay": "Fehler: {error}",
+  "@errorDisplay": {
+    "placeholders": {
+      "error": {"type": "Object"}
+    }
+  },
+  "add": "Hinzufügen",
+  "addItemTitle": "Artikel hinzufügen",
+  "addItemHint": "z.B. Milch"
 }

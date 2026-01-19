@@ -304,6 +304,8 @@ void main() {
       ),
     );
 
+    await tester.pumpAndSettle();
+
     // Initial state: Header visible, Item hidden (default collapsed)
     // "1 archivierte Kassenbons" or similar.
     expect(find.byIcon(Icons.archive_outlined), findsOneWidget);
