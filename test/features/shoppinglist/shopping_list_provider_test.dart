@@ -98,6 +98,51 @@ void main() {
       expect(items.first.quantity, 2);
     });
 
+    test('addItem should update unitPrice if item already exists', () async {
+      final repository = FakeShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = container.read(shoppingListProvider.notifier);
+
+      await provider.addItem('Milk', unitPrice: 1.5);
+      await provider.addItem('Milk', unitPrice: 2.0);
+
+      final items = await repository.watchItems().first;
+      expect(items.length, 1);
+      expect(items.first.name, 'Milk');
+      expect(items.first.quantity, 2);
+      expect(items.first.unitPrice, 2.0);
+    });
+
+    test(
+      'addItem should keep old unitPrice if new one is not provided',
+      () async {
+        final repository = FakeShoppingListRepository();
+        final container = ProviderContainer(
+          overrides: [
+            shoppingListRepositoryProvider.overrideWith((ref) => repository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final provider = container.read(shoppingListProvider.notifier);
+
+        await provider.addItem('Milk', unitPrice: 1.5);
+        await provider.addItem('Milk', unitPrice: null);
+
+        final items = await repository.watchItems().first;
+        expect(items.length, 1);
+        expect(items.first.name, 'Milk');
+        expect(items.first.quantity, 2);
+        expect(items.first.unitPrice, 1.5);
+      },
+    );
+
     test('addItem should match brand when checking for duplicates', () async {
       final repository = FakeShoppingListRepository();
       final container = ProviderContainer(

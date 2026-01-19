@@ -28,6 +28,7 @@ class ShoppingList extends _$ShoppingList {
       );
       final updated = existingItem.copyWith(
         quantity: existingItem.quantity + quantity,
+        unitPrice: unitPrice ?? existingItem.unitPrice,
       );
       await repository.updateItem(updated);
     } catch (_) {

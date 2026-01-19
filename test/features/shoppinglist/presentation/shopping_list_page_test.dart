@@ -6,6 +6,7 @@ import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 
 // Fake Repository for UI Test
 class FakeShoppingListRepository implements ShoppingListRepository {
@@ -85,6 +86,10 @@ void main() {
     // Verify Items
     expect(find.text('Apples'), findsOneWidget);
     expect(find.text('Bananas'), findsOneWidget);
+
+    // Verify Stats Header
+    expect(find.byType(SummaryHeader), findsOneWidget);
+    expect(find.text('UNGEFÄHRE KOSTEN'), findsOneWidget);
   });
 
   testWidgets('ShoppingListPage renders empty state', (tester) async {
