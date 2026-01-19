@@ -15,6 +15,16 @@ class MockFailingRepository implements ShoppingListRepository {
   }
 
   @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {
+    throw Exception('Simulated Network Error');
+  }
+
+  @override
   Stream<List<ShoppingListItem>> watchItems() => Stream.value([]);
   @override
   Future<void> deleteItem(String id) async {}

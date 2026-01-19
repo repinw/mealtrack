@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
@@ -36,20 +35,63 @@ class ShoppingListRepository {
 
   Future<void> addItem(ShoppingListItem item) async {
     try {
-      await _collection.doc(item.id).set(item.toJson());
+      final json = item.toJson();
+      json['normalizedName'] = item.name.toLowerCase();
+      await _collection.doc(item.id).set(json);
     } catch (e) {
-      debugPrint('Error adding item to shopping list: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {
+    try {
+      final normalizedName = name.toLowerCase();
+
+      await _firestore.runTransaction((transaction) async {
+        final querySnapshot = await _collection
+            .where('normalizedName', isEqualTo: normalizedName)
+            .where('brand', isEqualTo: brand)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final doc = querySnapshot.docs.first;
+          final existingItem = ShoppingListItem.fromJson(doc.data());
+          final updatedItem = existingItem.copyWith(
+            quantity: existingItem.quantity + quantity,
+            unitPrice: unitPrice ?? existingItem.unitPrice,
+          );
+          final json = updatedItem.toJson();
+          json['normalizedName'] = normalizedName; // Ensure preserved/updated
+          transaction.set(doc.reference, json);
+        } else {
+          final newItem = ShoppingListItem.create(
+            name: name,
+            brand: brand,
+            quantity: quantity,
+            unitPrice: unitPrice,
+          );
+          final json = newItem.toJson();
+          json['normalizedName'] = normalizedName;
+          transaction.set(_collection.doc(newItem.id), json);
+        }
+      });
+    } catch (e) {
       rethrow;
     }
   }
 
   Future<void> updateItem(ShoppingListItem item) async {
     try {
-      await _collection
-          .doc(item.id)
-          .set(item.toJson(), SetOptions(merge: true));
+      final json = item.toJson();
+      json['normalizedName'] = item.name.toLowerCase();
+      await _collection.doc(item.id).set(json, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error updating item in shopping list: $e');
       rethrow;
     }
   }
@@ -58,7 +100,6 @@ class ShoppingListRepository {
     try {
       await _collection.doc(id).delete();
     } catch (e) {
-      debugPrint('Error deleting item from shopping list: $e');
       rethrow;
     }
   }
@@ -71,7 +112,6 @@ class ShoppingListRepository {
         batch.delete(doc.reference);
       });
     } catch (e) {
-      debugPrint('Error clearing shopping list: $e');
       rethrow;
     }
   }

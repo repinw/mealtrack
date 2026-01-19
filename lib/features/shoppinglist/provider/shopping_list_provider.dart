@@ -20,26 +20,12 @@ class ShoppingList extends _$ShoppingList {
     double? unitPrice,
   }) async {
     final repository = ref.read(shoppingListRepositoryProvider);
-    final items = await repository.watchItems().first;
-
-    try {
-      final existingItem = items.firstWhere(
-        (i) => i.name == name && i.brand == brand,
-      );
-      final updated = existingItem.copyWith(
-        quantity: existingItem.quantity + quantity,
-        unitPrice: unitPrice ?? existingItem.unitPrice,
-      );
-      await repository.updateItem(updated);
-    } catch (_) {
-      final item = ShoppingListItem.create(
-        name: name,
-        brand: brand,
-        quantity: quantity,
-        unitPrice: unitPrice,
-      );
-      await repository.addItem(item);
-    }
+    await repository.addOrMergeItem(
+      name: name,
+      brand: brand,
+      quantity: quantity,
+      unitPrice: unitPrice,
+    );
   }
 
   Future<void> deleteItem(String id) async {

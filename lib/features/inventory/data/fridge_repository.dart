@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
@@ -42,7 +42,6 @@ class FridgeRepository {
           .map((doc) => FridgeItem.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      debugPrint('Error loading items from repository: $e');
       rethrow;
     }
   }
@@ -61,7 +60,6 @@ class FridgeRepository {
         batch.set(_collection.doc(item.id), item.toJson());
       });
     } catch (e) {
-      debugPrint('Error adding items in repository: $e');
       rethrow;
     }
   }
@@ -70,7 +68,6 @@ class FridgeRepository {
     try {
       await _collection.doc(item.id).update(item.toJson());
     } catch (e) {
-      debugPrint('Error updating item in repository: $e');
       rethrow;
     }
   }
@@ -81,7 +78,6 @@ class FridgeRepository {
         batch.update(_collection.doc(item.id), item.toJson());
       });
     } catch (e) {
-      debugPrint('Error batch updating items in repository: $e');
       rethrow;
     }
   }
@@ -92,7 +88,6 @@ class FridgeRepository {
           .doc(item.id)
           .update(item.adjustQuantity(delta).toJson());
     } catch (e) {
-      debugPrint('Error updating quantity in repository: $e');
       rethrow;
     }
   }
@@ -105,7 +100,6 @@ class FridgeRepository {
         batch.delete(doc.reference);
       });
     } catch (e) {
-      debugPrint('Error deleting all items in repository: $e');
       rethrow;
     }
   }
@@ -114,7 +108,6 @@ class FridgeRepository {
     try {
       await _collection.doc(id).delete();
     } catch (e) {
-      debugPrint('Error deleting item in repository: $e');
       rethrow;
     }
   }
@@ -124,7 +117,6 @@ class FridgeRepository {
       final items = await getItems();
       return items.where((item) => item.quantity > 0).toList();
     } catch (e) {
-      debugPrint('Error getting available items in repository: $e');
       rethrow;
     }
   }
@@ -144,7 +136,6 @@ class FridgeRepository {
 
       return groupedMap.entries.toList();
     } catch (e) {
-      debugPrint('Error getting grouped items in repository: $e');
       rethrow;
     }
   }

@@ -17,6 +17,35 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   }
 
   @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {
+    final current = _itemsSubject.value;
+    final index = current.indexWhere((i) => i.name == name && i.brand == brand);
+    if (index >= 0) {
+      final existingItem = current[index];
+      final updatedItem = existingItem.copyWith(
+        quantity: existingItem.quantity + quantity,
+        unitPrice: unitPrice ?? existingItem.unitPrice,
+      );
+      final newItems = List<ShoppingListItem>.from(current);
+      newItems[index] = updatedItem;
+      _itemsSubject.add(newItems);
+    } else {
+      final newItem = ShoppingListItem.create(
+        name: name,
+        brand: brand,
+        quantity: quantity,
+        unitPrice: unitPrice,
+      );
+      _itemsSubject.add([...current, newItem]);
+    }
+  }
+
+  @override
   Future<void> deleteItem(String id) async {
     final current = _itemsSubject.value;
     _itemsSubject.add(current.where((item) => item.id != id).toList());

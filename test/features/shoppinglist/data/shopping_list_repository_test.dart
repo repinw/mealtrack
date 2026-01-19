@@ -155,5 +155,74 @@ void main() {
       expect(snapshot.data()!['quantity'], 10);
       expect(snapshot.data()!['extra_field'], 'preserve_me');
     });
+    test('addOrMergeItem merges items case-insensitively', () async {
+      // 1. Add "Milk"
+      await repository.addOrMergeItem(
+        name: 'Milk',
+        brand: 'Farm',
+        quantity: 1,
+        unitPrice: 1.0,
+      );
+
+      // Verify created
+      final snapshot1 = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+      expect(snapshot1.docs.length, 1);
+      expect(snapshot1.docs.first.data()['name'], 'Milk');
+      expect(snapshot1.docs.first.data()['quantity'], 1);
+      expect(snapshot1.docs.first.data()['normalizedName'], 'milk');
+
+      // 2. Add "milk" (lowercase) - should merge
+      await repository.addOrMergeItem(
+        name: 'milk',
+        brand: 'Farm',
+        quantity: 2,
+        unitPrice: 1.5,
+      );
+
+      final snapshot2 = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+
+      // Should still be 1 item
+      expect(snapshot2.docs.length, 1);
+      final doc = snapshot2.docs.first.data();
+      expect(
+        doc['name'],
+        'Milk',
+      ); // Original name preserved (or updated if logic changed, but here we expect original doc reused)
+      expect(doc['quantity'], 3); // 1 + 2
+      expect(doc['unitPrice'], 1.5);
+      expect(doc['normalizedName'], 'milk');
+    });
+
+    test('addOrMergeItem creates new item if brand differs', () async {
+      await repository.addOrMergeItem(
+        name: 'Milk',
+        brand: 'Brand A',
+        quantity: 1,
+        unitPrice: 1.0,
+      );
+
+      await repository.addOrMergeItem(
+        name: 'Milk',
+        brand: 'Brand B',
+        quantity: 1,
+        unitPrice: 1.0,
+      );
+
+      final snapshot = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+
+      expect(snapshot.docs.length, 2);
+    });
   });
 }

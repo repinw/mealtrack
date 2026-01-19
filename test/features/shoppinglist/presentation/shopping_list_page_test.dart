@@ -27,6 +27,24 @@ class FakeShoppingListRepository implements ShoppingListRepository {
     _controller.add(items);
   }
 
+  @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {
+    // Basic implementation for test if needed, or just stub
+    final newItem = ShoppingListItem.create(
+      name: name,
+      brand: brand,
+      quantity: quantity,
+      unitPrice: unitPrice,
+    );
+    items = [...items, newItem];
+    _controller.add(items);
+  }
+
   final List<String> deletedIds = [];
 
   @override

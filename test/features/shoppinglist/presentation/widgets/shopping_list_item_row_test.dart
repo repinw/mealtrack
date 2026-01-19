@@ -16,6 +16,14 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   Stream<List<ShoppingListItem>> watchItems() => Stream.value(items);
   @override
   Future<void> addItem(ShoppingListItem item) async {}
+
+  @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {}
   @override
   Future<void> deleteItem(String id) async {}
   @override
