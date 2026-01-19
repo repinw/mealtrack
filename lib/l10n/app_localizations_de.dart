@@ -421,4 +421,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get addItemHint => 'z.B. Milch';
+
+  @override
+  String get approximateCostLabel => 'UNGEFÄHRE KOSTEN';
 }

@@ -46,9 +46,9 @@ class ShoppingListPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      "UNGEFÄHRE KOSTEN",
-                      style: TextStyle(
+                    Text(
+                      l10n.approximateCostLabel,
+                      style: const TextStyle(
                         fontSize: 12,
                         color: labelColor,
                         letterSpacing: 0.5,

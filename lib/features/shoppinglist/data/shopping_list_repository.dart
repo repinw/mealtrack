@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:mealtrack/core/utils/firestore_utils.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 
 part 'shopping_list_repository.g.dart';
@@ -44,11 +45,10 @@ class ShoppingListRepository {
 
   Future<void> clearList() async {
     final snapshot = await _collection.get();
-    final batch = _firestore.batch();
-    for (final doc in snapshot.docs) {
+    final docs = snapshot.docs;
+    await FirestoreUtils.processInBatches(_firestore, docs, (batch, doc) {
       batch.delete(doc.reference);
-    }
-    await batch.commit();
+    });
   }
 
   Stream<List<ShoppingListItem>> watchItems() => _collection

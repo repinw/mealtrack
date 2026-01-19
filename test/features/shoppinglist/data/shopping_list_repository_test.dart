@@ -1,4 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
@@ -96,6 +97,56 @@ void main() {
       expect(firstResult[0].name, 'Apples');
       expect(firstResult[1].name, 'Bananas');
       expect(firstResult[2].name, 'Cherries');
+    });
+
+    test('clearList handles more than 500 items (Batch Limit)', () async {
+      // Add 501 items
+      for (var i = 0; i < 501; i++) {
+        final item = ShoppingListItem.create(name: 'Item $i');
+        await repository.addItem(item);
+      }
+
+      final beforeSnapshot = await fakeFirestore
+          .collection('users')
+          .doc(testUid)
+          .collection('shopping_list')
+          .get();
+      expect(beforeSnapshot.docs.length, 501);
+
+      await repository.clearList();
+
+      final afterSnapshot = await fakeFirestore
+          .collection('users')
+          .doc(testUid)
+          .collection('shopping_list')
+          .get();
+      expect(afterSnapshot.docs.isEmpty, isTrue);
+    });
+
+    test('updateItem preserves fields not in model (merge: true)', () async {
+      final item = ShoppingListItem.create(name: 'Apples', quantity: 1);
+      await repository.addItem(item);
+
+      // Manually add a field to Firestore that is not in the model
+      await fakeFirestore
+          .collection('users')
+          .doc(testUid)
+          .collection('shopping_list')
+          .doc(item.id)
+          .set({'extra_field': 'preserve_me'}, SetOptions(merge: true));
+
+      final updatedItem = item.copyWith(quantity: 10);
+      await repository.updateItem(updatedItem);
+
+      final snapshot = await fakeFirestore
+          .collection('users')
+          .doc(testUid)
+          .collection('shopping_list')
+          .doc(item.id)
+          .get();
+
+      expect(snapshot.data()!['quantity'], 10);
+      expect(snapshot.data()!['extra_field'], 'preserve_me');
     });
   });
 }

@@ -430,6 +430,65 @@ void main() {
 
       expect(stats.scanCount, 2); // R1 and R2
     });
+
+    test('excludes consumed items from scanCount and articleCount', () async {
+      final itemActive = FridgeItem.create(
+        name: 'Active',
+        storeName: 'S',
+        quantity: 1,
+        receiptId: 'R1',
+      );
+      final itemConsumed = FridgeItem.create(
+        name: 'Consumed',
+        storeName: 'S',
+        quantity: 1,
+        receiptId: 'R2',
+      ).copyWith(isConsumed: true, quantity: 0);
+
+      when(
+        () => mockRepository.watchItems(),
+      ).thenAnswer((_) => Stream.value([itemActive, itemConsumed]));
+
+      final container = makeContainer();
+      container.listen(fridgeItemsProvider, (_, _) {});
+      await container.read(fridgeItemsProvider.future);
+
+      final stats = container.read(inventoryStatsProvider);
+
+      expect(stats.articleCount, 1);
+      expect(stats.scanCount, 1); // Only R1 counts
+    });
+
+    test(
+      'counts receipt once if it has both active and consumed items',
+      () async {
+        final item1 = FridgeItem.create(
+          name: 'Active',
+          storeName: 'S',
+          quantity: 1,
+          receiptId: 'R1',
+        );
+        final item2 = FridgeItem.create(
+          name: 'Consumed',
+          storeName: 'S',
+          quantity: 1,
+          receiptId: 'R1',
+        ).copyWith(isConsumed: true, quantity: 0);
+
+        when(
+          () => mockRepository.watchItems(),
+        ).thenAnswer((_) => Stream.value([item1, item2]));
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
+        await container.read(fridgeItemsProvider.future);
+
+        final stats = container.read(inventoryStatsProvider);
+
+        expect(stats.articleCount, 1);
+        expect(stats.scanCount, 1); // R1 counts because item1 is active
+      },
+    );
   });
 
   group('archiveReceipt and unarchiveReceipt state persistence', () {

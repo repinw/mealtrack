@@ -205,4 +205,141 @@ void main() {
       expect(items, isEmpty);
     });
   });
+
+  group('Shopping List Stats', () {
+    test(
+      'Happy Path: should calculate stats correctly for active items',
+      () async {
+        final repository = FakeShoppingListRepository();
+        // Total: (2.5 * 2) + (1.0 * 1) + (5.0 * 3) = 5.0 + 1.0 + 15.0 = 21.0
+        // ArticleCount: 2 + 1 + 3 = 6
+        // ScanCount: 3 unique IDs
+        await repository.addItem(
+          ShoppingListItem.create(name: 'A', unitPrice: 2.5, quantity: 2),
+        );
+        await repository.addItem(
+          ShoppingListItem.create(name: 'B', unitPrice: 1.0, quantity: 1),
+        );
+        await repository.addItem(
+          ShoppingListItem.create(name: 'C', unitPrice: 5.0, quantity: 3),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            shoppingListRepositoryProvider.overrideWith((ref) => repository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        // Keep providers alive and wait for data
+        container.listen(shoppingListProvider, (_, _) {});
+        container.listen(shoppingListStatsProvider, (_, _) {});
+
+        await container.read(shoppingListProvider.future);
+        final stats = container.read(shoppingListStatsProvider);
+
+        expect(stats.totalValue, 21.0);
+        expect(stats.articleCount, 6);
+        expect(stats.scanCount, 3);
+      },
+    );
+
+    test('Edge Case: Null Price should be treated as 0.0', () async {
+      final repository = FakeShoppingListRepository();
+      await repository.addItem(
+        ShoppingListItem.create(name: 'Free', unitPrice: null, quantity: 5),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(shoppingListProvider, (_, _) {});
+      container.listen(shoppingListStatsProvider, (_, _) {});
+
+      await container.read(shoppingListProvider.future);
+      final stats = container.read(shoppingListStatsProvider);
+
+      expect(stats.totalValue, 0.0);
+      expect(stats.articleCount, 5);
+    });
+
+    test('Edge Case: Zero Quantity should be ignored', () async {
+      final repository = FakeShoppingListRepository();
+      await repository.addItem(
+        ShoppingListItem.create(name: 'Active', unitPrice: 10.0, quantity: 1),
+      );
+      await repository.addItem(
+        ShoppingListItem.create(
+          name: 'Inactive',
+          unitPrice: 100.0,
+          quantity: 0,
+        ),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(shoppingListProvider, (_, _) {});
+      container.listen(shoppingListStatsProvider, (_, _) {});
+
+      await container.read(shoppingListProvider.future);
+      final stats = container.read(shoppingListStatsProvider);
+
+      expect(stats.totalValue, 10.0);
+      expect(stats.articleCount, 1);
+      expect(stats.scanCount, 1);
+    });
+
+    test('Edge Case: Empty List should return empty stats', () async {
+      final repository = FakeShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(shoppingListProvider, (_, _) {});
+      container.listen(shoppingListStatsProvider, (_, _) {});
+
+      await container.read(shoppingListProvider.future);
+      final stats = container.read(shoppingListStatsProvider);
+
+      expect(stats.totalValue, 0.0);
+      expect(stats.articleCount, 0);
+      expect(stats.scanCount, 0);
+    });
+
+    test('Edge Case: Negative Prices should be handled robustly', () async {
+      final repository = FakeShoppingListRepository();
+      // Total: (10.0 * 2) + (-5.0 * 1) = 20.0 - 5.0 = 15.0
+      await repository.addItem(
+        ShoppingListItem.create(name: 'Plus', unitPrice: 10.0, quantity: 2),
+      );
+      await repository.addItem(
+        ShoppingListItem.create(name: 'Minus', unitPrice: -5.0, quantity: 1),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(shoppingListProvider, (_, _) {});
+      container.listen(shoppingListStatsProvider, (_, _) {});
+
+      await container.read(shoppingListProvider.future);
+      final stats = container.read(shoppingListStatsProvider);
+
+      expect(stats.totalValue, 15.0);
+      expect(stats.articleCount, 3);
+    });
+  });
 }
