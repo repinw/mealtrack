@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 
 class ScannedItemRow extends StatefulWidget {
@@ -33,13 +34,24 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
-    _priceController = TextEditingController(
-      text: (widget.item.unitPrice * widget.item.quantity).toStringAsFixed(2),
-    );
+    _priceController = TextEditingController();
     _qtyController = TextEditingController(
       text: widget.item.quantity.toString(),
     );
     _weightController = TextEditingController(text: widget.item.weight ?? '');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = Localizations.localeOf(context).toString();
+    final decimalFormat = NumberFormat.decimalPattern(locale)
+      ..minimumFractionDigits = 2
+      ..maximumFractionDigits = 2;
+
+    _priceController.text = decimalFormat.format(
+      widget.item.unitPrice * widget.item.quantity,
+    );
   }
 
   @override
@@ -50,8 +62,13 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         _nameController.text = widget.item.name;
       }
 
+      final locale = Localizations.localeOf(context).toString();
+      final decimalFormat = NumberFormat.decimalPattern(locale)
+        ..minimumFractionDigits = 2
+        ..maximumFractionDigits = 2;
+
       final total = widget.item.unitPrice * widget.item.quantity;
-      final priceText = total.toStringAsFixed(2);
+      final priceText = decimalFormat.format(total);
       final currentPriceVal = double.tryParse(
         _priceController.text.replaceAll(',', '.'),
       );
@@ -90,12 +107,16 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: widget.item.discounts.entries.map((entry) {
+            final currencyFormat = NumberFormat.simpleCurrency(
+              locale: Localizations.localeOf(context).toString(),
+              name: 'EUR',
+            );
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(entry.key),
                 Text(
-                  "-${entry.value.toStringAsFixed(2)} €",
+                  "-${currencyFormat.format(entry.value)}",
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
@@ -281,9 +302,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                       onChanged: (_) => _updateItem(),
                     ),
                   ),
-                  const Text(
-                    " €",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    " ${NumberFormat.simpleCurrency(locale: Localizations.localeOf(context).toString(), name: 'EUR').currencySymbol}",
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
 
                   const SizedBox(width: 4),

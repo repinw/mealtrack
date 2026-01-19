@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 void main() {
   group('ScannedItemRow Widget Test', () {
@@ -20,6 +21,29 @@ void main() {
       );
     }
 
+    Widget wrap(Widget child) {
+      return MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('de'),
+        home: Scaffold(body: child),
+      );
+    }
+
+    Widget createTestWidget(
+      FridgeItem item, {
+      VoidCallback? onDelete,
+      ValueChanged<FridgeItem>? onChanged,
+    }) {
+      return wrap(
+        ScannedItemRow(
+          item: item,
+          onDelete: onDelete ?? () {},
+          onChanged: onChanged ?? (_) {},
+        ),
+      );
+    }
+
     testWidgets('Happy Path: Changing quantity calls onChanged', (
       tester,
     ) async {
@@ -27,15 +51,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       expect(find.byKey(const Key('quantityField')), findsOneWidget);
@@ -56,15 +72,7 @@ void main() {
       bool onChangedCalled = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (_) => onChangedCalled = true,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (_) => onChangedCalled = true),
       );
 
       final qtyFinder = find.byKey(const Key('quantityField'));
@@ -80,16 +88,11 @@ void main() {
       final item = createItem();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {
-                wasDeleted = true;
-              },
-              onChanged: (_) {},
-            ),
-          ),
+        createTestWidget(
+          item,
+          onDelete: () {
+            wasDeleted = true;
+          },
         ),
       );
 
@@ -104,15 +107,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       await tester.enterText(find.byKey(const Key('nameField')), 'New Name');
@@ -126,19 +121,11 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final priceFinder = find.byKey(const Key('priceField'));
-      await tester.enterText(priceFinder, '15.00');
+      await tester.enterText(priceFinder, '15,00');
       await tester.pump();
       expect(updatedItem?.unitPrice, 15.0);
     });
@@ -176,15 +163,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final weightFinder = find.byKey(const Key('weightField'));
@@ -204,15 +183,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final weightFinder = find.byKey(const Key('weightField'));
@@ -234,17 +205,7 @@ void main() {
         discounts: const {'Rabatt': 2.50},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item));
 
       expect(find.byIcon(Icons.local_offer), findsOneWidget);
     });
@@ -260,25 +221,40 @@ void main() {
         discounts: const {'Sonderrabatt': 2.50},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item));
 
       await tester.tap(find.byIcon(Icons.local_offer));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Enthaltene Rabatte'), findsOneWidget);
-      expect(find.text('Sonderrabatt'), findsOneWidget);
-      expect(find.text('-2.50 €'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Enthaltene Rabatte'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Sonderrabatt'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.textContaining('2,50'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.textContaining('€'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Discount dialog can be dismissed', (tester) async {
@@ -293,17 +269,7 @@ void main() {
         discounts: const {'Rabatt': 2.50},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item));
 
       await tester.tap(find.byIcon(Icons.local_offer));
       await tester.pumpAndSettle();
@@ -319,17 +285,7 @@ void main() {
     ) async {
       final item = createItem();
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item));
 
       expect(find.byIcon(Icons.local_offer), findsNothing);
     });
@@ -363,15 +319,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final priceFinder = find.byKey(const Key('priceField'));
@@ -386,31 +334,11 @@ void main() {
       final item1 = createItem(name: 'Original Name');
       final item2 = createItem(name: 'Updated Name');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item1,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item1));
 
       expect(find.text('Original Name'), findsOneWidget);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item2,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item2));
 
       await tester.pump();
 
@@ -426,36 +354,16 @@ void main() {
       final item1 = createItem(unitPrice: 10.0);
       final item2 = item1.copyWith(unitPrice: 25.0);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item1,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item1));
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item2,
-              onDelete: () {},
-              onChanged: (_) {},
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(item2));
 
       await tester.pump();
 
       final priceField = tester.widget<TextField>(
         find.byKey(const Key('priceField')),
       );
-      expect(priceField.controller?.text, '25.00');
+      expect(priceField.controller?.text, '25,00');
     });
 
     testWidgets(
@@ -464,29 +372,9 @@ void main() {
         final item1 = createItem(quantity: 1);
         final item2 = item1.copyWith(quantity: 5);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ScannedItemRow(
-                item: item1,
-                onDelete: () {},
-                onChanged: (_) {},
-              ),
-            ),
-          ),
-        );
+        await tester.pumpWidget(createTestWidget(item1));
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ScannedItemRow(
-                item: item2,
-                onDelete: () {},
-                onChanged: (_) {},
-              ),
-            ),
-          ),
-        );
+        await tester.pumpWidget(createTestWidget(item2));
 
         await tester.pump();
 
@@ -510,15 +398,7 @@ void main() {
         FridgeItem? updatedItem;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ScannedItemRow(
-                item: item,
-                onDelete: () {},
-                onChanged: (val) => updatedItem = val,
-              ),
-            ),
-          ),
+          createTestWidget(item, onChanged: (val) => updatedItem = val),
         );
 
         final brandFinder = find.byKey(const Key('brandField'));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ReceiptFooter extends StatelessWidget {
@@ -41,7 +42,10 @@ class ReceiptFooter extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "${total.toStringAsFixed(2)} €",
+                  NumberFormat.simpleCurrency(
+                    locale: Localizations.localeOf(context).toString(),
+                    name: 'EUR',
+                  ).format(total),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,

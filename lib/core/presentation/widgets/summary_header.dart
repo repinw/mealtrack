@@ -42,7 +42,10 @@ class SummaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'de_DE', symbol: '€');
+    final currencyFormat = NumberFormat.simpleCurrency(
+      locale: Localizations.localeOf(context).toString(),
+      name: 'EUR',
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
@@ -50,7 +53,6 @@ class SummaryHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Left Side: Label and Total Value
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -61,7 +63,6 @@ class SummaryHeader extends StatelessWidget {
             ],
           ),
 
-          // Right Side: Secondary Info and Item Count Pill
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,

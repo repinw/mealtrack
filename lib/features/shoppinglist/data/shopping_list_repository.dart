@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
@@ -35,20 +36,46 @@ class ShoppingListRepository {
       .doc(_uid)
       .collection(_collectionName);
 
-  Future<void> addItem(ShoppingListItem item) =>
-      _collection.doc(item.id).set(item.toJson());
+  Future<void> addItem(ShoppingListItem item) async {
+    try {
+      await _collection.doc(item.id).set(item.toJson());
+    } catch (e) {
+      debugPrint('Error adding item to shopping list: $e');
+      rethrow;
+    }
+  }
 
-  Future<void> updateItem(ShoppingListItem item) =>
-      _collection.doc(item.id).set(item.toJson(), SetOptions(merge: true));
+  Future<void> updateItem(ShoppingListItem item) async {
+    try {
+      await _collection
+          .doc(item.id)
+          .set(item.toJson(), SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error updating item in shopping list: $e');
+      rethrow;
+    }
+  }
 
-  Future<void> deleteItem(String id) => _collection.doc(id).delete();
+  Future<void> deleteItem(String id) async {
+    try {
+      await _collection.doc(id).delete();
+    } catch (e) {
+      debugPrint('Error deleting item from shopping list: $e');
+      rethrow;
+    }
+  }
 
   Future<void> clearList() async {
-    final snapshot = await _collection.get();
-    final docs = snapshot.docs;
-    await FirestoreUtils.processInBatches(_firestore, docs, (batch, doc) {
-      batch.delete(doc.reference);
-    });
+    try {
+      final snapshot = await _collection.get();
+      final docs = snapshot.docs;
+      await FirestoreUtils.processInBatches(_firestore, docs, (batch, doc) {
+        batch.delete(doc.reference);
+      });
+    } catch (e) {
+      debugPrint('Error clearing shopping list: $e');
+      rethrow;
+    }
   }
 
   Stream<List<ShoppingListItem>> watchItems() => _collection

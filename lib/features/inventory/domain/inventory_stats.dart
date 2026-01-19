@@ -1,13 +1,14 @@
-class InventoryStats {
-  final double totalValue;
-  final int scanCount;
-  final int articleCount;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const InventoryStats({
-    required this.totalValue,
-    required this.scanCount,
-    required this.articleCount,
-  });
+part 'inventory_stats.freezed.dart';
+
+@freezed
+abstract class InventoryStats with _$InventoryStats {
+  const factory InventoryStats({
+    required double totalValue,
+    required int scanCount,
+    required int articleCount,
+  }) = _InventoryStats;
 
   static const empty = InventoryStats(
     totalValue: 0,

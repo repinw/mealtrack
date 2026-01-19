@@ -1,13 +1,14 @@
-class ShoppingListStats {
-  final double totalValue;
-  final int scanCount;
-  final int articleCount;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const ShoppingListStats({
-    required this.totalValue,
-    required this.scanCount,
-    required this.articleCount,
-  });
+part 'shopping_list_stats.freezed.dart';
+
+@freezed
+abstract class ShoppingListStats with _$ShoppingListStats {
+  const factory ShoppingListStats({
+    required double totalValue,
+    required int scanCount,
+    required int articleCount,
+  }) = _ShoppingListStats;
 
   static const empty = ShoppingListStats(
     totalValue: 0,

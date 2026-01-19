@@ -16,7 +16,7 @@ void main() {
 
   group('ShoppingListRepository', () {
     test('addItem adds an item to the collection', () async {
-      final item = ShoppingListItem.create(name: 'Apples');
+      final item = ShoppingListItem.create(name: 'Apples', unitPrice: 1.99);
       await repository.addItem(item);
 
       final snapshot = await fakeFirestore
@@ -28,13 +28,18 @@ void main() {
 
       expect(snapshot.exists, isTrue);
       expect(snapshot.data()!['name'], 'Apples');
+      expect(snapshot.data()!['unitPrice'], 1.99);
     });
 
     test('updateItem updates an existing item (merge)', () async {
-      final item = ShoppingListItem.create(name: 'Apples', quantity: 1);
+      final item = ShoppingListItem.create(
+        name: 'Apples',
+        quantity: 1,
+        unitPrice: 1.50,
+      );
       await repository.addItem(item);
 
-      final updatedItem = item.copyWith(quantity: 5);
+      final updatedItem = item.copyWith(quantity: 5, unitPrice: 2.00);
       await repository.updateItem(updatedItem);
 
       final snapshot = await fakeFirestore
@@ -46,6 +51,7 @@ void main() {
 
       expect(snapshot.data()!['quantity'], 5);
       expect(snapshot.data()!['name'], 'Apples');
+      expect(snapshot.data()!['unitPrice'], 2.00);
     });
 
     test('deleteItem removes an item', () async {
