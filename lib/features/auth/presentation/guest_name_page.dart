@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mealtrack/core/extensions/user_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';

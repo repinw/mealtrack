@@ -26,15 +26,12 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final currencyFormat = NumberFormat.currency(locale: 'de_DE', symbol: '€');
 
-    const backgroundColor = AppTheme.primaryColor;
-    const accentColor = AppTheme.secondaryColor;
-    const textColor = AppTheme.white;
     const labelColor = Colors.grey;
     const highlightColor = AppTheme.accentColor;
 
     return AppBar(
       toolbarHeight: kToolbarHeight,
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.primaryColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: false,
@@ -103,7 +100,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     currencyFormat.format(stats.totalValue),
                     style: const TextStyle(
                       fontSize: 32,
-                      color: textColor,
+                      color: AppTheme.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -136,7 +133,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: accentColor,
+                      color: AppTheme.secondaryColor,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white12),
                     ),

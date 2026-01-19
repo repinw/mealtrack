@@ -9,9 +9,13 @@ import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
 import 'package:mealtrack/features/auth/presentation/welcome_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_stats.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
+import 'package:mealtrack/core/models/user_profile.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -55,6 +59,11 @@ class MockInventoryFilterNotifier extends InventoryFilter {
 class MockScannerViewModel extends ScannerViewModel {
   @override
   Future<List<FridgeItem>> build() async => [];
+}
+
+class MockShoppingList extends ShoppingList {
+  @override
+  Stream<List<ShoppingListItem>> build() => Stream.value([]);
 }
 
 void main() {
@@ -158,6 +167,16 @@ void main() {
           ),
           inventoryStatsProvider.overrideWith((ref) => InventoryStats.empty),
           scannerViewModelProvider.overrideWith(() => MockScannerViewModel()),
+          userProfileProvider.overrideWith(
+            (ref) => Stream.value(
+              UserProfile(
+                uid: mockUser.uid,
+                email: mockUser.email,
+                displayName: mockUser.displayName,
+              ),
+            ),
+          ),
+          shoppingListProvider.overrideWith(() => MockShoppingList()),
         ],
       );
       addTearDown(container.dispose);

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mocktail/mocktail.dart';
 

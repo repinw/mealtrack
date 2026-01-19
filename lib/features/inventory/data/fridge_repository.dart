@@ -1,26 +1,46 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
+import 'package:mealtrack/core/utils/firestore_utils.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'fridge_repository.g.dart';
 
 @riverpod
 FridgeRepository fridgeRepository(Ref ref) {
-  return FridgeRepository(
-    firestoreService: ref.watch(firestoreServiceProvider),
-  );
+  final authState = ref.watch(authStateChangesProvider);
+  final user = authState.value;
+  final profile = ref.watch(userProfileProvider).value;
+  final firestore = ref.watch(firebaseFirestoreProvider);
+
+  if (user == null) {
+    throw Exception('User not authenticated');
+  }
+
+  final targetUid = profile?.householdId ?? user.uid;
+  final collection = firestore
+      .collection(usersCollection)
+      .doc(targetUid)
+      .collection(inventoryCollection);
+
+  return FridgeRepository(collection);
 }
 
 class FridgeRepository {
-  final FirestoreService _firestoreService;
+  final CollectionReference<Map<String, dynamic>> _collection;
+  final FirebaseFirestore _firestore;
 
-  FridgeRepository({required FirestoreService firestoreService})
-    : _firestoreService = firestoreService;
+  FridgeRepository(this._collection) : _firestore = _collection.firestore;
 
   Future<List<FridgeItem>> getItems() async {
     try {
-      return await _firestoreService.getItems();
+      final snapshot = await _collection.get();
+      return snapshot.docs
+          .map((doc) => FridgeItem.fromJson(doc.data()))
+          .toList();
     } catch (e) {
       debugPrint('Error loading items from repository: $e');
       rethrow;
@@ -28,12 +48,18 @@ class FridgeRepository {
   }
 
   Stream<List<FridgeItem>> watchItems() {
-    return _firestoreService.watchItems();
+    return _collection.snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => FridgeItem.fromJson(doc.data()))
+          .toList();
+    });
   }
 
   Future<void> addItems(List<FridgeItem> items) async {
     try {
-      await _firestoreService.addItemsBatch(items);
+      await FirestoreUtils.processInBatches(_firestore, items, (batch, item) {
+        batch.set(_collection.doc(item.id), item.toJson());
+      });
     } catch (e) {
       debugPrint('Error adding items in repository: $e');
       rethrow;
@@ -42,7 +68,7 @@ class FridgeRepository {
 
   Future<void> updateItem(FridgeItem item) async {
     try {
-      await _firestoreService.updateItem(item);
+      await _collection.doc(item.id).update(item.toJson());
     } catch (e) {
       debugPrint('Error updating item in repository: $e');
       rethrow;
@@ -51,7 +77,9 @@ class FridgeRepository {
 
   Future<void> updateItemsBatch(List<FridgeItem> items) async {
     try {
-      await _firestoreService.updateItemsBatch(items);
+      await FirestoreUtils.processInBatches(_firestore, items, (batch, item) {
+        batch.update(_collection.doc(item.id), item.toJson());
+      });
     } catch (e) {
       debugPrint('Error batch updating items in repository: $e');
       rethrow;
@@ -60,7 +88,9 @@ class FridgeRepository {
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     try {
-      await _firestoreService.updateItem(item.adjustQuantity(delta));
+      await _collection
+          .doc(item.id)
+          .update(item.adjustQuantity(delta).toJson());
     } catch (e) {
       debugPrint('Error updating quantity in repository: $e');
       rethrow;
@@ -69,7 +99,11 @@ class FridgeRepository {
 
   Future<void> deleteAllItems() async {
     try {
-      await _firestoreService.deleteAllItems();
+      final snapshot = await _collection.get();
+      final items = snapshot.docs;
+      await FirestoreUtils.processInBatches(_firestore, items, (batch, doc) {
+        batch.delete(doc.reference);
+      });
     } catch (e) {
       debugPrint('Error deleting all items in repository: $e');
       rethrow;
@@ -78,7 +112,7 @@ class FridgeRepository {
 
   Future<void> deleteItem(String id) async {
     try {
-      await _firestoreService.deleteItem(id);
+      await _collection.doc(id).delete();
     } catch (e) {
       debugPrint('Error deleting item in repository: $e');
       rethrow;

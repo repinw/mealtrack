@@ -8,8 +8,7 @@ import 'package:mealtrack/app.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/service/firebase_ai_service.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 
@@ -74,9 +73,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         firebaseAiServiceProvider.overrideWithValue(mockFirebaseAiService),
-        firestoreServiceProvider.overrideWith(
-          (ref) => FirestoreService(FakeFirebaseFirestore(), 'test_user'),
-        ),
+
         authStateChangesProvider.overrideWith(
           (ref) => Stream.value(MockUser()),
         ),

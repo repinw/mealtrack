@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/sharing_card.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -8,6 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
+
+class FakeHouseholdRepository extends Fake implements HouseholdRepository {
+}
 
 void main() {
   late AppLocalizations l10n;
@@ -24,6 +29,9 @@ void main() {
       overrides: [
         firebaseFirestoreProvider.overrideWithValue(fakeFirestore),
         firebaseAuthProvider.overrideWithValue(mockAuth),
+        householdRepositoryProvider.overrideWith(
+          (ref) => FakeHouseholdRepository(),
+        ),
       ],
       child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

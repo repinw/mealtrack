@@ -5,13 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/members_section.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
-// Manual Fakes
-class FakeFirestoreService extends Fake implements FirestoreService {
+class FakeHouseholdRepository extends Fake implements HouseholdRepository {
   String? removedMemberId;
 
   @override
@@ -28,10 +27,10 @@ class FakeUser extends Fake implements User {
 }
 
 void main() {
-  late FakeFirestoreService fakeFirestoreService;
+  late FakeHouseholdRepository fakeRepository;
 
   setUp(() {
-    fakeFirestoreService = FakeFirestoreService();
+    fakeRepository = FakeHouseholdRepository();
   });
 
   Widget createWidgetUnderTest({
@@ -42,7 +41,7 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        firestoreServiceProvider.overrideWith((ref) => fakeFirestoreService),
+        householdRepositoryProvider.overrideWith((ref) => fakeRepository),
         firebaseAuthProvider.overrideWith(
           (ref) => MockFirebaseAuth(currentUser),
         ),
@@ -72,7 +71,7 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        firestoreServiceProvider.overrideWith((ref) => fakeFirestoreService),
+        householdRepositoryProvider.overrideWith((ref) => fakeRepository),
         firebaseAuthProvider.overrideWith(
           (ref) => MockFirebaseAuth(currentUser),
         ),
@@ -171,9 +170,6 @@ void main() {
 
       // Should find remove button for guest
       expect(find.byIcon(Icons.remove_circle_outline), findsOneWidget);
-      // Host shouldn't have remove button (checked by code logic: if (isMe) no remove button logic?)
-      // Code: if (isHost && !isMe) show icon.
-      // So host doesn't see one for themselves, but sees for guest.
     });
 
     testWidgets('does NOT show remove button when current user is guest', (
@@ -225,7 +221,7 @@ void main() {
       // Cancel
       await tester.tap(find.text('Abbrechen'));
       await tester.pumpAndSettle();
-      expect(fakeFirestoreService.removedMemberId, isNull);
+      expect(fakeRepository.removedMemberId, isNull);
 
       // Re-open and Confirm
       await tester.tap(find.byIcon(Icons.remove_circle_outline));
@@ -233,7 +229,7 @@ void main() {
       await tester.tap(find.text('Entfernen'));
       await tester.pumpAndSettle();
 
-      expect(fakeFirestoreService.removedMemberId, 'guest1');
+      expect(fakeRepository.removedMemberId, 'guest1');
     });
 
     testWidgets('shows loading indicator', (tester) async {

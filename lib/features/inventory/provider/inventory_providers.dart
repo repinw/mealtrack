@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_stats.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
@@ -262,24 +263,6 @@ final fridgeItemProvider = Provider.autoDispose.family<FridgeItem, String>((
     }),
   );
 });
-
-class InventoryStats {
-  final double totalValue;
-  final int scanCount;
-  final int articleCount;
-
-  const InventoryStats({
-    required this.totalValue,
-    required this.scanCount,
-    required this.articleCount,
-  });
-
-  static const empty = InventoryStats(
-    totalValue: 0,
-    scanCount: 0,
-    articleCount: 0,
-  );
-}
 
 @riverpod
 InventoryStats inventoryStats(Ref ref) {

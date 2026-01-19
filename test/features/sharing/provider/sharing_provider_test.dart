@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/sharing/provider/sharing_provider.dart';
 
-// Manual Fake
-class FakeFirestoreService extends Fake implements FirestoreService {
+class FakeHouseholdRepository extends Fake implements HouseholdRepository {
   String? errorToThrow;
   String generatedCode = '123456';
   String? joinedCode;
@@ -23,16 +22,16 @@ class FakeFirestoreService extends Fake implements FirestoreService {
 }
 
 void main() {
-  late FakeFirestoreService fakeFirestoreService;
+  late FakeHouseholdRepository fakeRepository;
 
   setUp(() {
-    fakeFirestoreService = FakeFirestoreService();
+    fakeRepository = FakeHouseholdRepository();
   });
 
   ProviderContainer makeContainer() {
     final container = ProviderContainer(
       overrides: [
-        firestoreServiceProvider.overrideWithValue(fakeFirestoreService),
+        householdRepositoryProvider.overrideWithValue(fakeRepository),
       ],
     );
     addTearDown(container.dispose);
@@ -62,7 +61,7 @@ void main() {
 
       test('sets state to AsyncError on failure', () async {
         final container = makeContainer();
-        fakeFirestoreService.errorToThrow = 'Generate Error';
+        fakeRepository.errorToThrow = 'Generate Error';
 
         await container.read(sharingViewModelProvider.notifier).generateCode();
 
@@ -84,12 +83,12 @@ void main() {
         final state = container.read(sharingViewModelProvider);
         expect(state.value, 'JOINED');
         expect(state, isA<AsyncData>());
-        expect(fakeFirestoreService.joinedCode, codeToJoin);
+        expect(fakeRepository.joinedCode, codeToJoin);
       });
 
       test('sets state to AsyncError on failure', () async {
         final container = makeContainer();
-        fakeFirestoreService.errorToThrow = 'Join Error';
+        fakeRepository.errorToThrow = 'Join Error';
 
         await container
             .read(sharingViewModelProvider.notifier)
@@ -104,7 +103,7 @@ void main() {
         'sets state to AsyncError with "Invalid Code" for UI handling',
         () async {
           final container = makeContainer();
-          fakeFirestoreService.errorToThrow = 'Invalid Code';
+          fakeRepository.errorToThrow = 'Invalid Code';
 
           await container
               .read(sharingViewModelProvider.notifier)

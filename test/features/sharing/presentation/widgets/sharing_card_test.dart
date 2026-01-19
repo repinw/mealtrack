@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/invite_section.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/join_section.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/members_section.dart';
 import 'package:mealtrack/features/sharing/presentation/widgets/sharing_card.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
-class FakeFirestoreService extends Fake implements FirestoreService {
+class FakeHouseholdRepository extends Fake implements HouseholdRepository {
   bool leaveHouseholdCalled = false;
 
   @override
@@ -38,10 +38,10 @@ class MockFirebaseAuth extends Fake implements FirebaseAuth {
 }
 
 void main() {
-  late FakeFirestoreService fakeFirestoreService;
+  late FakeHouseholdRepository fakeRepository;
 
   setUp(() {
-    fakeFirestoreService = FakeFirestoreService();
+    fakeRepository = FakeHouseholdRepository();
   });
 
   Widget createWidgetUnderTest({
@@ -51,7 +51,7 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        firestoreServiceProvider.overrideWith((ref) => fakeFirestoreService),
+        householdRepositoryProvider.overrideWith((ref) => fakeRepository),
         firebaseAuthProvider.overrideWith(
           (ref) => MockFirebaseAuth(currentUser),
         ),
@@ -209,14 +209,14 @@ void main() {
 
       await tester.tap(find.text('Abbrechen'));
       await tester.pumpAndSettle();
-      expect(fakeFirestoreService.leaveHouseholdCalled, isFalse);
+      expect(fakeRepository.leaveHouseholdCalled, isFalse);
 
       await tester.tap(find.text('Haushalt verlassen'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Verlassen'));
       await tester.pumpAndSettle();
 
-      expect(fakeFirestoreService.leaveHouseholdCalled, isTrue);
+      expect(fakeRepository.leaveHouseholdCalled, isTrue);
     });
   });
 }

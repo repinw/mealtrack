@@ -14,7 +14,7 @@ class InventoryItemRow extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     ref
         .read(shoppingListProvider.notifier)
-        .addItem(item.name, brand: item.brand);
+        .addItem(item.name, brand: item.brand, unitPrice: item.unitPrice);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.itemAddedToShoppingList(item.name))),

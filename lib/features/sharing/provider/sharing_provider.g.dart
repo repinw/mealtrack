@@ -43,7 +43,7 @@ final class SharingViewModelProvider
   }
 }
 
-String _$sharingViewModelHash() => r'fd7d06abc1ad778f6574b1df9b881cbba827413d';
+String _$sharingViewModelHash() => r'347ad4fae057c27f5ac21b996c253356fe7427c9';
 
 abstract class _$SharingViewModel extends $Notifier<AsyncValue<String?>> {
   AsyncValue<String?> build();

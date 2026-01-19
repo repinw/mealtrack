@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,31 +9,44 @@ import 'package:mealtrack/l10n/app_localizations.dart';
 
 // Fake Repository for UI Test
 class FakeShoppingListRepository implements ShoppingListRepository {
-  final List<ShoppingListItem> items;
+  List<ShoppingListItem> items;
+  final _controller = StreamController<List<ShoppingListItem>>.broadcast();
 
   FakeShoppingListRepository(this.items);
 
   @override
-  Stream<List<ShoppingListItem>> watchItems() {
-    return Stream.value(items);
+  Stream<List<ShoppingListItem>> watchItems() async* {
+    yield items;
+    yield* _controller.stream;
   }
 
   @override
-  Future<void> addItem(ShoppingListItem item) async {}
+  Future<void> addItem(ShoppingListItem item) async {
+    items = [...items, item];
+    _controller.add(items);
+  }
 
   final List<String> deletedIds = [];
 
   @override
   Future<void> deleteItem(String id) async {
     deletedIds.add(id);
+    items = items.where((i) => i.id != id).toList();
+    _controller.add(items);
   }
 
   @override
-  Future<void> updateItem(ShoppingListItem item) async {}
+  Future<void> updateItem(ShoppingListItem item) async {
+    items = items.map((i) => i.id == item.id ? item : i).toList();
+    _controller.add(items);
+  }
+
   bool clearListCalled = false;
   @override
   Future<void> clearList() async {
     clearListCalled = true;
+    items = [];
+    _controller.add(items);
   }
 }
 
