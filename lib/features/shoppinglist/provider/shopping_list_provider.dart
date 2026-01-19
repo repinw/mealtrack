@@ -14,12 +14,24 @@ class ShoppingList extends _$ShoppingList {
 
   Future<void> addItem(String name, {String? brand, int quantity = 1}) async {
     final repository = ref.read(shoppingListRepositoryProvider);
-    final item = ShoppingListItem.create(
-      name: name,
-      brand: brand,
-      quantity: quantity,
-    );
-    await repository.addItem(item);
+    final items = await repository.watchItems().first;
+
+    try {
+      final existingItem = items.firstWhere(
+        (i) => i.name == name && i.brand == brand,
+      );
+      final updated = existingItem.copyWith(
+        quantity: existingItem.quantity + quantity,
+      );
+      await repository.updateItem(updated);
+    } catch (_) {
+      final item = ShoppingListItem.create(
+        name: name,
+        brand: brand,
+        quantity: quantity,
+      );
+      await repository.addItem(item);
+    }
   }
 
   Future<void> deleteItem(String id) async {

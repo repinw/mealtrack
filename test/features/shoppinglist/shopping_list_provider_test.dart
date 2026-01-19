@@ -68,17 +68,61 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      // We need to access the notifier to call methods
       final provider = container.read(shoppingListProvider.notifier);
 
-      // Attempt to add an item
-      // This will fail (compilation or runtime) until we implement addItem in the provider
       await provider.addItem('Milk');
 
-      // Verify repository was updated
       final items = await repository.watchItems().first;
       expect(items.length, 1);
       expect(items.first.name, 'Milk');
+      expect(items.first.quantity, 1);
+    });
+
+    test('addItem should increment quantity if item already exists', () async {
+      final repository = FakeShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = container.read(shoppingListProvider.notifier);
+
+      await provider.addItem('Milk');
+      await provider.addItem('Milk');
+
+      final items = await repository.watchItems().first;
+      expect(items.length, 1);
+      expect(items.first.name, 'Milk');
+      expect(items.first.quantity, 2);
+    });
+
+    test('addItem should match brand when checking for duplicates', () async {
+      final repository = FakeShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = container.read(shoppingListProvider.notifier);
+
+      await provider.addItem('Milk', brand: 'Brand A');
+      await provider.addItem('Milk', brand: 'Brand B');
+
+      final items = await repository.watchItems().first;
+      expect(items.length, 2);
+      expect(items[0].brand, 'Brand A');
+      expect(items[1].brand, 'Brand B');
+
+      await provider.addItem('Milk', brand: 'Brand A');
+      final items2 = await repository.watchItems().first;
+      expect(items2.length, 2);
+      // Depending on list order implementation, find by brand
+      final brandA = items2.firstWhere((i) => i.brand == 'Brand A');
+      expect(brandA.quantity, 2);
     });
 
     test('deleteItem should remove item from repository', () async {

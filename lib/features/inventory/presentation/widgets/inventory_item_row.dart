@@ -10,6 +10,18 @@ class InventoryItemRow extends ConsumerWidget {
 
   const InventoryItemRow({super.key, required this.itemId});
 
+  void _addItemToShoppingList(BuildContext context, WidgetRef ref, item) {
+    final l10n = AppLocalizations.of(context)!;
+    ref
+        .read(shoppingListProvider.notifier)
+        .addItem(item.name, brand: item.brand);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.itemAddedToShoppingList(item.name))),
+      );
+    }
+  }
+
   void _handleQuantityUpdate(
     BuildContext context,
     WidgetRef ref,
@@ -57,27 +69,11 @@ class InventoryItemRow extends ConsumerWidget {
         child: const Icon(Icons.shopping_cart, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
-        ref
-            .read(shoppingListProvider.notifier)
-            .addItem(item.name, brand: item.brand);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.itemAddedToShoppingList(item.name))),
-          );
-        }
+        _addItemToShoppingList(context, ref, item);
         return false;
       },
       child: InkWell(
-        onLongPress: () {
-          ref
-              .read(shoppingListProvider.notifier)
-              .addItem(item.name, brand: item.brand);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.itemAddedToShoppingList(item.name))),
-            );
-          }
-        },
+        onLongPress: () => _addItemToShoppingList(context, ref, item),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           decoration: const BoxDecoration(
