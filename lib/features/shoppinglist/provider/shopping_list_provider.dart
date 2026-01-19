@@ -17,7 +17,7 @@ class ShoppingList extends _$ShoppingList {
     String name, {
     String? brand,
     int quantity = 1,
-    double? unitPrice = 0.0,
+    double? unitPrice,
   }) async {
     final repository = ref.read(shoppingListRepositoryProvider);
     final items = await repository.watchItems().first;

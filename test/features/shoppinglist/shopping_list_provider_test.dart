@@ -120,7 +120,31 @@ void main() {
     });
 
     test(
-      'addItem should keep old unitPrice if new one is not provided',
+      'addItem should keep old unitPrice if new one is not provided (default null)',
+      () async {
+        final repository = FakeShoppingListRepository();
+        final container = ProviderContainer(
+          overrides: [
+            shoppingListRepositoryProvider.overrideWith((ref) => repository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final provider = container.read(shoppingListProvider.notifier);
+
+        await provider.addItem('Milk', unitPrice: 1.5);
+        await provider.addItem('Milk'); // No unitPrice provided
+
+        final items = await repository.watchItems().first;
+        expect(items.length, 1);
+        expect(items.first.name, 'Milk');
+        expect(items.first.quantity, 2);
+        expect(items.first.unitPrice, 1.5);
+      },
+    );
+
+    test(
+      'addItem should keep old unitPrice if new one is explicitly null',
       () async {
         final repository = FakeShoppingListRepository();
         final container = ProviderContainer(
@@ -385,6 +409,37 @@ void main() {
 
       expect(stats.totalValue, 15.0);
       expect(stats.articleCount, 3);
+    });
+
+    test('addItem with new price updates totalValue in stats', () async {
+      final repository = FakeShoppingListRepository();
+      final container = ProviderContainer(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Listen to both providers
+      container.listen(shoppingListProvider, (_, _) {});
+      container.listen(shoppingListStatsProvider, (_, _) {});
+
+      final provider = container.read(shoppingListProvider.notifier);
+
+      // 1. Add item with price 1.5
+      await provider.addItem('Milk', unitPrice: 1.5, quantity: 2);
+      await container.read(shoppingListProvider.future);
+
+      expect(container.read(shoppingListStatsProvider).totalValue, 3.0);
+
+      // 2. Add same item with price 2.0 (new price)
+      await provider.addItem('Milk', unitPrice: 2.0, quantity: 1);
+      await container.read(shoppingListProvider.future);
+
+      // Total quantity: 2 + 1 = 3
+      // New price should be 2.0
+      // Expected total: 3 * 2.0 = 6.0
+      expect(container.read(shoppingListStatsProvider).totalValue, 6.0);
     });
   });
 }
