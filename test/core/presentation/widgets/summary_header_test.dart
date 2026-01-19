@@ -86,5 +86,28 @@ void main() {
       // Check that there is only one Column in the right side (or rather, no 'SECONDARY' text)
       expect(find.text('SECONDARY'), findsNothing);
     });
+
+    testWidgets('handles very large total value without overflow', (
+      WidgetTester tester,
+    ) async {
+      // Using a large value to check for potential overflows in the UI
+      await tester.pumpWidget(
+        createTestWidget(
+          const SummaryHeader(
+            label: 'VERY LARGE VALUE LABEL',
+            totalValue: 999999.99,
+            articleCount: 999,
+          ),
+        ),
+      );
+
+      expect(find.text('VERY LARGE VALUE LABEL'), findsOneWidget);
+      // Depending on locale formatting, 999.999,99 €
+      expect(find.text('999.999,99 €'), findsOneWidget);
+      expect(find.text('999 Teile'), findsOneWidget);
+
+      // No overflow should occur. tester.pumpWidget would throw if it did in some cases,
+      // but we can also check for the presence of the widgets.
+    });
   });
 }
