@@ -387,4 +387,38 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get addItemNotImplemented => 'Hinzufügen - Noch nicht implementiert';
+
+  @override
+  String itemAddedToShoppingList(String name) {
+    return '$name zur Einkaufsliste hinzugefügt';
+  }
+
+  @override
+  String unitPriceLabel(String price) {
+    return '$price€ / Stk';
+  }
+
+  @override
+  String get shoppingListEmpty => 'Keine Einträge';
+
+  @override
+  String get shoppingListClearTitle => 'Liste leeren?';
+
+  @override
+  String get shoppingListClearConfirmation =>
+      'Möchtest du wirklich alle Einträge löschen?';
+
+  @override
+  String errorDisplay(Object error) {
+    return 'Fehler: $error';
+  }
+
+  @override
+  String get add => 'Hinzufügen';
+
+  @override
+  String get addItemTitle => 'Artikel hinzufügen';
+
+  @override
+  String get addItemHint => 'z.B. Milch';
 }

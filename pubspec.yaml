@@ -62,6 +62,7 @@ dependencies:
   json_annotation: ^4.9.0
   firebase_ui_localizations: ^2.0.1
   shared_preferences: ^2.5.4
+  rxdart: ^0.28.0
 
 
 dev_dependencies:

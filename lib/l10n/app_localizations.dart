@@ -801,6 +801,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Hinzufügen - Noch nicht implementiert'**
   String get addItemNotImplemented;
+
+  /// No description provided for @itemAddedToShoppingList.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} zur Einkaufsliste hinzugefügt'**
+  String itemAddedToShoppingList(String name);
+
+  /// No description provided for @unitPriceLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'{price}€ / Stk'**
+  String unitPriceLabel(String price);
+
+  /// No description provided for @shoppingListEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Einträge'**
+  String get shoppingListEmpty;
+
+  /// No description provided for @shoppingListClearTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste leeren?'**
+  String get shoppingListClearTitle;
+
+  /// No description provided for @shoppingListClearConfirmation.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du wirklich alle Einträge löschen?'**
+  String get shoppingListClearConfirmation;
+
+  /// No description provided for @errorDisplay.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {error}'**
+  String errorDisplay(Object error);
+
+  /// No description provided for @add.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get add;
+
+  /// No description provided for @addItemTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel hinzufügen'**
+  String get addItemTitle;
+
+  /// No description provided for @addItemHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Milch'**
+  String get addItemHint;
 }
 
 class _AppLocalizationsDelegate

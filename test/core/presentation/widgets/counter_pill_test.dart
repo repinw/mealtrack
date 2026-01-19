@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/core/presentation/widgets/action_button.dart';
 
 void main() {
   group('CounterPill', () {
-    testWidgets('renders quantity/initialQuantity text correctly', (
-      tester,
-    ) async {
+    testWidgets('renders quantity/maxQuantity text correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: CounterPill(
               quantity: 42,
-              initialQuantity: 100,
+              maxQuantity: 100,
               isOutOfStock: false,
               onUpdate: (_) {},
             ),
@@ -40,7 +38,7 @@ void main() {
           home: Scaffold(
             body: CounterPill(
               quantity: 5,
-              initialQuantity: 10,
+              maxQuantity: 10,
               isOutOfStock: false,
               onUpdate: (_) {},
             ),
@@ -77,7 +75,7 @@ void main() {
           home: Scaffold(
             body: CounterPill(
               quantity: 0,
-              initialQuantity: 10,
+              maxQuantity: 10,
               isOutOfStock: true,
               onUpdate: (_) {},
             ),
@@ -106,7 +104,7 @@ void main() {
           home: Scaffold(
             body: CounterPill(
               quantity: 10,
-              initialQuantity: 10,
+              maxQuantity: 10,
               isOutOfStock: false,
               canIncrease: false,
               onUpdate: (_) {},
@@ -135,7 +133,7 @@ void main() {
             home: Scaffold(
               body: CounterPill(
                 quantity: 5,
-                initialQuantity: 10,
+                maxQuantity: 10,
                 isOutOfStock: false,
                 canIncrease: true,
                 onUpdate: (delta) {
@@ -160,7 +158,7 @@ void main() {
             home: Scaffold(
               body: CounterPill(
                 quantity: 5,
-                initialQuantity: 10,
+                maxQuantity: 10,
                 isOutOfStock: false,
                 onUpdate: (delta) {
                   if (delta == -1) called = true;
@@ -181,8 +179,9 @@ void main() {
           home: Scaffold(
             body: CounterPill(
               quantity: 0,
-              initialQuantity: 10,
+              maxQuantity: 10,
               isOutOfStock: true,
+              canDecrease: false,
               onUpdate: (_) {},
             ),
           ),
@@ -208,7 +207,7 @@ void main() {
           home: Scaffold(
             body: CounterPill(
               quantity: 5,
-              initialQuantity: 10,
+              maxQuantity: 10,
               isOutOfStock: false,
               onUpdate: null, // Simulate archived/read-only state
             ),

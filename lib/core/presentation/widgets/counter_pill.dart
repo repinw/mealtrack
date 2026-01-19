@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/core/presentation/widgets/action_button.dart';
 
 class CounterPill extends StatelessWidget {
   final int quantity;
-  final int initialQuantity;
+  final int? maxQuantity;
   final bool isOutOfStock;
   final bool canIncrease;
+  final bool canDecrease;
   final ValueChanged<int>? onUpdate;
 
   const CounterPill({
     super.key,
     required this.quantity,
-    required this.initialQuantity,
-    required this.isOutOfStock,
+    this.maxQuantity,
+    this.isOutOfStock = false,
     this.canIncrease = true,
+    this.canDecrease = true,
     this.onUpdate,
   });
 
@@ -53,23 +55,25 @@ class CounterPill extends StatelessWidget {
   Widget _buildMinusButton() {
     return ActionButton(
       icon: Icons.remove,
-      onTap: (isOutOfStock || onUpdate == null) ? null : () => onUpdate!(-1),
+      onTap: (!canDecrease || onUpdate == null) ? null : () => onUpdate!(-1),
     );
   }
 
   Widget _buildPlusButton() {
     return ActionButton(
       icon: Icons.add,
-      onTap: (canIncrease && onUpdate != null) ? () => onUpdate!(1) : null,
+      onTap: (!canIncrease || onUpdate == null) ? null : () => onUpdate!(1),
     );
   }
 
   Widget _buildQuantityText(BuildContext context) {
+    final text = maxQuantity != null ? '$quantity / $maxQuantity' : '$quantity';
+
     return SizedBox(
       width: 40,
       child: Center(
         child: Text(
-          '$quantity / $initialQuantity',
+          text,
           style: TextStyle(
             color: _getBadgeTextColor(context),
             fontSize: 12,

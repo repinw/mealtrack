@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+
+class AddShoppingItemDialog extends ConsumerStatefulWidget {
+  const AddShoppingItemDialog({super.key});
+
+  @override
+  ConsumerState<AddShoppingItemDialog> createState() =>
+      _AddShoppingItemDialogState();
+}
+
+class _AddShoppingItemDialogState extends ConsumerState<AddShoppingItemDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      final navigator = Navigator.of(context);
+
+      try {
+        await ref.read(shoppingListProvider.notifier).addItem(text);
+        if (mounted) {
+          navigator.pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.quantityUpdateFailed,
+              ), // Use generic error or add new string
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(l10n.addItemTitle),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: InputDecoration(hintText: l10n.addItemHint),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        TextButton(onPressed: _submit, child: Text(l10n.add)),
+      ],
+    );
+  }
+}

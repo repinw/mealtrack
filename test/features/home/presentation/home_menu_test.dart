@@ -17,6 +17,23 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
+
+class FakeShoppingListRepository implements ShoppingListRepository {
+  @override
+  Stream<List<ShoppingListItem>> watchItems() => Stream.value([]);
+  @override
+  Future<void> addItem(ShoppingListItem item) async {}
+  @override
+  Future<void> deleteItem(String id) async {}
+  @override
+  Future<void> clearList() async {}
+  @override
+  Future<void> updateItem(ShoppingListItem item) async {}
+}
+
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
 class MockFridgeItemsNotifier extends FridgeItems {
@@ -84,6 +101,9 @@ void main() {
         fridgeItemsProvider.overrideWith(() => MockFridgeItemsNotifier()),
         firebaseFirestoreProvider.overrideWithValue(fakeFirestore),
         firebaseAuthProvider.overrideWithValue(mockAuth),
+        shoppingListRepositoryProvider.overrideWithValue(
+          FakeShoppingListRepository(),
+        ),
         ...additionalOverrides,
       ],
       child: const MaterialApp(
@@ -134,13 +154,17 @@ void main() {
       expect(find.byType(BottomSheet), findsOneWidget);
     });
 
-    testWidgets('FAB shows SnackBar with addItemNotImplemented on non-Tab 0', (
+    testWidgets('FAB shows add icon on Shopping List Tab (Index 1)', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      // Navigate to Shopping List
+      await tester.tap(find.text(l10n.shoppinglist));
+      await tester.pumpAndSettle(); // Animation
+
+      expect(find.byIcon(Icons.add), findsOneWidget);
     });
   });
 
@@ -195,7 +219,7 @@ void main() {
       await tester.tap(find.text(l10n.shoppinglist));
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n.featureInProgress), findsOneWidget);
+      expect(find.byType(ShoppingListPage), findsOneWidget);
     });
 
     testWidgets('tapping Kalorien shows featureInProgress snackbar', (
