@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
 
@@ -139,10 +139,11 @@ class InventoryItemRow extends ConsumerWidget {
 
               CounterPill(
                 quantity: item.quantity,
-                initialQuantity: item.initialQuantity,
+                maxQuantity: item.initialQuantity,
                 isOutOfStock: isOutOfStock,
                 canIncrease:
                     !isArchived && item.quantity < item.initialQuantity,
+                canDecrease: item.quantity > 0,
                 onUpdate: isArchived
                     ? null
                     : (delta) =>

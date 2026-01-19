@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
 
 class ShoppingListItemRow extends ConsumerWidget {
   final ShoppingListItem item;
@@ -77,49 +77,14 @@ class ShoppingListItemRow extends ConsumerWidget {
   }
 
   Widget _buildCounterPill(BuildContext context, WidgetRef ref) {
-    // Logic from CounterPill.dart (simplified for in-stock only)
-    final colorScheme = Theme.of(context).colorScheme;
-    final backgroundColor = colorScheme.secondaryContainer;
-    final textColor = colorScheme.onSecondaryContainer;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ActionButton(
-            icon: Icons.remove,
-            onTap: item.quantity > 1
-                ? () => ref
-                      .read(shoppingListProvider.notifier)
-                      .updateQuantity(item.id, -1)
-                : null,
-          ),
-          SizedBox(
-            width: 40, // Match CounterPill width exactly
-            child: Center(
-              child: Text(
-                '${item.quantity}',
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          ActionButton(
-            icon: Icons.add,
-            onTap: () => ref
-                .read(shoppingListProvider.notifier)
-                .updateQuantity(item.id, 1),
-          ),
-        ],
-      ),
+    return CounterPill(
+      quantity: item.quantity,
+      isOutOfStock:
+          false,
+      canDecrease: item.quantity > 1,
+      onUpdate: (delta) {
+        ref.read(shoppingListProvider.notifier).updateQuantity(item.id, delta);
+      },
     );
   }
 }

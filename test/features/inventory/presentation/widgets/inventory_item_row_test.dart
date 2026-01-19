@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/counter_pill.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
+import 'package:mealtrack/core/presentation/widgets/action_button.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
@@ -261,9 +261,6 @@ void main() {
         reason: 'onUpdate should be null for archived items',
       );
 
-      // Verify visual disabled state via helper validation or button check
-      // We know from counter_pill_test that null onUpdate disables buttons.
-      // We can optionally verify the buttons are disabled explicitly if we want to be thorough.
 
       final minusButton = find.descendant(
         of: counterPillFinder,

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_item_row.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/action_button.dart';
+import 'package:mealtrack/core/presentation/widgets/action_button.dart';
 
 // Fake Repo for toggle
 class FakeShoppingListRepository implements ShoppingListRepository {
@@ -96,5 +96,28 @@ void main() {
     await tester.pump();
 
     expect(repository.updatedItem!.quantity, 2);
+  });
+
+  testWidgets('renders long name and brand with ellipsis and no overflow', (
+    tester,
+  ) async {
+    const longString =
+        'This is a very very very long string that should definitely overflow the available horizontal space in the row component to test if the ellipsis works correctly';
+    const item = ShoppingListItem(
+      id: '1',
+      name: longString,
+      brand: longString,
+      quantity: 1,
+    );
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: ProviderScope(child: ShoppingListItemRow(item: item)),
+        ),
+      ),
+    );
+
+    expect(find.text(longString), findsNWidgets(2)); // Name + Brand
   });
 }

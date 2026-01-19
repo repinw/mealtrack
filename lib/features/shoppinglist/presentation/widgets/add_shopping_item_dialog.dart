@@ -20,11 +20,29 @@ class _AddShoppingItemDialogState extends ConsumerState<AddShoppingItemDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
-      ref.read(shoppingListProvider.notifier).addItem(text);
-      Navigator.of(context).pop();
+      final l10n = AppLocalizations.of(context)!;
+      final navigator = Navigator.of(context);
+
+      try {
+        await ref.read(shoppingListProvider.notifier).addItem(text);
+        if (mounted) {
+          navigator.pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.quantityUpdateFailed,
+              ), // Use generic error or add new string
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
