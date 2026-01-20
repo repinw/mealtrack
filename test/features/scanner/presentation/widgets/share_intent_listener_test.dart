@@ -49,19 +49,22 @@ void main() {
   ) async {
     final fakeScannerViewModel = FakeScannerViewModel();
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           scannerViewModelProvider.overrideWith(() => fakeScannerViewModel),
           shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
         ],
         child: ShareIntentListener(
           child: MaterialApp(
-            navigatorKey: rootNavigatorKey,
+            navigatorKey: navigatorKey,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: Text('Home')),
-          ),
+          ), // ...
         ),
       ),
     );
@@ -87,15 +90,18 @@ void main() {
   ) async {
     final fakeScannerViewModel = FakeScannerViewModel();
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           scannerViewModelProvider.overrideWith(() => fakeScannerViewModel),
           shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
         ],
         child: ShareIntentListener(
           child: MaterialApp(
-            navigatorKey: rootNavigatorKey,
+            navigatorKey: navigatorKey,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: Text('Home')),
@@ -126,15 +132,18 @@ void main() {
   ) async {
     final fakeScannerViewModel = FakeScannerViewModel();
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           scannerViewModelProvider.overrideWith(() => fakeScannerViewModel),
           shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
         ],
         child: ShareIntentListener(
           child: MaterialApp(
-            navigatorKey: rootNavigatorKey,
+            navigatorKey: navigatorKey,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: Text('Home')),
@@ -162,15 +171,18 @@ void main() {
   ) async {
     final fakeScannerViewModel = FakeScannerViewModel()..shouldThrow = true;
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           scannerViewModelProvider.overrideWith(() => fakeScannerViewModel),
           shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
         ],
         child: ShareIntentListener(
           child: MaterialApp(
-            navigatorKey: rootNavigatorKey,
+            navigatorKey: navigatorKey,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: Text('Home')),
@@ -208,15 +220,18 @@ void main() {
   ) async {
     final fakeScannerViewModel = FakeScannerViewModel();
 
+    final navigatorKey = GlobalKey<NavigatorState>();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           scannerViewModelProvider.overrideWith(() => fakeScannerViewModel),
           shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
         ],
         child: ShareIntentListener(
           child: MaterialApp(
-            navigatorKey: rootNavigatorKey,
+            navigatorKey: navigatorKey,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: const Scaffold(body: Text('Home')),

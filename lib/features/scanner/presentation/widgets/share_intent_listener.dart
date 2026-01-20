@@ -29,18 +29,22 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
         setState(() => _isHandlingIntent = true);
 
         try {
-          ref.read(latestSharedFileProvider.notifier).consume();
-
-          final navigatorContext = rootNavigatorKey.currentContext;
+          final navigatorContext = ref
+              .read(navigatorKeyProvider)
+              .currentContext;
           if (navigatorContext == null || !navigatorContext.mounted) {
             setState(() => _isHandlingIntent = false);
             return;
           }
 
+          ref.read(latestSharedFileProvider.notifier).consume();
+
           final shouldScan = await _showConfirmationDialog(navigatorContext);
 
           if (shouldScan == true && mounted) {
-            final processContext = rootNavigatorKey.currentContext;
+            final processContext = ref
+                .read(navigatorKeyProvider)
+                .currentContext;
             if (processContext != null && processContext.mounted) {
               await _processSharedFile(processContext, next);
             }

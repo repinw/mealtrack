@@ -16,7 +16,7 @@ class MealTrackApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ShareIntentListener(
       child: MaterialApp(
-        navigatorKey: rootNavigatorKey,
+        navigatorKey: ref.watch(navigatorKeyProvider),
         title: 'MealTrack',
         theme: AppTheme.theme,
         localizationsDelegates: const [
