@@ -355,7 +355,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(item1));
 
       await tester.pumpWidget(createTestWidget(item2));
-      
+
       await tester.pump();
 
       final priceField = tester.widget<TextField>(
@@ -449,36 +449,113 @@ void main() {
         expect(updatedItem?.unitPrice, 1234.56);
       },
     );
-  });
 
-  testWidgets('Edge Case: Quantity 0 defaults to 1', (tester) async {
-    final item = FridgeItem.create(
-      name: 'Test Item',
-      storeName: 'Store',
-      quantity: 5,
-      unitPrice: 10.0,
-    );
-    FridgeItem? updatedItem;
+    testWidgets('Edge Case: Quantity 0 defaults to 1', (tester) async {
+      final item = FridgeItem.create(
+        name: 'Test Item',
+        storeName: 'Store',
+        quantity: 5,
+        unitPrice: 10.0,
+      );
+      FridgeItem? updatedItem;
 
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: ScannedItemRow(
-            item: item,
-            onDelete: () {},
-            onChanged: (val) => updatedItem = val,
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ScannedItemRow(
+              item: item,
+              onDelete: () {},
+              onChanged: (val) => updatedItem = val,
+            ),
           ),
         ),
-      ),
+      );
+
+      final qtyFinder = find.byKey(const Key('quantityField'));
+      await tester.enterText(qtyFinder, '0');
+      await tester.pump();
+
+      // Verify logic enforces 1
+      expect(updatedItem?.quantity, 1);
+    });
+
+    testWidgets(
+      'Fix: didUpdateWidget does not overwrite user input if parsed value matches (ignoring string format)',
+      (tester) async {
+        final item = createItem(unitPrice: 10.0);
+        FridgeItem? updatedItem;
+
+        await tester.pumpWidget(
+          createTestWidget(
+            item,
+            onChanged: (val) => updatedItem = val,
+            locale: const Locale('de'),
+          ),
+        );
+
+        final priceFinder = find.byKey(const Key('priceField'));
+
+        // User types "10"; which parses to 10.0 (matching item unitPrice)
+        await tester.enterText(priceFinder, '10');
+        await tester.pump();
+
+        // Trigger dependency/widget update with SAME item
+        await tester.pumpWidget(
+          createTestWidget(
+            item,
+            onChanged: (val) => updatedItem = val,
+            locale: const Locale('de'),
+          ),
+        );
+        await tester.pump();
+
+        final priceField = tester.widget<TextField>(priceFinder);
+
+        // Should confirm we are comparing values, not strings.
+        expect(priceField.controller?.text, '10');
+      },
     );
 
-    final qtyFinder = find.byKey(const Key('quantityField'));
-    await tester.enterText(qtyFinder, '0');
-    await tester.pump();
+    testWidgets('Fix: Robust handling of invalid format during rebuild', (
+      tester,
+    ) async {
+      final item = createItem(unitPrice: 10.0);
+      FridgeItem? updatedItem;
 
-    // Verify logic enforces 1
-    expect(updatedItem?.quantity, 1);
+      // Use a custom builder to force rebuilds
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return createTestWidget(
+              item,
+              onChanged: (val) => updatedItem = val,
+              locale: const Locale('de'),
+            );
+          },
+        ),
+      );
+
+      final priceFinder = find.byKey(const Key('priceField'));
+
+      // User types invalid text
+      await tester.enterText(priceFinder, 'invalid');
+      await tester.pump();
+
+      // Force a rebuild from parent
+      await tester.pumpWidget(
+        createTestWidget(
+          item,
+          onChanged: (val) => updatedItem = val,
+          locale: const Locale('de'),
+        ),
+      );
+      await tester.pump();
+
+      final priceField = tester.widget<TextField>(priceFinder);
+      // Should be reset to valid format because "invalid" is invalid.
+      expect(priceField.controller?.text, '10,00');
+    });
   });
 }

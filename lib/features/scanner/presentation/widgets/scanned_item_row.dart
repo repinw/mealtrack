@@ -53,9 +53,19 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
       ..minimumFractionDigits = 2
       ..maximumFractionDigits = 2;
 
-    _priceController.text = decimalFormat.format(
-      widget.item.unitPrice * widget.item.quantity,
-    );
+    final total = widget.item.unitPrice * widget.item.quantity;
+    final priceText = decimalFormat.format(total);
+
+    double? currentPriceVal;
+    try {
+      currentPriceVal = decimalFormat.parse(_priceController.text).toDouble();
+    } catch (_) {
+      currentPriceVal = null;
+    }
+
+    if (currentPriceVal != total) {
+      _priceController.text = priceText;
+    }
   }
 
   @override
@@ -82,7 +92,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         currentPriceVal = null;
       }
 
-      if (_priceController.text != priceText && currentPriceVal != total) {
+      if (currentPriceVal != total) {
         _priceController.text = priceText;
       }
       if (_qtyController.text != widget.item.quantity.toString()) {
