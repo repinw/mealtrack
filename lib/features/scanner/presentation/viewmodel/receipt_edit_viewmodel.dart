@@ -34,7 +34,7 @@ class ReceiptEditState {
 class ReceiptEditViewModel extends _$ReceiptEditViewModel {
   @override
   ReceiptEditState build() {
-    final homeState = ref.read(scannerViewModelProvider);
+    final homeState = ref.watch(scannerViewModelProvider);
     final items = homeState.value ?? [];
     return ReceiptEditState(items: items);
   }

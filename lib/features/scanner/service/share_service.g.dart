@@ -11,6 +11,54 @@ part of 'share_service.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(receiveSharingIntent)
+const receiveSharingIntentProvider = ReceiveSharingIntentProvider._();
+
+final class ReceiveSharingIntentProvider
+    extends
+        $FunctionalProvider<
+          ReceiveSharingIntent,
+          ReceiveSharingIntent,
+          ReceiveSharingIntent
+        >
+    with $Provider<ReceiveSharingIntent> {
+  const ReceiveSharingIntentProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'receiveSharingIntentProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$receiveSharingIntentHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReceiveSharingIntent> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ReceiveSharingIntent create(Ref ref) {
+    return receiveSharingIntent(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReceiveSharingIntent value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReceiveSharingIntent>(value),
+    );
+  }
+}
+
+String _$receiveSharingIntentHash() =>
+    r'e49894760f4eac458ad6831d1b70e7aaff1a368b';
+
 @ProviderFor(ShareService)
 const shareServiceProvider = ShareServiceProvider._();
 
@@ -35,7 +83,7 @@ final class ShareServiceProvider
   ShareService create() => ShareService();
 }
 
-String _$shareServiceHash() => r'8681410b554d31169cf0e5d7a79f876b44c88b5d';
+String _$shareServiceHash() => r'a2485c9ae6c33c689e5ea4099bb08c0366ddeb06';
 
 abstract class _$ShareService extends $AsyncNotifier<void> {
   FutureOr<void> build();
@@ -88,7 +136,7 @@ final class LatestSharedFileProvider
   }
 }
 
-String _$latestSharedFileHash() => r'd6954c084fbdfd03992a0b03ca20ed28d3d87b02';
+String _$latestSharedFileHash() => r'852da53d10165dcebb4608e603db996ad1da8d86';
 
 abstract class _$LatestSharedFile extends $Notifier<XFile?> {
   XFile? build();

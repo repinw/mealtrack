@@ -522,12 +522,44 @@ void main() {
         verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
       });
 
+      test('calls analyzePdfReceipt for uppercase .PDF files', () async {
+        final container = makeContainer();
+        final viewModel = container.read(scannerViewModelProvider.notifier);
+        container.listen(scannerViewModelProvider, (_, _) {});
+
+        final file = XFile('test.PDF');
+        when(
+          () => mockReceiptRepository.analyzePdfReceipt(any()),
+        ).thenAnswer((_) async => []);
+
+        await viewModel.analyzeSharedFile(file);
+
+        verify(() => mockReceiptRepository.analyzePdfReceipt(file)).called(1);
+        verifyNever(() => mockReceiptRepository.analyzeReceipt(any()));
+      });
+
       test('calls analyzeReceipt for non-pdf files (e.g. .jpg)', () async {
         final container = makeContainer();
         final viewModel = container.read(scannerViewModelProvider.notifier);
         container.listen(scannerViewModelProvider, (_, _) {});
 
         final file = XFile('test.jpg');
+        when(
+          () => mockReceiptRepository.analyzeReceipt(any()),
+        ).thenAnswer((_) async => []);
+
+        await viewModel.analyzeSharedFile(file);
+
+        verify(() => mockReceiptRepository.analyzeReceipt(file)).called(1);
+        verifyNever(() => mockReceiptRepository.analyzePdfReceipt(any()));
+      });
+
+      test('calls analyzeReceipt for files without extension', () async {
+        final container = makeContainer();
+        final viewModel = container.read(scannerViewModelProvider.notifier);
+        container.listen(scannerViewModelProvider, (_, _) {});
+
+        final file = XFile('just_a_file');
         when(
           () => mockReceiptRepository.analyzeReceipt(any()),
         ).thenAnswer((_) async => []);

@@ -6,14 +6,20 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'share_service.g.dart';
 
+@riverpod
+ReceiveSharingIntent receiveSharingIntent(Ref ref) =>
+    ReceiveSharingIntent.instance;
+
 @Riverpod(keepAlive: true)
 class ShareService extends _$ShareService {
   StreamSubscription? _intentSub;
 
   @override
   Future<void> build() async {
+    final intentPlugin = ref.watch(receiveSharingIntentProvider);
+
     // 1. Listen to media shared while the app is in memory
-    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+    _intentSub = intentPlugin.getMediaStream().listen(
       (List<SharedMediaFile> value) {
         if (value.isNotEmpty) {
           _handleSharedFiles(value);
@@ -25,7 +31,7 @@ class ShareService extends _$ShareService {
     );
 
     // 2. Handle media shared when the app is closed (cold start)
-    final initialMedia = await ReceiveSharingIntent.instance.getInitialMedia();
+    final initialMedia = await intentPlugin.getInitialMedia();
     if (initialMedia.isNotEmpty) {
       _handleSharedFiles(initialMedia);
     }

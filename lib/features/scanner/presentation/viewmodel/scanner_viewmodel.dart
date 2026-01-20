@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'scanner_viewmodel.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class ScannerViewModel extends _$ScannerViewModel {
   @override
   Future<List<FridgeItem>> build() async {

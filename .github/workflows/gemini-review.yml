@@ -2,114 +2,135 @@ name: Gemini Code Review (3 Pro + Tests)
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review]
+  workflow_dispatch:
 
 jobs:
   review:
+    # Spart Kosten: Läuft nicht bei Draft-PRs
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+      issues: write
+    
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install libraries
         run: pip install google-generativeai PyGithub
 
-      - name: Create Review Script
+      - name: Run Review Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.repository }}
         run: |
           cat << 'EOF' > review.py
           import os
           import google.generativeai as genai
           from github import Github
 
-          # --- KONFIGURATION ---
+          # --- CONFIG ---
+          # Stand 2026: Wir nutzen das neueste 3er Modell wie angefordert
+          MODEL_NAME = 'gemini-3-pro-preview' 
+          
           api_key = os.environ.get('GEMINI_API_KEY')
           if not api_key:
-              print("Kein API Key gefunden!")
+              print("❌ Kein API Key gefunden!")
               exit(1)
-          
+
           genai.configure(api_key=api_key)
-          MODEL_NAME = 'gemini-3-pro-preview' # Dein funktionierendes Modell
-          
-          # --- GITHUB VERBINDUNG ---
+
           g = Github(os.environ['GITHUB_TOKEN'])
           repo = g.get_repo(os.environ['REPO_NAME'])
           pr = repo.get_pull(int(os.environ['PR_NUMBER']))
 
-          # --- DIFF LADEN ---
+          # --- 1. ANTI-SPAM: Alte Bot-Kommentare löschen ---
+          print("🧹 Suche nach alten Bot-Kommentaren...")
+          try:
+              for comment in pr.get_issue_comments():
+                  if "🤖 Gemini Review" in comment.body:
+                      comment.delete()
+                      print(f"   Alten Kommentar {comment.id} gelöscht.")
+          except Exception as e:
+              print(f"⚠️ Konnte Kommentare nicht löschen (Berechtigung?): {e}")
+
+          # --- 2. DIFF LADEN & FILTERN ---
           diff_text = ''
           files_analyzed = []
           has_test_files = False
-          
+          # Erweiterte Ignore-Liste für weniger Token-Verbrauch
+          ignored_ext = ['.json', '.md', '.svg', '.png', '.lock', '.yml', '.yaml', '.css', '.scss']
+
           for file in pr.get_files():
-              if file.patch and not file.filename.endswith('lock'): 
+              # Ignoriere gelöschte Dateien oder unwichtige Formate
+              if file.status == "removed" or any(file.filename.endswith(ext) for ext in ignored_ext):
+                  continue
+              
+              if file.patch:
                   files_analyzed.append(file.filename)
                   diff_text += f'\n\n--- DATEI: {file.filename} ---\n{file.patch}\n'
                   
-                  # Grober Check: Sind Test-Dateien im PR dabei?
-                  if "test" in file.filename.lower() or "_spec" in file.filename.lower():
+                  if "test" in file.filename.lower() or "spec" in file.filename.lower():
                       has_test_files = True
 
           if not diff_text:
-              print('Keine relevanten Änderungen gefunden.')
+              print("✅ Keine review-relevanten Änderungen (Code) gefunden.")
               exit(0)
 
-          # --- GEMINI PROMPT ANPASSUNG ---
-          # Hier sagen wir Gemini, dass es streng auf Tests achten soll
-          
+          # --- 3. PROMPT ---
+          # Optimierter Prompt für Gemini 3 Context
           prompt = f'''
           Du bist ein strenger Senior Code Reviewer für das Projekt 'mealtrack'.
           
-          Deine Aufgabe:
-          1. Reviewe den Code auf Bugs, Sicherheit und Clean Code.
-          2. PRÜFE AUF TESTS: Wurden für neue Logik oder Funktionen Tests geschrieben?
-             (Hinweis: Im aktuellen PR sind Test-Dateien enthalten: {has_test_files})
-          3. Prüfe: Kommentare und Namen der Methoden/Funktionen/Klassen müssen auf Englisch sein
-          4. Prüfe: Sind Kommentare an den Stellen notwendig? Entferne sie falls nicht
+          KONTEXT:
+          - Dateien: {', '.join(files_analyzed)}
+          - Tests im PR enthalten? {"JA ✅" if has_test_files else "NEIN ❌ (Kritisch prüfen!)"}
+
+          AUFGABE:
+          1. Suche nach Bugs, Sicherheitslücken und Clean Code Verstößen.
+          2. PRÜFE TESTS: Wenn neue Logik ohne Tests kommt -> Schreibe **⚠️ TESTS FEHLEN**.
+          3. SPRACHE: Kommentare/Namen müssen Englisch sein.
+          4. STIL: Keine unnötigen Einleitungen.
           
-          Struktur deiner Antwort (in Markdown):
-          
+          ANTWORT FORMAT (Markdown):
           ### 🛡️ Review Zusammenfassung
-          Gib ein kurzes Urteil ab. Wenn Tests fehlen, schreibe groß: **⚠️ TESTS FEHLEN**
-          
+          (Urteil & Status)
+
           ### 🐛 Bugs & Anmerkungen
-          Liste kritische Fehler oder Sicherheitslücken auf.
-          
+          (Kritische Fehler)
+
           ### 🧪 Fehlende Tests & Szenarien
-          Analysiere die neuen Funktionen und liste konkret auf, welche Tests geschrieben werden MÜSSEN.
-          Gib Tipps für:
-          - **Happy Path** (Normalfall)
-          - **Edge Cases** (Null-Werte, leere Listen, negative Zahlen)
-          - **Error Handling** (Was passiert bei Fehlern?)
-          
-          Dateien im PR: {', '.join(files_analyzed)}
+          (Analysiere konkret: Was fehlt? Happy Path? Edge Cases?)
           
           CODE DIFF:
-          {diff_text[:90000]} 
+          {diff_text[:300000]}
           '''
+          # Gemini 3 hat großes Context Window, habe Limit auf 300k erhöht
 
+          # --- 4. KI ANFRAGE ---
           try:
+              print(f"🚀 Sende Anfrage an {MODEL_NAME}...")
               model = genai.GenerativeModel(MODEL_NAME)
               response = model.generate_content(prompt)
               review_body = response.text
           except Exception as e:
-              review_body = f'❌ **Fehler bei der KI-Anfrage:** {str(e)}'
+              review_body = f"❌ **KI-Fehler:** {str(e)}"
+              print(review_body)
 
-          # --- KOMMENTAR POSTEN ---
+          # --- 5. POSTEN ---
           header = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
           pr.create_issue_comment(header + review_body)
+          print("✅ Review gepostet!")
           EOF
 
-      - name: Run Gemini Review
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO_NAME: ${{ github.repository }}
-        run: python review.py
+          python review.py
