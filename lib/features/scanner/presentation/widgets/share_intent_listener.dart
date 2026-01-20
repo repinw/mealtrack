@@ -7,33 +7,53 @@ import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmo
 import 'package:mealtrack/features/scanner/service/share_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
-class ShareIntentListener extends ConsumerWidget {
+class ShareIntentListener extends ConsumerStatefulWidget {
   final Widget child;
 
   const ShareIntentListener({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShareIntentListener> createState() =>
+      _ShareIntentListenerState();
+}
+
+class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
+  bool _isHandlingIntent = false;
+
+  @override
+  Widget build(BuildContext context) {
     ref.watch(shareServiceProvider);
 
     ref.listen<XFile?>(latestSharedFileProvider, (_, next) async {
-      if (next != null) {
-        ref.read(latestSharedFileProvider.notifier).consume();
+      if (next != null && !_isHandlingIntent) {
+        setState(() => _isHandlingIntent = true);
 
-        final navigatorContext = rootNavigatorKey.currentContext;
-        if (navigatorContext == null) return;
+        try {
+          ref.read(latestSharedFileProvider.notifier).consume();
 
-        final shouldScan = await _showConfirmationDialog(navigatorContext);
-        if (shouldScan != true) return;
+          final navigatorContext = rootNavigatorKey.currentContext;
+          if (navigatorContext == null || !navigatorContext.mounted) {
+            setState(() => _isHandlingIntent = false);
+            return;
+          }
 
-        // Check if context is still valid
-        if (rootNavigatorKey.currentContext == null) return;
+          final shouldScan = await _showConfirmationDialog(navigatorContext);
 
-        await _processSharedFile(ref, next);
+          if (shouldScan == true && mounted) {
+            final processContext = rootNavigatorKey.currentContext;
+            if (processContext != null && processContext.mounted) {
+              await _processSharedFile(processContext, next);
+            }
+          }
+        } finally {
+          if (mounted) {
+            setState(() => _isHandlingIntent = false);
+          }
+        }
       }
     });
 
-    return child;
+    return widget.child;
   }
 
   Future<bool?> _showConfirmationDialog(BuildContext context) async {
@@ -60,10 +80,7 @@ class ShareIntentListener extends ConsumerWidget {
     );
   }
 
-  Future<void> _processSharedFile(WidgetRef ref, XFile file) async {
-    final context = rootNavigatorKey.currentContext;
-    if (context == null) return;
-
+  Future<void> _processSharedFile(BuildContext context, XFile file) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -73,15 +90,25 @@ class ShareIntentListener extends ConsumerWidget {
     try {
       await ref.read(scannerViewModelProvider.notifier).analyzeSharedFile(file);
 
-      // Pop loading dialog
-      rootNavigatorKey.currentState?.pop();
-      rootNavigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
-      );
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ReceiptEditPage()));
+      }
     } catch (e) {
-      // Pop loading dialog
-      rootNavigatorKey.currentState?.pop();
-      debugPrint('Error analyzing shared file: $e');
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        debugPrint('Error analyzing shared file: $e');
+
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n?.receiptReadErrorFormat ?? 'Error: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     }
   }
 }
