@@ -56,4 +56,4 @@ final class NavigatorKeyProvider
   }
 }
 
-String _$navigatorKeyHash() => r'617ac70ebc4c30db56eb48981eab39d3987bb6b3';
+String _$navigatorKeyHash() => r'e98ea9b83a531ebfa207927a585fc0549744a9c1';

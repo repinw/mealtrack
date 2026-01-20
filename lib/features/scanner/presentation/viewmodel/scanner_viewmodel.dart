@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'scanner_viewmodel.g.dart';
@@ -72,10 +73,14 @@ class ScannerViewModel extends _$ScannerViewModel {
     state = await AsyncValue.guard(() async {
       final receiptRepository = ref.read(receiptRepositoryProvider);
 
-      if (file.path.toLowerCase().endsWith('.pdf')) {
+      final mimeType = lookupMimeType(file.path);
+      final isPdf =
+          mimeType == 'application/pdf' ||
+          (mimeType == null && file.path.toLowerCase().endsWith('.pdf'));
+
+      if (isPdf) {
         return await receiptRepository.analyzePdfReceipt(file);
       } else {
-        // Assume image if not PDF (could verify mime type if needed)
         return await receiptRepository.analyzeReceipt(file);
       }
     });

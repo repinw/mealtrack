@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/router/app_router.dart';
+import 'package:mealtrack/features/scanner/presentation/controller/share_intent_controller.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
-import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mealtrack/features/scanner/service/share_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -23,6 +23,23 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
   @override
   Widget build(BuildContext context) {
     ref.watch(shareServiceProvider);
+
+    ref.listen(shareIntentControllerProvider, (previous, next) {
+      if (next is AsyncError) {
+        final navigatorContext = ref.read(navigatorKeyProvider).currentContext;
+        if (navigatorContext != null && navigatorContext.mounted) {
+          final l10n = AppLocalizations.of(navigatorContext);
+          ScaffoldMessenger.of(navigatorContext).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n?.receiptReadErrorFormat ?? 'Error: ${next.error}',
+              ),
+              backgroundColor: Theme.of(navigatorContext).colorScheme.error,
+            ),
+          );
+        }
+      }
+    });
 
     ref.listen<XFile?>(latestSharedFileProvider, (_, next) async {
       if (next != null && !_isHandlingIntent) {
@@ -46,7 +63,27 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
                 .read(navigatorKeyProvider)
                 .currentContext;
             if (processContext != null && processContext.mounted) {
-              await _processSharedFile(processContext, next);
+              showDialog(
+                context: processContext,
+                barrierDismissible: false,
+                builder: (c) =>
+                    const Center(child: CircularProgressIndicator()),
+              );
+
+              await ref
+                  .read(shareIntentControllerProvider.notifier)
+                  .analyzeFile(next);
+              if (processContext.mounted && Navigator.canPop(processContext)) {
+                Navigator.pop(processContext);
+              }
+
+              if (processContext.mounted &&
+                  !ref.read(shareIntentControllerProvider).hasError) {
+                Navigator.push(
+                  processContext,
+                  MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
+                );
+              }
             }
           }
         } finally {
@@ -82,37 +119,5 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
         ],
       ),
     );
-  }
-
-  Future<void> _processSharedFile(BuildContext context, XFile file) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (c) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      await ref.read(scannerViewModelProvider.notifier).analyzeSharedFile(file);
-
-      if (context.mounted) {
-        Navigator.of(context).pop();
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const ReceiptEditPage()));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.of(context).pop();
-        debugPrint('Error analyzing shared file: $e');
-
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n?.receiptReadErrorFormat ?? 'Error: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    }
   }
 }

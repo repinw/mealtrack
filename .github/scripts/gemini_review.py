@@ -83,7 +83,13 @@ CODE DIFF:
 try:
     print(f"🚀 Sende Anfrage an {MODEL_NAME}...")
     model = genai.GenerativeModel(MODEL_NAME)
-    response = model.generate_content(prompt)
+    
+    generation_config = {
+        "temperature": 0.1,         # Fast 0 für strikte Code-Analyse
+        "max_output_tokens": 100000 # Viel Platz für lange Reviews
+    }
+    
+    response = model.generate_content(prompt, generation_config=generation_config)
     review_body = response.text
 except Exception as e:
     review_body = f"❌ **KI-Fehler:** {str(e)}"
