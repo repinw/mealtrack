@@ -176,5 +176,57 @@ void main() {
       expect(stats.articleCount, 2);
       expect(stats.scanCount, 1);
     });
+
+    test(
+      'Edge Case: Mixed items (Normal, Null Price, Zero Quantity)',
+      () async {
+        final items = [
+          const ShoppingListItem(
+            id: '1',
+            name: 'Normal Item',
+            quantity: 2,
+            unitPrice: 2.50,
+            isChecked: false,
+          ),
+          const ShoppingListItem(
+            id: '2',
+            name: 'Null Price Item',
+            quantity: 3,
+            unitPrice: null,
+            isChecked: false,
+          ),
+          const ShoppingListItem(
+            id: '3',
+            name: 'Zero Quantity Info',
+            quantity: 0,
+            unitPrice: 10.0,
+            isChecked: false,
+          ),
+        ];
+
+        final container = ProviderContainer(
+          overrides: [
+            shoppingListProvider.overrideWith(() => MockShoppingList(items)),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final statsFuture = container.read(shoppingListProvider.future);
+        container.listen(shoppingListStatsProvider, (_, _) {});
+
+        await statsFuture;
+
+        final stats = container.read(shoppingListStatsProvider);
+
+        // (2 * 2.50) + (3 * 0) + (0 * 10.0) = 5.0
+        expect(stats.totalValue, 5.0);
+
+        // 2 + 3 = 5 (Zero quantity items are not counted in article count)
+        expect(stats.articleCount, 5);
+
+        // Zero quantity items are excluded from scanCount
+        expect(stats.scanCount, 2);
+      },
+    );
   });
 }

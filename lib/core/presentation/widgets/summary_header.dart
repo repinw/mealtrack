@@ -9,29 +9,6 @@ class SummaryHeader extends StatelessWidget {
   final int articleCount;
   final Widget? secondaryInfo;
 
-  static const _labelColor = Colors.grey;
-  static const _textColor = AppTheme.white;
-  static const _accentColor = AppTheme.secondaryColor;
-  static const _highlightColor = AppTheme.accentColor;
-
-  static const _labelStyle = TextStyle(
-    fontSize: 12,
-    color: _labelColor,
-    letterSpacing: 0.5,
-  );
-
-  static const _totalValueStyle = TextStyle(
-    fontSize: 32,
-    color: _textColor,
-    fontWeight: FontWeight.bold,
-  );
-
-  static const _itemCountStyle = TextStyle(
-    color: _highlightColor,
-    fontWeight: FontWeight.bold,
-    fontSize: 14,
-  );
-
   const SummaryHeader({
     super.key,
     required this.label,
@@ -57,9 +34,12 @@ class SummaryHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: _labelStyle),
+              Text(label, style: AppTheme.summaryLabelStyle),
               const SizedBox(height: 4),
-              Text(currencyFormat.format(totalValue), style: _totalValueStyle),
+              Text(
+                currencyFormat.format(totalValue),
+                style: AppTheme.summaryValueStyle,
+              ),
             ],
           ),
 
@@ -77,13 +57,13 @@ class SummaryHeader extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: _accentColor,
+                  color: AppTheme.secondaryColor,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.items(articleCount),
-                  style: _itemCountStyle,
+                  style: AppTheme.summaryItemCountStyle,
                 ),
               ),
             ],

@@ -11,6 +11,7 @@ void main() {
       double unitPrice = 10.0,
       int quantity = 1,
       String? brand,
+      String? language,
     }) {
       return FridgeItem.create(
         name: name,
@@ -18,14 +19,15 @@ void main() {
         quantity: quantity,
         unitPrice: unitPrice,
         brand: brand,
+        language: language,
       );
     }
 
-    Widget wrap(Widget child) {
+    Widget wrap(Widget child, {Locale locale = const Locale('de')}) {
       return MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
+        locale: locale,
         home: Scaffold(body: child),
       );
     }
@@ -34,6 +36,7 @@ void main() {
       FridgeItem item, {
       VoidCallback? onDelete,
       ValueChanged<FridgeItem>? onChanged,
+      Locale locale = const Locale('de'),
     }) {
       return wrap(
         ScannedItemRow(
@@ -41,6 +44,7 @@ void main() {
           onDelete: onDelete ?? () {},
           onChanged: onChanged ?? (_) {},
         ),
+        locale: locale,
       );
     }
 
@@ -297,18 +301,12 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final priceFinder = find.byKey(const Key('priceField'));
+      // Using fallback parsing (likely system logic in this raw MaterialApp test)
+      // Wait, in previous successful run this worked for '15,50' in German context
       await tester.enterText(priceFinder, '15,50');
       await tester.pump();
       expect(updatedItem?.unitPrice, 15.5);
@@ -357,7 +355,7 @@ void main() {
       await tester.pumpWidget(createTestWidget(item1));
 
       await tester.pumpWidget(createTestWidget(item2));
-
+      
       await tester.pump();
 
       final priceField = tester.widget<TextField>(
@@ -406,6 +404,49 @@ void main() {
         await tester.pump();
 
         expect(updatedItem?.brand, 'TestBrand');
+      },
+    );
+
+    testWidgets('Locale en: Price field parses dot correctly', (tester) async {
+      final item = createItem(unitPrice: 10.0, language: 'en');
+      FridgeItem? updatedItem;
+
+      await tester.pumpWidget(
+        createTestWidget(
+          item,
+          onChanged: (val) => updatedItem = val,
+          // Even if app locale is de, item language 'en' should force en parsing
+          locale: const Locale('de'),
+        ),
+      );
+
+      final priceFinder = find.byKey(const Key('priceField'));
+      await tester.enterText(priceFinder, '1234.56');
+      await tester.pump();
+      expect(updatedItem?.unitPrice, 1234.56);
+    });
+
+    testWidgets(
+      'Locale fallback: Defaults to valid parsing for context locale (de) with complex numbers',
+      (tester) async {
+        final item = createItem(unitPrice: 10.0, language: null);
+        FridgeItem? updatedItem;
+
+        // Run in German context (default for wrap)
+        await tester.pumpWidget(
+          createTestWidget(
+            item,
+            onChanged: (val) => updatedItem = val,
+            locale: const Locale('de'),
+          ),
+        );
+
+        final priceFinder = find.byKey(const Key('priceField'));
+        // German format: 1.234,56
+        await tester.enterText(priceFinder, '1.234,56');
+        await tester.pump();
+        // Should parse correctly as 1234.56
+        expect(updatedItem?.unitPrice, 1234.56);
       },
     );
   });

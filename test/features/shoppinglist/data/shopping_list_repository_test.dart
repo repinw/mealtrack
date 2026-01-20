@@ -224,5 +224,106 @@ void main() {
 
       expect(snapshot.docs.length, 2);
     });
+
+    test('Happy Path (Merge): Merges item with same name and brand', () async {
+      // 1. Existing item
+      const name = 'Milch';
+      const brand = 'Ja!';
+      await repository.addOrMergeItem(
+        name: name,
+        brand: brand,
+        quantity: 1,
+        unitPrice: 1.0,
+      );
+
+      // 2. Add same item again
+      await repository.addOrMergeItem(
+        name: name,
+        brand: brand,
+        quantity: 2,
+        unitPrice:
+            1.0, // Unit price might update, but here we focus on quantity merge
+      );
+
+      final snapshot = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+
+      expect(
+        snapshot.docs.length,
+        1,
+        reason: 'Should have merged into one document',
+      );
+      final data = snapshot.docs.first.data();
+      expect(data['name'], name);
+      expect(data['brand'], brand);
+      expect(data['quantity'], 3, reason: '1 + 2 = 3');
+    });
+
+    test('Happy Path (New): Creates new item with normalizedName', () async {
+      const name = 'Neues Produkt';
+      await repository.addOrMergeItem(
+        name: name,
+        brand: 'Marke',
+        quantity: 1,
+        unitPrice: 2.50,
+      );
+
+      final snapshot = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+
+      expect(snapshot.docs.length, 1);
+      final data = snapshot.docs.first.data();
+      expect(data['name'], name);
+      expect(data['normalizedName'], 'neues produkt');
+    });
+
+    test(
+      'Edge Case (Brand Null vs. Empty): Treats null and empty string as different brands',
+      () async {
+        // 1. Add "Brot" with brand: null
+        await repository.addOrMergeItem(
+          name: 'Brot',
+          brand: null,
+          quantity: 1,
+          unitPrice: 1.0,
+        );
+
+        // 2. Add "Brot" with brand: "Bäcker"
+        await repository.addOrMergeItem(
+          name: 'Brot',
+          brand: 'Bäcker',
+          quantity: 1,
+          unitPrice: 1.5,
+        );
+
+        final snapshot = await fakeFirestore
+            .collection(usersCollection)
+            .doc(testUid)
+            .collection(shoppingListCollection)
+            .get();
+
+        expect(
+          snapshot.docs.length,
+          2,
+          reason: 'Null brand and "Bäcker" should remain separate',
+        );
+
+        final docNullBrand = snapshot.docs.firstWhere(
+          (d) => d.data()['brand'] == null,
+        );
+        final docBakeryBrand = snapshot.docs.firstWhere(
+          (d) => d.data()['brand'] == 'Bäcker',
+        );
+
+        expect(docNullBrand.exists, isTrue);
+        expect(docBakeryBrand.exists, isTrue);
+      },
+    );
   });
 }

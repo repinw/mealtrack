@@ -11,6 +11,25 @@ class AppTheme {
   static const Color navBarBackground = Color(0xFFE0E0E0);
   static Color get shadowLight => Colors.black.withValues(alpha: 0.1);
 
+  // SummaryHeader Styles
+  static const TextStyle summaryLabelStyle = TextStyle(
+    fontSize: 12,
+    color: Colors.grey,
+    letterSpacing: 0.5,
+  );
+
+  static const TextStyle summaryValueStyle = TextStyle(
+    fontSize: 32,
+    color: white,
+    fontWeight: FontWeight.bold,
+  );
+
+  static const TextStyle summaryItemCountStyle = TextStyle(
+    color: accentColor,
+    fontWeight: FontWeight.bold,
+    fontSize: 14,
+  );
+
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
