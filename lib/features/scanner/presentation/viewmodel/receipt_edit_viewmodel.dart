@@ -61,4 +61,15 @@ class ReceiptEditViewModel extends _$ReceiptEditViewModel {
     updatedItems[index] = newItem;
     state = state.copyWith(items: updatedItems);
   }
+
+  void updateReceiptDate(DateTime newDate) {
+    final updatedItems = state.items.map((item) {
+      if (item.receiptDate != newDate) {
+        return item.copyWith(receiptDate: newDate);
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(items: updatedItems);
+  }
 }
