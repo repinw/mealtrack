@@ -94,19 +94,19 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('de')];
 
-  /// No description provided for @noAvailableProducts.
+  /// Message shown when no products are detected.
   ///
   /// In de, this message translates to:
   /// **'Keine Produkte erkannt'**
   String get noAvailableProducts;
 
-  /// No description provided for @addReceipt.
+  /// Translation for addReceipt
   ///
   /// In de, this message translates to:
   /// **'Kassenbon hinzufügen'**
   String get addReceipt;
 
-  /// No description provided for @selectOption.
+  /// Translation for selectOption
   ///
   /// In de, this message translates to:
   /// **'Option wählen'**
@@ -124,13 +124,13 @@ abstract class AppLocalizations {
   /// **'{count} Teile'**
   String items(int count);
 
-  /// No description provided for @archive.
+  /// Translation for archive
   ///
   /// In de, this message translates to:
   /// **'Archivieren'**
   String get archive;
 
-  /// No description provided for @archived.
+  /// Translation for archived
   ///
   /// In de, this message translates to:
   /// **'Archiviert'**
@@ -142,7 +142,7 @@ abstract class AppLocalizations {
   /// **'{count} archivierte Kassenbons'**
   String archivedCount(int count);
 
-  /// No description provided for @unarchive.
+  /// Translation for unarchive
   ///
   /// In de, this message translates to:
   /// **'Reaktivieren'**
@@ -154,31 +154,31 @@ abstract class AppLocalizations {
   /// **'{count} Einträge'**
   String entries(int count);
 
-  /// No description provided for @filterAll.
+  /// Translation for filterAll
   ///
   /// In de, this message translates to:
   /// **'Alle'**
   String get filterAll;
 
-  /// No description provided for @filterAvailable.
+  /// Translation for filterAvailable
   ///
   /// In de, this message translates to:
   /// **'Vorrat'**
   String get filterAvailable;
 
-  /// No description provided for @filterEmpty.
+  /// Translation for filterEmpty
   ///
   /// In de, this message translates to:
   /// **'Verbraucht'**
   String get filterEmpty;
 
-  /// No description provided for @verifyScan.
+  /// Translation for verifyScan
   ///
   /// In de, this message translates to:
   /// **'SCAN ÜBERPRÜFEN'**
   String get verifyScan;
 
-  /// No description provided for @positions.
+  /// Translation for positions
   ///
   /// In de, this message translates to:
   /// **'POSITIONEN'**
@@ -190,187 +190,187 @@ abstract class AppLocalizations {
   /// **'{count} Artikel'**
   String articles(int count);
 
-  /// No description provided for @amountAbbr.
+  /// Translation for amountAbbr
   ///
   /// In de, this message translates to:
   /// **'ANZ'**
   String get amountAbbr;
 
-  /// No description provided for @brandDescription.
+  /// Translation for brandDescription
   ///
   /// In de, this message translates to:
   /// **'MARKE / BESCHREIBUNG'**
   String get brandDescription;
 
-  /// No description provided for @weight.
+  /// Translation for weight
   ///
   /// In de, this message translates to:
   /// **'GEWICHT'**
   String get weight;
 
-  /// No description provided for @price.
+  /// Translation for price
   ///
   /// In de, this message translates to:
   /// **'PREIS'**
   String get price;
 
-  /// No description provided for @save.
+  /// Translation for save
   ///
   /// In de, this message translates to:
   /// **'Speichern'**
   String get save;
 
-  /// No description provided for @total.
+  /// Translation for total
   ///
   /// In de, this message translates to:
   /// **'GESAMT'**
   String get total;
 
-  /// No description provided for @noAvailableItems.
+  /// Translation for noAvailableItems
   ///
   /// In de, this message translates to:
   /// **'Keine verfügbaren Artikel'**
   String get noAvailableItems;
 
-  /// No description provided for @noItemsFound.
+  /// Translation for noItemsFound
   ///
   /// In de, this message translates to:
   /// **'Keine Artikel gefunden'**
   String get noItemsFound;
 
-  /// No description provided for @debugHiveReset.
+  /// Translation for debugHiveReset
   ///
   /// In de, this message translates to:
   /// **'Debug: Hive Reset'**
   String get debugHiveReset;
 
-  /// No description provided for @debugDataDeleted.
+  /// Translation for debugDataDeleted
   ///
   /// In de, this message translates to:
   /// **'Debug: Alle Daten gelöscht'**
   String get debugDataDeleted;
 
-  /// No description provided for @imageUploading.
+  /// Translation for imageUploading
   ///
   /// In de, this message translates to:
   /// **'Bild wird hochgeladen und analysiert...'**
   String get imageUploading;
 
-  /// No description provided for @noTextFromAi.
+  /// Translation for noTextFromAi
   ///
   /// In de, this message translates to:
   /// **'Kein Text von der KI erhalten.'**
   String get noTextFromAi;
 
-  /// No description provided for @aiResult.
+  /// Translation for aiResult
   ///
   /// In de, this message translates to:
   /// **'KI Ergebnis: '**
   String get aiResult;
 
-  /// No description provided for @aiRequestError.
+  /// Translation for aiRequestError
   ///
   /// In de, this message translates to:
   /// **'Fehler bei der KI-Anfrage: '**
   String get aiRequestError;
 
-  /// No description provided for @emptyJsonString.
+  /// Translation for emptyJsonString
   ///
   /// In de, this message translates to:
   /// **'Leerer JSON-String empfangen.'**
   String get emptyJsonString;
 
-  /// No description provided for @sanitizedJsonEmpty.
+  /// Translation for sanitizedJsonEmpty
   ///
   /// In de, this message translates to:
   /// **'Bereinigter JSON-String ist leer.'**
   String get sanitizedJsonEmpty;
 
-  /// No description provided for @unexpectedJsonFormat.
+  /// Translation for unexpectedJsonFormat
   ///
   /// In de, this message translates to:
   /// **'Unerwartetes JSON-Format empfangen: '**
   String get unexpectedJsonFormat;
 
-  /// No description provided for @jsonParsingError.
+  /// Translation for jsonParsingError
   ///
   /// In de, this message translates to:
   /// **'Fehler beim Parsen des JSON: '**
   String get jsonParsingError;
 
-  /// No description provided for @unknownStorename.
+  /// Translation for unknownStorename
   ///
   /// In de, this message translates to:
   /// **'Unbekannter Laden'**
   String get unknownStorename;
 
-  /// No description provided for @unknownArticle.
+  /// Translation for unknownArticle
   ///
   /// In de, this message translates to:
   /// **'Unbekannter Artikel'**
   String get unknownArticle;
 
-  /// No description provided for @defaultStoreName.
+  /// Translation for defaultStoreName
   ///
   /// In de, this message translates to:
   /// **'Ladenname'**
   String get defaultStoreName;
 
-  /// No description provided for @pleaseSelectPdf.
+  /// Translation for pleaseSelectPdf
   ///
   /// In de, this message translates to:
   /// **'Bitte wähle eine PDF-Datei.'**
   String get pleaseSelectPdf;
 
-  /// No description provided for @digitalFridge.
+  /// Translation for digitalFridge
   ///
   /// In de, this message translates to:
   /// **'Digitaler Kühlschrank'**
   String get digitalFridge;
 
-  /// No description provided for @imageFromGallery.
+  /// Translation for imageFromGallery
   ///
   /// In de, this message translates to:
   /// **'Bild aus Galerie'**
   String get imageFromGallery;
 
-  /// No description provided for @imageFromCamera.
+  /// Translation for imageFromCamera
   ///
   /// In de, this message translates to:
   /// **'Bild aufnehmen'**
   String get imageFromCamera;
 
-  /// No description provided for @imageFromPdf.
+  /// Translation for imageFromPdf
   ///
   /// In de, this message translates to:
   /// **'Aus PDF'**
   String get imageFromPdf;
 
-  /// No description provided for @receiptReadErrorFormat.
+  /// Translation for receiptReadErrorFormat
   ///
   /// In de, this message translates to:
   /// **'Der Kassenbon konnte nicht gelesen werden (Format-Fehler).'**
   String get receiptReadErrorFormat;
 
-  /// No description provided for @errorOccurred.
+  /// Translation for errorOccurred
   ///
   /// In de, this message translates to:
   /// **'Ein Fehler ist aufgetreten: '**
   String get errorOccurred;
 
-  /// No description provided for @quantityUpdateFailed.
+  /// Translation for quantityUpdateFailed
   ///
   /// In de, this message translates to:
   /// **'Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.'**
   String get quantityUpdateFailed;
 
-  /// No description provided for @loading.
+  /// Translation for loading
   ///
   /// In de, this message translates to:
   /// **'Lädt...'**
   String get loading;
 
-  /// No description provided for @initializingApp.
+  /// Translation for initializingApp
   ///
   /// In de, this message translates to:
   /// **'App wird initialisiert...'**
@@ -380,237 +380,237 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Fehler beim Initialisieren der App: {error}'**
-  String errorInitializing(Object error);
+  String errorInitializing(String error);
 
-  /// No description provided for @retry.
+  /// Translation for retry
   ///
   /// In de, this message translates to:
   /// **'Erneut versuchen'**
   String get retry;
 
-  /// No description provided for @guestMode.
+  /// Translation for guestMode
   ///
   /// In de, this message translates to:
   /// **'Gast-Modus'**
   String get guestMode;
 
-  /// No description provided for @guestModeDescription.
+  /// Translation for guestModeDescription
   ///
   /// In de, this message translates to:
   /// **'Sie nutzen die App derzeit als Gast. Verknüpfen Sie Ihr Konto mit einer E-Mail oder Google, um Ihre Daten zu sichern und auf mehreren Geräten zu synchronisieren.'**
   String get guestModeDescription;
 
-  /// No description provided for @linkAccount.
+  /// Translation for linkAccount
   ///
   /// In de, this message translates to:
   /// **'Konto verknüpfen'**
   String get linkAccount;
 
-  /// No description provided for @createNewAccount.
+  /// Translation for createNewAccount
   ///
   /// In de, this message translates to:
   /// **'Neues Konto erstellen'**
   String get createNewAccount;
 
-  /// No description provided for @useExistingAccount.
+  /// Translation for useExistingAccount
   ///
   /// In de, this message translates to:
   /// **'Bestehendes Konto nutzen'**
   String get useExistingAccount;
 
-  /// No description provided for @linkAccountSuccess.
+  /// Translation for linkAccountSuccess
   ///
   /// In de, this message translates to:
   /// **'Konto erfolgreich verknüpft!'**
   String get linkAccountSuccess;
 
-  /// No description provided for @warning.
+  /// Translation for warning
   ///
   /// In de, this message translates to:
   /// **'Achtung'**
   String get warning;
 
-  /// No description provided for @linkAccountExistingWarning.
+  /// Translation for linkAccountExistingWarning
   ///
   /// In de, this message translates to:
   /// **'Wenn Sie sich mit einem bestehenden Konto anmelden möchten, werden alle Daten Ihres aktuellen Gast-Kontos gelöscht.\n\nSie werden zur Startseite weitergeleitet, wo Sie sich einloggen können.'**
   String get linkAccountExistingWarning;
 
-  /// No description provided for @proceed.
+  /// Translation for proceed
   ///
   /// In de, this message translates to:
   /// **'Fortfahren'**
   String get proceed;
 
-  /// No description provided for @cancel.
+  /// Translation for cancel
   ///
   /// In de, this message translates to:
   /// **'Abbrechen'**
   String get cancel;
 
-  /// No description provided for @delete.
+  /// Translation for delete
   ///
   /// In de, this message translates to:
   /// **'Löschen'**
   String get delete;
 
-  /// No description provided for @userAccount.
+  /// Translation for userAccount
   ///
   /// In de, this message translates to:
   /// **'Benutzerkonto'**
   String get userAccount;
 
-  /// No description provided for @name.
+  /// Translation for name
   ///
   /// In de, this message translates to:
   /// **'Name'**
   String get name;
 
-  /// No description provided for @email.
+  /// Translation for email
   ///
   /// In de, this message translates to:
   /// **'E-Mail'**
   String get email;
 
-  /// No description provided for @id.
+  /// Translation for id
   ///
   /// In de, this message translates to:
   /// **'ID'**
   String get id;
 
-  /// No description provided for @notAvailable.
+  /// Translation for notAvailable
   ///
   /// In de, this message translates to:
   /// **'Nicht verfügbar'**
   String get notAvailable;
 
-  /// No description provided for @logout.
+  /// Translation for logout
   ///
   /// In de, this message translates to:
   /// **'Abmelden'**
   String get logout;
 
-  /// No description provided for @deleteAccount.
+  /// Translation for deleteAccount
   ///
   /// In de, this message translates to:
   /// **'Account löschen'**
   String get deleteAccount;
 
-  /// No description provided for @deleteAccountQuestion.
+  /// Translation for deleteAccountQuestion
   ///
   /// In de, this message translates to:
   /// **'Account löschen?'**
   String get deleteAccountQuestion;
 
-  /// No description provided for @deleteAccountWarning.
+  /// Translation for deleteAccountWarning
   ///
   /// In de, this message translates to:
   /// **'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.\n\nMöchten Sie Ihren Account wirklich löschen?'**
   String get deleteAccountWarning;
 
-  /// No description provided for @deleteAccountError.
+  /// Translation for deleteAccountError
   ///
   /// In de, this message translates to:
   /// **'Fehler beim Löschen: '**
   String get deleteAccountError;
 
-  /// No description provided for @howShouldWeCallYou.
+  /// Translation for howShouldWeCallYou
   ///
   /// In de, this message translates to:
   /// **'Wie möchtest du genannt werden?'**
   String get howShouldWeCallYou;
 
-  /// No description provided for @yourName.
+  /// Translation for yourName
   ///
   /// In de, this message translates to:
   /// **'Dein Name'**
   String get yourName;
 
-  /// No description provided for @enterValidName.
+  /// Translation for enterValidName
   ///
   /// In de, this message translates to:
   /// **'Bitte gib einen Namen ein'**
   String get enterValidName;
 
-  /// No description provided for @next.
+  /// Translation for next
   ///
   /// In de, this message translates to:
   /// **'Weiter'**
   String get next;
 
-  /// No description provided for @errorLabel.
+  /// Translation for errorLabel
   ///
   /// In de, this message translates to:
   /// **'Fehler: '**
   String get errorLabel;
 
-  /// No description provided for @welcomeTitle.
+  /// Translation for welcomeTitle
   ///
   /// In de, this message translates to:
   /// **'Willkommen bei MealTrack!'**
   String get welcomeTitle;
 
-  /// No description provided for @welcomeSubtitle.
+  /// Translation for welcomeSubtitle
   ///
   /// In de, this message translates to:
   /// **'Behalte den Überblick über deine Lebensmittel'**
   String get welcomeSubtitle;
 
-  /// No description provided for @loginBtn.
+  /// Translation for loginBtn
   ///
   /// In de, this message translates to:
   /// **'Einloggen'**
   String get loginBtn;
 
-  /// No description provided for @continueGuestBtn.
+  /// Translation for continueGuestBtn
   ///
   /// In de, this message translates to:
   /// **'Als Gast fortsetzen'**
   String get continueGuestBtn;
 
-  /// No description provided for @existingAccountFound.
+  /// Translation for existingAccountFound
   ///
   /// In de, this message translates to:
   /// **'Bestehendes Konto gefunden'**
   String get existingAccountFound;
 
-  /// No description provided for @existingAccountFoundDescription.
+  /// Translation for existingAccountFoundDescription
   ///
   /// In de, this message translates to:
   /// **'Dieses Konto ist bereits registriert. Wenn Sie fortfahren, gehen alle Daten Ihres aktuellen Gast-Kontos verloren.\n\nMöchten Sie sich trotzdem mit dem bestehenden Konto anmelden?'**
   String get existingAccountFoundDescription;
 
-  /// No description provided for @signedInWithExistingAccount.
+  /// Translation for signedInWithExistingAccount
   ///
   /// In de, this message translates to:
   /// **'Sie wurden mit Ihrem bestehenden Konto angemeldet.'**
   String get signedInWithExistingAccount;
 
-  /// No description provided for @signInErrorPrefix.
+  /// Translation for signInErrorPrefix
   ///
   /// In de, this message translates to:
   /// **'Fehler bei der Anmeldung: '**
   String get signInErrorPrefix;
 
-  /// No description provided for @signInSubtitle.
+  /// Translation for signInSubtitle
   ///
   /// In de, this message translates to:
   /// **'Bitte melden Sie sich an, um fortzufahren.'**
   String get signInSubtitle;
 
-  /// No description provided for @signUpSubtitle.
+  /// Translation for signUpSubtitle
   ///
   /// In de, this message translates to:
   /// **'Bitte erstellen Sie ein Konto, um fortzufahren'**
   String get signUpSubtitle;
 
-  /// No description provided for @signInAction.
+  /// Translation for signInAction
   ///
   /// In de, this message translates to:
   /// **'anmelden'**
   String get signInAction;
 
-  /// No description provided for @signUpAction.
+  /// Translation for signUpAction
   ///
   /// In de, this message translates to:
   /// **'registrieren'**
@@ -622,187 +622,187 @@ abstract class AppLocalizations {
   /// **'Durch {action} stimmen Sie unseren Nutzungsbedingungen zu.'**
   String tosDisclaimer(String action);
 
-  /// No description provided for @settings.
+  /// Translation for settings
   ///
   /// In de, this message translates to:
   /// **'Einstellungen'**
   String get settings;
 
-  /// No description provided for @stockValue.
+  /// Translation for stockValue
   ///
   /// In de, this message translates to:
   /// **'VORRATSWERT'**
   String get stockValue;
 
-  /// No description provided for @sharing.
+  /// Translation for sharing
   ///
   /// In de, this message translates to:
   /// **'Teilen'**
   String get sharing;
 
-  /// No description provided for @invite.
+  /// Translation for invite
   ///
   /// In de, this message translates to:
   /// **'Einladen'**
   String get invite;
 
-  /// No description provided for @join.
+  /// Translation for join
   ///
   /// In de, this message translates to:
   /// **'Beitreten'**
   String get join;
 
-  /// No description provided for @generateCode.
+  /// Translation for generateCode
   ///
   /// In de, this message translates to:
   /// **'Code generieren'**
   String get generateCode;
 
-  /// No description provided for @sharingCode.
+  /// Translation for sharingCode
   ///
   /// In de, this message translates to:
   /// **'Dein Sharing-Code'**
   String get sharingCode;
 
-  /// No description provided for @sharingCodeDescription.
+  /// Translation for sharingCodeDescription
   ///
   /// In de, this message translates to:
   /// **'Teile diesen Code, um deine Vorräte gemeinsam mit anderen zu verwalten.'**
   String get sharingCodeDescription;
 
-  /// No description provided for @enterSharingCode.
+  /// Translation for enterSharingCode
   ///
   /// In de, this message translates to:
   /// **'Sharing-Code eingeben'**
   String get enterSharingCode;
 
-  /// No description provided for @joinHousehold.
+  /// Translation for joinHousehold
   ///
   /// In de, this message translates to:
   /// **'Haushalt beitreten'**
   String get joinHousehold;
 
-  /// No description provided for @invalidCode.
+  /// Translation for invalidCode
   ///
   /// In de, this message translates to:
   /// **'Ungültiger Code'**
   String get invalidCode;
 
-  /// No description provided for @codeExpired.
+  /// Translation for codeExpired
   ///
   /// In de, this message translates to:
   /// **'Code abgelaufen'**
   String get codeExpired;
 
-  /// No description provided for @codeValidDuration.
+  /// Translation for codeValidDuration
   ///
   /// In de, this message translates to:
   /// **'Code ist für 24 Stunden gültig'**
   String get codeValidDuration;
 
-  /// No description provided for @copyCode.
+  /// Translation for copyCode
   ///
   /// In de, this message translates to:
   /// **'Code kopieren'**
   String get copyCode;
 
-  /// No description provided for @codeCopied.
+  /// Translation for codeCopied
   ///
   /// In de, this message translates to:
   /// **'Code kopiert!'**
   String get codeCopied;
 
-  /// No description provided for @convertAccountToShare.
+  /// Translation for convertAccountToShare
   ///
   /// In de, this message translates to:
   /// **'Bitte verknüpfen Sie Ihr Konto, um einen Haushalt erstellen zu können.'**
   String get convertAccountToShare;
 
-  /// No description provided for @householdMembers.
+  /// Translation for householdMembers
   ///
   /// In de, this message translates to:
   /// **'Haushaltsmitglieder'**
   String get householdMembers;
 
-  /// No description provided for @you.
+  /// Translation for you
   ///
   /// In de, this message translates to:
   /// **'Du'**
   String get you;
 
-  /// No description provided for @removeMember.
+  /// Translation for removeMember
   ///
   /// In de, this message translates to:
   /// **'Mitglied entfernen'**
   String get removeMember;
 
-  /// No description provided for @removeMemberConfirmation.
+  /// Translation for removeMemberConfirmation
   ///
   /// In de, this message translates to:
   /// **'Möchten Sie dieses Mitglied wirklich aus dem Haushalt entfernen?'**
   String get removeMemberConfirmation;
 
-  /// No description provided for @remove.
+  /// Translation for remove
   ///
   /// In de, this message translates to:
   /// **'Entfernen'**
   String get remove;
 
-  /// No description provided for @cannotJoinOwnHousehold.
+  /// Translation for cannotJoinOwnHousehold
   ///
   /// In de, this message translates to:
   /// **'Sie können nicht Ihrem eigenen Haushalt beitreten.'**
   String get cannotJoinOwnHousehold;
 
-  /// No description provided for @leaveHousehold.
+  /// Translation for leaveHousehold
   ///
   /// In de, this message translates to:
   /// **'Haushalt verlassen'**
   String get leaveHousehold;
 
-  /// No description provided for @leaveHouseholdConfirmation.
+  /// Translation for leaveHouseholdConfirmation
   ///
   /// In de, this message translates to:
   /// **'Möchten Sie den Haushalt wirklich verlassen?'**
   String get leaveHouseholdConfirmation;
 
-  /// No description provided for @leave.
+  /// Translation for leave
   ///
   /// In de, this message translates to:
   /// **'Verlassen'**
   String get leave;
 
-  /// No description provided for @inventory.
+  /// Translation for inventory
   ///
   /// In de, this message translates to:
   /// **'Vorrat'**
   String get inventory;
 
-  /// No description provided for @shoppinglist.
+  /// Translation for shoppinglist
   ///
   /// In de, this message translates to:
   /// **'Einkaufsliste'**
   String get shoppinglist;
 
-  /// No description provided for @calories.
+  /// Translation for calories
   ///
   /// In de, this message translates to:
   /// **'Kalorien'**
   String get calories;
 
-  /// No description provided for @statistics.
+  /// Translation for statistics
   ///
   /// In de, this message translates to:
   /// **'Statistik'**
   String get statistics;
 
-  /// No description provided for @featureInProgress.
+  /// Translation for featureInProgress
   ///
   /// In de, this message translates to:
   /// **'Diese Funktion ist noch in Arbeit 🚧'**
   String get featureInProgress;
 
-  /// No description provided for @addItemNotImplemented.
+  /// Translation for addItemNotImplemented
   ///
   /// In de, this message translates to:
   /// **'Hinzufügen - Noch nicht implementiert'**
@@ -820,19 +820,19 @@ abstract class AppLocalizations {
   /// **'{price}€ / Stk'**
   String unitPriceLabel(String price);
 
-  /// No description provided for @shoppingListEmpty.
+  /// Translation for shoppingListEmpty
   ///
   /// In de, this message translates to:
   /// **'Keine Einträge'**
   String get shoppingListEmpty;
 
-  /// No description provided for @shoppingListClearTitle.
+  /// Translation for shoppingListClearTitle
   ///
   /// In de, this message translates to:
   /// **'Liste leeren?'**
   String get shoppingListClearTitle;
 
-  /// No description provided for @shoppingListClearConfirmation.
+  /// Translation for shoppingListClearConfirmation
   ///
   /// In de, this message translates to:
   /// **'Möchtest du wirklich alle Einträge löschen?'**
@@ -842,51 +842,51 @@ abstract class AppLocalizations {
   ///
   /// In de, this message translates to:
   /// **'Fehler: {error}'**
-  String errorDisplay(Object error);
+  String errorDisplay(String error);
 
-  /// No description provided for @add.
+  /// Translation for add
   ///
   /// In de, this message translates to:
   /// **'Hinzufügen'**
   String get add;
 
-  /// No description provided for @addItemTitle.
+  /// Translation for addItemTitle
   ///
   /// In de, this message translates to:
   /// **'Artikel hinzufügen'**
   String get addItemTitle;
 
-  /// No description provided for @addItemHint.
+  /// Translation for addItemHint
   ///
   /// In de, this message translates to:
   /// **'z.B. Milch'**
   String get addItemHint;
 
-  /// No description provided for @approximateCostLabel.
+  /// Translation for approximateCostLabel
   ///
   /// In de, this message translates to:
   /// **'UNGEFÄHRE KOSTEN'**
   String get approximateCostLabel;
 
-  /// No description provided for @firstLoginRequiresInternet.
+  /// Translation for firstLoginRequiresInternet
   ///
   /// In de, this message translates to:
   /// **'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.'**
   String get firstLoginRequiresInternet;
 
-  /// No description provided for @scanReceiptDialogTitle.
+  /// Translation for scanReceiptDialogTitle
   ///
   /// In de, this message translates to:
   /// **'Beleg scannen?'**
   String get scanReceiptDialogTitle;
 
-  /// No description provided for @scanReceiptDialogContent.
+  /// Translation for scanReceiptDialogContent
   ///
   /// In de, this message translates to:
   /// **'Möchtest du dieses Dokument als Kassenbon scannen?'**
   String get scanReceiptDialogContent;
 
-  /// No description provided for @yes.
+  /// Translation for yes
   ///
   /// In de, this message translates to:
   /// **'Ja'**

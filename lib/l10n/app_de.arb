@@ -1,205 +1,575 @@
 {
   "@@locale": "de",
-  
   "noAvailableProducts": "Keine Produkte erkannt",
+  "@noAvailableProducts": {
+    "description": "Message shown when no products are detected."
+  },
   "addReceipt": "Kassenbon hinzufügen",
+  "@addReceipt": {
+    "description": "Translation for addReceipt"
+  },
   "selectOption": "Option wählen",
+  "@selectOption": {
+    "description": "Translation for selectOption"
+  },
   "purchases": "{count} Einkäufe",
   "@purchases": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "items": "{count} Teile",
   "@items": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "archive": "Archivieren",
+  "@archive": {
+    "description": "Translation for archive"
+  },
   "archived": "Archiviert",
+  "@archived": {
+    "description": "Translation for archived"
+  },
   "archivedCount": "{count} archivierte Kassenbons",
   "@archivedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "unarchive": "Reaktivieren",
+  "@unarchive": {
+    "description": "Translation for unarchive"
+  },
   "entries": "{count} Einträge",
   "@entries": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-  
   "filterAll": "Alle",
+  "@filterAll": {
+    "description": "Translation for filterAll"
+  },
   "filterAvailable": "Vorrat",
+  "@filterAvailable": {
+    "description": "Translation for filterAvailable"
+  },
   "filterEmpty": "Verbraucht",
-  
+  "@filterEmpty": {
+    "description": "Translation for filterEmpty"
+  },
   "verifyScan": "SCAN ÜBERPRÜFEN",
+  "@verifyScan": {
+    "description": "Translation for verifyScan"
+  },
   "positions": "POSITIONEN",
+  "@positions": {
+    "description": "Translation for positions"
+  },
   "articles": "{count} Artikel",
   "@articles": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "amountAbbr": "ANZ",
+  "@amountAbbr": {
+    "description": "Translation for amountAbbr"
+  },
   "brandDescription": "MARKE / BESCHREIBUNG",
+  "@brandDescription": {
+    "description": "Translation for brandDescription"
+  },
   "weight": "GEWICHT",
+  "@weight": {
+    "description": "Translation for weight"
+  },
   "price": "PREIS",
+  "@price": {
+    "description": "Translation for price"
+  },
   "save": "Speichern",
+  "@save": {
+    "description": "Translation for save"
+  },
   "total": "GESAMT",
-  
+  "@total": {
+    "description": "Translation for total"
+  },
   "noAvailableItems": "Keine verfügbaren Artikel",
+  "@noAvailableItems": {
+    "description": "Translation for noAvailableItems"
+  },
   "noItemsFound": "Keine Artikel gefunden",
+  "@noItemsFound": {
+    "description": "Translation for noItemsFound"
+  },
   "debugHiveReset": "Debug: Hive Reset",
+  "@debugHiveReset": {
+    "description": "Translation for debugHiveReset"
+  },
   "debugDataDeleted": "Debug: Alle Daten gelöscht",
-  
+  "@debugDataDeleted": {
+    "description": "Translation for debugDataDeleted"
+  },
   "imageUploading": "Bild wird hochgeladen und analysiert...",
+  "@imageUploading": {
+    "description": "Translation for imageUploading"
+  },
   "noTextFromAi": "Kein Text von der KI erhalten.",
+  "@noTextFromAi": {
+    "description": "Translation for noTextFromAi"
+  },
   "aiResult": "KI Ergebnis: ",
+  "@aiResult": {
+    "description": "Translation for aiResult"
+  },
   "aiRequestError": "Fehler bei der KI-Anfrage: ",
-  
+  "@aiRequestError": {
+    "description": "Translation for aiRequestError"
+  },
   "emptyJsonString": "Leerer JSON-String empfangen.",
+  "@emptyJsonString": {
+    "description": "Translation for emptyJsonString"
+  },
   "sanitizedJsonEmpty": "Bereinigter JSON-String ist leer.",
+  "@sanitizedJsonEmpty": {
+    "description": "Translation for sanitizedJsonEmpty"
+  },
   "unexpectedJsonFormat": "Unerwartetes JSON-Format empfangen: ",
+  "@unexpectedJsonFormat": {
+    "description": "Translation for unexpectedJsonFormat"
+  },
   "jsonParsingError": "Fehler beim Parsen des JSON: ",
+  "@jsonParsingError": {
+    "description": "Translation for jsonParsingError"
+  },
   "unknownStorename": "Unbekannter Laden",
+  "@unknownStorename": {
+    "description": "Translation for unknownStorename"
+  },
   "unknownArticle": "Unbekannter Artikel",
-  
+  "@unknownArticle": {
+    "description": "Translation for unknownArticle"
+  },
   "defaultStoreName": "Ladenname",
+  "@defaultStoreName": {
+    "description": "Translation for defaultStoreName"
+  },
   "pleaseSelectPdf": "Bitte wähle eine PDF-Datei.",
-  
+  "@pleaseSelectPdf": {
+    "description": "Translation for pleaseSelectPdf"
+  },
   "digitalFridge": "Digitaler Kühlschrank",
+  "@digitalFridge": {
+    "description": "Translation for digitalFridge"
+  },
   "imageFromGallery": "Bild aus Galerie",
+  "@imageFromGallery": {
+    "description": "Translation for imageFromGallery"
+  },
   "imageFromCamera": "Bild aufnehmen",
+  "@imageFromCamera": {
+    "description": "Translation for imageFromCamera"
+  },
   "imageFromPdf": "Aus PDF",
+  "@imageFromPdf": {
+    "description": "Translation for imageFromPdf"
+  },
   "receiptReadErrorFormat": "Der Kassenbon konnte nicht gelesen werden (Format-Fehler).",
+  "@receiptReadErrorFormat": {
+    "description": "Translation for receiptReadErrorFormat"
+  },
   "errorOccurred": "Ein Fehler ist aufgetreten: ",
+  "@errorOccurred": {
+    "description": "Translation for errorOccurred"
+  },
   "quantityUpdateFailed": "Menge konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+  "@quantityUpdateFailed": {
+    "description": "Translation for quantityUpdateFailed"
+  },
   "loading": "Lädt...",
-  
+  "@loading": {
+    "description": "Translation for loading"
+  },
   "initializingApp": "App wird initialisiert...",
+  "@initializingApp": {
+    "description": "Translation for initializingApp"
+  },
   "errorInitializing": "Fehler beim Initialisieren der App: {error}",
   "@errorInitializing": {
     "placeholders": {
-      "error": {"type": "Object"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "retry": "Erneut versuchen",
-  
+  "@retry": {
+    "description": "Translation for retry"
+  },
   "guestMode": "Gast-Modus",
+  "@guestMode": {
+    "description": "Translation for guestMode"
+  },
   "guestModeDescription": "Sie nutzen die App derzeit als Gast. Verknüpfen Sie Ihr Konto mit einer E-Mail oder Google, um Ihre Daten zu sichern und auf mehreren Geräten zu synchronisieren.",
+  "@guestModeDescription": {
+    "description": "Translation for guestModeDescription"
+  },
   "linkAccount": "Konto verknüpfen",
+  "@linkAccount": {
+    "description": "Translation for linkAccount"
+  },
   "createNewAccount": "Neues Konto erstellen",
+  "@createNewAccount": {
+    "description": "Translation for createNewAccount"
+  },
   "useExistingAccount": "Bestehendes Konto nutzen",
+  "@useExistingAccount": {
+    "description": "Translation for useExistingAccount"
+  },
   "linkAccountSuccess": "Konto erfolgreich verknüpft!",
-  
+  "@linkAccountSuccess": {
+    "description": "Translation for linkAccountSuccess"
+  },
   "warning": "Achtung",
+  "@warning": {
+    "description": "Translation for warning"
+  },
   "linkAccountExistingWarning": "Wenn Sie sich mit einem bestehenden Konto anmelden möchten, werden alle Daten Ihres aktuellen Gast-Kontos gelöscht.\n\nSie werden zur Startseite weitergeleitet, wo Sie sich einloggen können.",
+  "@linkAccountExistingWarning": {
+    "description": "Translation for linkAccountExistingWarning"
+  },
   "proceed": "Fortfahren",
+  "@proceed": {
+    "description": "Translation for proceed"
+  },
   "cancel": "Abbrechen",
+  "@cancel": {
+    "description": "Translation for cancel"
+  },
   "delete": "Löschen",
-  
+  "@delete": {
+    "description": "Translation for delete"
+  },
   "userAccount": "Benutzerkonto",
+  "@userAccount": {
+    "description": "Translation for userAccount"
+  },
   "name": "Name",
+  "@name": {
+    "description": "Translation for name"
+  },
   "email": "E-Mail",
+  "@email": {
+    "description": "Translation for email"
+  },
   "id": "ID",
+  "@id": {
+    "description": "Translation for id"
+  },
   "notAvailable": "Nicht verfügbar",
+  "@notAvailable": {
+    "description": "Translation for notAvailable"
+  },
   "logout": "Abmelden",
-  
+  "@logout": {
+    "description": "Translation for logout"
+  },
   "deleteAccount": "Account löschen",
+  "@deleteAccount": {
+    "description": "Translation for deleteAccount"
+  },
   "deleteAccountQuestion": "Account löschen?",
+  "@deleteAccountQuestion": {
+    "description": "Translation for deleteAccountQuestion"
+  },
   "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht.\n\nMöchten Sie Ihren Account wirklich löschen?",
+  "@deleteAccountWarning": {
+    "description": "Translation for deleteAccountWarning"
+  },
   "deleteAccountError": "Fehler beim Löschen: ",
-  
+  "@deleteAccountError": {
+    "description": "Translation for deleteAccountError"
+  },
   "howShouldWeCallYou": "Wie möchtest du genannt werden?",
+  "@howShouldWeCallYou": {
+    "description": "Translation for howShouldWeCallYou"
+  },
   "yourName": "Dein Name",
+  "@yourName": {
+    "description": "Translation for yourName"
+  },
   "enterValidName": "Bitte gib einen Namen ein",
+  "@enterValidName": {
+    "description": "Translation for enterValidName"
+  },
   "next": "Weiter",
+  "@next": {
+    "description": "Translation for next"
+  },
   "errorLabel": "Fehler: ",
-  
+  "@errorLabel": {
+    "description": "Translation for errorLabel"
+  },
   "welcomeTitle": "Willkommen bei MealTrack!",
+  "@welcomeTitle": {
+    "description": "Translation for welcomeTitle"
+  },
   "welcomeSubtitle": "Behalte den Überblick über deine Lebensmittel",
+  "@welcomeSubtitle": {
+    "description": "Translation for welcomeSubtitle"
+  },
   "loginBtn": "Einloggen",
+  "@loginBtn": {
+    "description": "Translation for loginBtn"
+  },
   "continueGuestBtn": "Als Gast fortsetzen",
-  
+  "@continueGuestBtn": {
+    "description": "Translation for continueGuestBtn"
+  },
   "existingAccountFound": "Bestehendes Konto gefunden",
+  "@existingAccountFound": {
+    "description": "Translation for existingAccountFound"
+  },
   "existingAccountFoundDescription": "Dieses Konto ist bereits registriert. Wenn Sie fortfahren, gehen alle Daten Ihres aktuellen Gast-Kontos verloren.\n\nMöchten Sie sich trotzdem mit dem bestehenden Konto anmelden?",
+  "@existingAccountFoundDescription": {
+    "description": "Translation for existingAccountFoundDescription"
+  },
   "signedInWithExistingAccount": "Sie wurden mit Ihrem bestehenden Konto angemeldet.",
+  "@signedInWithExistingAccount": {
+    "description": "Translation for signedInWithExistingAccount"
+  },
   "signInErrorPrefix": "Fehler bei der Anmeldung: ",
+  "@signInErrorPrefix": {
+    "description": "Translation for signInErrorPrefix"
+  },
   "signInSubtitle": "Bitte melden Sie sich an, um fortzufahren.",
+  "@signInSubtitle": {
+    "description": "Translation for signInSubtitle"
+  },
   "signUpSubtitle": "Bitte erstellen Sie ein Konto, um fortzufahren",
+  "@signUpSubtitle": {
+    "description": "Translation for signUpSubtitle"
+  },
   "signInAction": "anmelden",
+  "@signInAction": {
+    "description": "Translation for signInAction"
+  },
   "signUpAction": "registrieren",
+  "@signUpAction": {
+    "description": "Translation for signUpAction"
+  },
   "tosDisclaimer": "Durch {action} stimmen Sie unseren Nutzungsbedingungen zu.",
   "@tosDisclaimer": {
     "placeholders": {
-      "action": {"type": "String"}
+      "action": {
+        "type": "String"
+      }
     }
   },
-  
   "settings": "Einstellungen",
+  "@settings": {
+    "description": "Translation for settings"
+  },
   "stockValue": "VORRATSWERT",
+  "@stockValue": {
+    "description": "Translation for stockValue"
+  },
   "sharing": "Teilen",
+  "@sharing": {
+    "description": "Translation for sharing"
+  },
   "invite": "Einladen",
+  "@invite": {
+    "description": "Translation for invite"
+  },
   "join": "Beitreten",
+  "@join": {
+    "description": "Translation for join"
+  },
   "generateCode": "Code generieren",
+  "@generateCode": {
+    "description": "Translation for generateCode"
+  },
   "sharingCode": "Dein Sharing-Code",
+  "@sharingCode": {
+    "description": "Translation for sharingCode"
+  },
   "sharingCodeDescription": "Teile diesen Code, um deine Vorräte gemeinsam mit anderen zu verwalten.",
+  "@sharingCodeDescription": {
+    "description": "Translation for sharingCodeDescription"
+  },
   "enterSharingCode": "Sharing-Code eingeben",
+  "@enterSharingCode": {
+    "description": "Translation for enterSharingCode"
+  },
   "joinHousehold": "Haushalt beitreten",
+  "@joinHousehold": {
+    "description": "Translation for joinHousehold"
+  },
   "invalidCode": "Ungültiger Code",
+  "@invalidCode": {
+    "description": "Translation for invalidCode"
+  },
   "codeExpired": "Code abgelaufen",
+  "@codeExpired": {
+    "description": "Translation for codeExpired"
+  },
   "codeValidDuration": "Code ist für 24 Stunden gültig",
+  "@codeValidDuration": {
+    "description": "Translation for codeValidDuration"
+  },
   "copyCode": "Code kopieren",
+  "@copyCode": {
+    "description": "Translation for copyCode"
+  },
   "codeCopied": "Code kopiert!",
+  "@codeCopied": {
+    "description": "Translation for codeCopied"
+  },
   "convertAccountToShare": "Bitte verknüpfen Sie Ihr Konto, um einen Haushalt erstellen zu können.",
+  "@convertAccountToShare": {
+    "description": "Translation for convertAccountToShare"
+  },
   "householdMembers": "Haushaltsmitglieder",
+  "@householdMembers": {
+    "description": "Translation for householdMembers"
+  },
   "you": "Du",
+  "@you": {
+    "description": "Translation for you"
+  },
   "removeMember": "Mitglied entfernen",
+  "@removeMember": {
+    "description": "Translation for removeMember"
+  },
   "removeMemberConfirmation": "Möchten Sie dieses Mitglied wirklich aus dem Haushalt entfernen?",
+  "@removeMemberConfirmation": {
+    "description": "Translation for removeMemberConfirmation"
+  },
   "remove": "Entfernen",
+  "@remove": {
+    "description": "Translation for remove"
+  },
   "cannotJoinOwnHousehold": "Sie können nicht Ihrem eigenen Haushalt beitreten.",
+  "@cannotJoinOwnHousehold": {
+    "description": "Translation for cannotJoinOwnHousehold"
+  },
   "leaveHousehold": "Haushalt verlassen",
+  "@leaveHousehold": {
+    "description": "Translation for leaveHousehold"
+  },
   "leaveHouseholdConfirmation": "Möchten Sie den Haushalt wirklich verlassen?",
+  "@leaveHouseholdConfirmation": {
+    "description": "Translation for leaveHouseholdConfirmation"
+  },
   "leave": "Verlassen",
-  
+  "@leave": {
+    "description": "Translation for leave"
+  },
   "inventory": "Vorrat",
+  "@inventory": {
+    "description": "Translation for inventory"
+  },
   "shoppinglist": "Einkaufsliste",
+  "@shoppinglist": {
+    "description": "Translation for shoppinglist"
+  },
   "calories": "Kalorien",
+  "@calories": {
+    "description": "Translation for calories"
+  },
   "statistics": "Statistik",
+  "@statistics": {
+    "description": "Translation for statistics"
+  },
   "featureInProgress": "Diese Funktion ist noch in Arbeit 🚧",
+  "@featureInProgress": {
+    "description": "Translation for featureInProgress"
+  },
   "addItemNotImplemented": "Hinzufügen - Noch nicht implementiert",
+  "@addItemNotImplemented": {
+    "description": "Translation for addItemNotImplemented"
+  },
   "itemAddedToShoppingList": "{name} zur Einkaufsliste hinzugefügt",
   "@itemAddedToShoppingList": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "unitPriceLabel": "{price}€ / Stk",
   "@unitPriceLabel": {
     "placeholders": {
-      "price": {"type": "String"}
+      "price": {
+        "type": "String"
+      }
     }
   },
   "shoppingListEmpty": "Keine Einträge",
+  "@shoppingListEmpty": {
+    "description": "Translation for shoppingListEmpty"
+  },
   "shoppingListClearTitle": "Liste leeren?",
+  "@shoppingListClearTitle": {
+    "description": "Translation for shoppingListClearTitle"
+  },
   "shoppingListClearConfirmation": "Möchtest du wirklich alle Einträge löschen?",
+  "@shoppingListClearConfirmation": {
+    "description": "Translation for shoppingListClearConfirmation"
+  },
   "errorDisplay": "Fehler: {error}",
   "@errorDisplay": {
     "placeholders": {
-      "error": {"type": "Object"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "add": "Hinzufügen",
+  "@add": {
+    "description": "Translation for add"
+  },
   "addItemTitle": "Artikel hinzufügen",
+  "@addItemTitle": {
+    "description": "Translation for addItemTitle"
+  },
   "addItemHint": "z.B. Milch",
+  "@addItemHint": {
+    "description": "Translation for addItemHint"
+  },
   "approximateCostLabel": "UNGEFÄHRE KOSTEN",
+  "@approximateCostLabel": {
+    "description": "Translation for approximateCostLabel"
+  },
   "firstLoginRequiresInternet": "Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.",
-  
+  "@firstLoginRequiresInternet": {
+    "description": "Translation for firstLoginRequiresInternet"
+  },
   "scanReceiptDialogTitle": "Beleg scannen?",
+  "@scanReceiptDialogTitle": {
+    "description": "Translation for scanReceiptDialogTitle"
+  },
   "scanReceiptDialogContent": "Möchtest du dieses Dokument als Kassenbon scannen?",
-  "yes": "Ja"
+  "@scanReceiptDialogContent": {
+    "description": "Translation for scanReceiptDialogContent"
+  },
+  "yes": "Ja",
+  "@yes": {
+    "description": "Translation for yes"
+  }
 }

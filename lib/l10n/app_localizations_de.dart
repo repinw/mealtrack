@@ -162,7 +162,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get initializingApp => 'App wird initialisiert...';
 
   @override
-  String errorInitializing(Object error) {
+  String errorInitializing(String error) {
     return 'Fehler beim Initialisieren der App: $error';
   }
 
@@ -412,7 +412,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Möchtest du wirklich alle Einträge löschen?';
 
   @override
-  String errorDisplay(Object error) {
+  String errorDisplay(String error) {
     return 'Fehler: $error';
   }
 
