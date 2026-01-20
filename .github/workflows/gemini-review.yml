@@ -5,6 +5,10 @@ on:
     types: [opened, synchronize, ready_for_review]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   review:
     # Spart Kosten: Läuft nicht bei Draft-PRs
@@ -22,10 +26,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Install libraries
-        run: pip install google-generativeai PyGithub
+        run: pip install "google-generativeai>=0.3.0" "PyGithub>=2.1.0"
 
       - name: Run Review Script
         env:
@@ -33,104 +36,4 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO_NAME: ${{ github.repository }}
-        run: |
-          cat << 'EOF' > review.py
-          import os
-          import google.generativeai as genai
-          from github import Github
-
-          # --- CONFIG ---
-          # Stand 2026: Wir nutzen das neueste 3er Modell wie angefordert
-          MODEL_NAME = 'gemini-3-pro-preview' 
-          
-          api_key = os.environ.get('GEMINI_API_KEY')
-          if not api_key:
-              print("❌ Kein API Key gefunden!")
-              exit(1)
-
-          genai.configure(api_key=api_key)
-
-          g = Github(os.environ['GITHUB_TOKEN'])
-          repo = g.get_repo(os.environ['REPO_NAME'])
-          pr = repo.get_pull(int(os.environ['PR_NUMBER']))
-
-          # --- 1. ANTI-SPAM: Alte Bot-Kommentare löschen ---
-          print("🧹 Suche nach alten Bot-Kommentaren...")
-          try:
-              for comment in pr.get_issue_comments():
-                  if "🤖 Gemini Review" in comment.body:
-                      comment.delete()
-                      print(f"   Alten Kommentar {comment.id} gelöscht.")
-          except Exception as e:
-              print(f"⚠️ Konnte Kommentare nicht löschen (Berechtigung?): {e}")
-
-          # --- 2. DIFF LADEN & FILTERN ---
-          diff_text = ''
-          files_analyzed = []
-          has_test_files = False
-          # Erweiterte Ignore-Liste für weniger Token-Verbrauch
-          ignored_ext = ['.json', '.md', '.svg', '.png', '.lock', '.yml', '.yaml', '.css', '.scss']
-
-          for file in pr.get_files():
-              # Ignoriere gelöschte Dateien oder unwichtige Formate
-              if file.status == "removed" or any(file.filename.endswith(ext) for ext in ignored_ext):
-                  continue
-              
-              if file.patch:
-                  files_analyzed.append(file.filename)
-                  diff_text += f'\n\n--- DATEI: {file.filename} ---\n{file.patch}\n'
-                  
-                  if "test" in file.filename.lower() or "spec" in file.filename.lower():
-                      has_test_files = True
-
-          if not diff_text:
-              print("✅ Keine review-relevanten Änderungen (Code) gefunden.")
-              exit(0)
-
-          # --- 3. PROMPT ---
-          # Optimierter Prompt für Gemini 3 Context
-          prompt = f'''
-          Du bist ein strenger Senior Code Reviewer für das Projekt 'mealtrack'.
-          
-          KONTEXT:
-          - Dateien: {', '.join(files_analyzed)}
-          - Tests im PR enthalten? {"JA ✅" if has_test_files else "NEIN ❌ (Kritisch prüfen!)"}
-
-          AUFGABE:
-          1. Suche nach Bugs, Sicherheitslücken und Clean Code Verstößen.
-          2. PRÜFE TESTS: Wenn neue Logik ohne Tests kommt -> Schreibe **⚠️ TESTS FEHLEN**.
-          3. SPRACHE: Kommentare/Namen müssen Englisch sein.
-          4. STIL: Keine unnötigen Einleitungen.
-          
-          ANTWORT FORMAT (Markdown):
-          ### 🛡️ Review Zusammenfassung
-          (Urteil & Status)
-
-          ### 🐛 Bugs & Anmerkungen
-          (Kritische Fehler)
-
-          ### 🧪 Fehlende Tests & Szenarien
-          (Analysiere konkret: Was fehlt? Happy Path? Edge Cases?)
-          
-          CODE DIFF:
-          {diff_text[:300000]}
-          '''
-          # Gemini 3 hat großes Context Window, habe Limit auf 300k erhöht
-
-          # --- 4. KI ANFRAGE ---
-          try:
-              print(f"🚀 Sende Anfrage an {MODEL_NAME}...")
-              model = genai.GenerativeModel(MODEL_NAME)
-              response = model.generate_content(prompt)
-              review_body = response.text
-          except Exception as e:
-              review_body = f"❌ **KI-Fehler:** {str(e)}"
-              print(review_body)
-
-          # --- 5. POSTEN ---
-          header = f'## 🤖 Gemini Review ({MODEL_NAME})\n'
-          pr.create_issue_comment(header + review_body)
-          print("✅ Review gepostet!")
-          EOF
-
-          python review.py
+        run: python .github/scripts/gemini_review.py
