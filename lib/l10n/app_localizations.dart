@@ -526,6 +526,12 @@ abstract class AppLocalizations {
   /// **'Dein Name'**
   String get yourName;
 
+  /// No description provided for @enterValidName.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib einen Namen ein'**
+  String get enterValidName;
+
   /// No description provided for @next.
   ///
   /// In de, this message translates to:
@@ -861,6 +867,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'UNGEFÄHRE KOSTEN'**
   String get approximateCostLabel;
+
+  /// No description provided for @firstLoginRequiresInternet.
+  ///
+  /// In de, this message translates to:
+  /// **'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.'**
+  String get firstLoginRequiresInternet;
 }
 
 class _AppLocalizationsDelegate
