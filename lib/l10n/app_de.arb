@@ -116,6 +116,7 @@
   
   "howShouldWeCallYou": "Wie möchtest du genannt werden?",
   "yourName": "Dein Name",
+  "enterValidName": "Bitte gib einen Namen ein",
   "next": "Weiter",
   "errorLabel": "Fehler: ",
   
@@ -195,5 +196,6 @@
   "add": "Hinzufügen",
   "addItemTitle": "Artikel hinzufügen",
   "addItemHint": "z.B. Milch",
-  "approximateCostLabel": "UNGEFÄHRE KOSTEN"
+  "approximateCostLabel": "UNGEFÄHRE KOSTEN",
+  "firstLoginRequiresInternet": "Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist."
 }

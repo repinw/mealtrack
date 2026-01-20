@@ -1,10 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mealtrack/core/extensions/user_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/provider/firebase_providers.dart';
-import 'package:mealtrack/features/auth/provider/auth_service.dart';
+import 'package:mealtrack/core/errors/firebase_error_codes.dart';
 import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
+import 'package:mealtrack/features/auth/presentation/viewmodel/guest_name_viewmodel.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class GuestNamePage extends ConsumerStatefulWidget {
@@ -18,7 +17,7 @@ class GuestNamePage extends ConsumerStatefulWidget {
 
 class _GuestNamePageState extends ConsumerState<GuestNamePage> {
   late final TextEditingController _nameController;
-  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -32,92 +31,118 @@ class _GuestNamePageState extends ConsumerState<GuestNamePage> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    final l10n = AppLocalizations.of(context)!;
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+  void _submit() {
+    FocusScope.of(context).unfocus();
 
-    setState(() => _isLoading = true);
-
-    try {
-      final auth = ref.read(firebaseAuthProvider);
-      final firestore = ref.read(firebaseFirestoreProvider);
-      User? user = widget.user;
-
-      if (user == null) {
-        final userCredential = await auth.signInAnonymously();
-        user = userCredential.user;
-      }
-
-      await user!.updateDisplayNameAndReload(name, firestore: firestore);
-
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const AuthGate()),
-          (route) => false,
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.errorLabel}${e.message}')),
-        );
-      }
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
+
+    final name = _nameController.text.trim();
+    ref
+        .read(guestNameViewModelProvider.notifier)
+        .submit(name: name, user: widget.user);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    final state = ref.watch(guestNameViewModelProvider);
+
+    ref.listen(guestNameViewModelProvider, (_, next) {
+      if (!next.isLoading && !next.hasError) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const AuthGate()),
+          (route) => false,
+        );
+      }
+    });
+
+    final errorMessage = _getErrorMessage(state.error, l10n);
+    final isLoading = state.isLoading;
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-              Text(
-                l10n.howShouldWeCallYou,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(),
+                  Text(
+                    l10n.howShouldWeCallYou,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.yourName,
+                      border: const OutlineInputBorder(),
+                    ),
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.enterValidName;
+                      }
+                      return null;
+                    },
+                    onFieldSubmitted: (_) => _submit(),
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: isLoading ? null : _submit,
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(errorMessage != null ? l10n.retry : l10n.next),
+                  ),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      errorMessage,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const Spacer(flex: 2),
+                ],
               ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.yourName,
-                  border: const OutlineInputBorder(),
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-                onSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isLoading ? null : _submit,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.next),
-              ),
-              const Spacer(flex: 2),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String? _getErrorMessage(Object? error, AppLocalizations l10n) {
+    if (error == null) return null;
+    if (error is FirebaseAuthException) {
+      if (isNetworkError(error.code)) {
+        return l10n.firstLoginRequiresInternet;
+      }
+      return '${l10n.errorLabel}${error.message}';
+    }
+    return '${l10n.errorLabel}$error';
   }
 }

@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
-import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
@@ -25,25 +27,33 @@ void main() {
   late MockUser mockUser;
   late MockUserCredential mockUserCredential;
   late MockNavigatorObserver mockObserver;
+  late FakeFirebaseFirestore fakeFirestore;
 
   setUp(() {
     mockAuth = MockFirebaseAuth();
     mockUser = MockUser();
     mockUserCredential = MockUserCredential();
     mockObserver = MockNavigatorObserver();
+    fakeFirestore = FakeFirebaseFirestore();
 
     registerFallbackValue(FakeRoute());
 
+    // User Setup
+    when(() => mockUser.uid).thenReturn('test_uid');
+    when(() => mockUser.email).thenReturn('test@example.com');
+    when(() => mockUser.isAnonymous).thenReturn(true);
+    when(() => mockUser.displayName).thenReturn(null); // Default to no name
+
+    // Extension method underlying calls
+    when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
+    when(() => mockUser.reload()).thenAnswer((_) async {});
+
+    // Auth Setup
     when(() => mockUserCredential.user).thenReturn(mockUser);
     when(
       () => mockAuth.signInAnonymously(),
     ).thenAnswer((_) async => mockUserCredential);
     when(() => mockAuth.currentUser).thenReturn(mockUser);
-    when(() => mockUser.uid).thenReturn('test_uid');
-    when(() => mockUser.email).thenReturn('test@example.com');
-    when(() => mockUser.isAnonymous).thenReturn(true);
-    when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {});
-    when(() => mockUser.reload()).thenAnswer((_) async {});
   });
 
   Widget createWidgetUnderTest({
@@ -53,7 +63,7 @@ void main() {
     return ProviderScope(
       overrides: [
         firebaseAuthProvider.overrideWithValue(mockAuth),
-        firebaseFirestoreProvider.overrideWithValue(FakeFirebaseFirestore()),
+        firebaseFirestoreProvider.overrideWithValue(fakeFirestore),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -66,30 +76,52 @@ void main() {
     );
   }
 
+  AppLocalizations getL10n(WidgetTester tester) {
+    return AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!;
+  }
+
   testWidgets('GuestNamePage renders correctly', (tester) async {
     await tester.pumpWidget(createWidgetUnderTest());
-
-    // Allow localizations to load
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        AppLocalizations.of(
-          tester.element(find.byType(GuestNamePage)),
-        )!.howShouldWeCallYou,
-      ),
-      findsOneWidget,
-    );
+    final l10n = getL10n(tester);
+
+    expect(find.text(l10n.howShouldWeCallYou), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
-    expect(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.next), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('GuestNamePage calls signInAnonymously and navigates', (
+  testWidgets('shows loading indicator and disables button while submitting', (
+    tester,
+  ) async {
+    final completer = Completer<UserCredential>();
+    when(
+      () => mockAuth.signInAnonymously(),
+    ).thenAnswer((_) => completer.future);
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Loading User');
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+
+    // Verify loading state
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text(getL10n(tester).next), findsNothing);
+    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    expect(button.onPressed, isNull);
+
+    // Complete future
+    completer.complete(mockUserCredential);
+    await tester.pumpAndSettle();
+
+    // Verify loading ended (and likely navigated away, but mostly loading check)
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('Happy Path: signInAnonymously, syncs data, and navigates', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -97,24 +129,29 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
-    await tester.pump(); // Start async
+    await tester.enterText(find.byType(TextField), 'New User');
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
 
+    // Verify Auth calls
     verify(() => mockAuth.signInAnonymously()).called(1);
-    verify(() => mockUser.updateDisplayName('Test Guest')).called(1);
+    verify(() => mockUser.updateDisplayName('New User')).called(1);
+    verify(() => mockUser.reload()).called(1);
 
-    // Check navigation
+    // Verify Firestore Data (checking UserExtension effect)
+    final snapshot = await fakeFirestore
+        .collection(usersCollection)
+        .doc('test_uid')
+        .get();
+    expect(snapshot.exists, isTrue);
+    expect(snapshot.data()!['displayName'], 'New User');
+    expect(snapshot.data()!['isAnonymous'], isTrue);
+
+    // Verify Navigation
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
   });
 
-  testWidgets('GuestNamePage updates existing user if provided', (
-    tester,
-  ) async {
+  testWidgets('updates existing user if provided', (tester) async {
     when(() => mockUser.displayName).thenReturn('Old Name');
 
     await tester.pumpWidget(
@@ -127,129 +164,100 @@ void main() {
 
     expect(find.text('Old Name'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'New Name');
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
-    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'Updated Name');
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
 
+    // Verify No SignInAnonymously
     verifyNever(() => mockAuth.signInAnonymously());
-    verify(() => mockUser.updateDisplayName('New Name')).called(1);
+
+    // Verify Update Calls
+    verify(() => mockUser.updateDisplayName('Updated Name')).called(1);
+    verify(() => mockUser.reload()).called(1);
+
+    // Verify Firestore Update
+    final snapshot = await fakeFirestore
+        .collection(usersCollection)
+        .doc('test_uid')
+        .get();
+    expect(snapshot.exists, isTrue);
+    expect(snapshot.data()!['displayName'], 'Updated Name');
+
+    // Verify Navigation
     verify(() => mockObserver.didPush(any(), any())).called(greaterThan(0));
   });
 
-  testWidgets('does nothing when name is empty', (tester) async {
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pumpAndSettle();
-
-    // Don't enter any text, just tap the button
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
-    await tester.pump();
-
-    // signInAnonymously should NOT be called
-    verifyNever(() => mockAuth.signInAnonymously());
-  });
-
-  testWidgets('does nothing when name contains only whitespace', (
+  testWidgets('does nothing when name is empty or validation fails', (
     tester,
   ) async {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();
 
-    // Enter only whitespace
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    // Verify validaton error
+    expect(find.text(getL10n(tester).enterValidName), findsOneWidget);
+    verifyNever(() => mockAuth.signInAnonymously());
+
     await tester.enterText(find.byType(TextField), '   ');
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
-    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
 
-    // signInAnonymously should NOT be called
+    // Verify validaton error for whitespace
+    expect(find.text(getL10n(tester).enterValidName), findsOneWidget);
     verifyNever(() => mockAuth.signInAnonymously());
   });
 
-  testWidgets('shows error snackbar when signInAnonymously fails', (
+  testWidgets('displays network error message when network fails', (
     tester,
   ) async {
-    when(() => mockAuth.signInAnonymously()).thenThrow(
-      FirebaseAuthException(
-        code: 'network-request-failed',
-        message: 'A network error occurred.',
-      ),
-    );
-
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    // Verify error snackbar is shown
-    expect(find.byType(SnackBar), findsOneWidget);
-    expect(
-      find.textContaining(
-        AppLocalizations.of(
-          tester.element(find.byType(GuestNamePage)),
-        )!.errorLabel,
-      ),
-      findsOneWidget,
-    );
-    expect(find.textContaining('A network error occurred.'), findsOneWidget);
-  });
-
-  testWidgets('shows error snackbar when updateDisplayName fails', (
-    tester,
-  ) async {
-    when(() => mockUser.updateDisplayName(any())).thenAnswer((_) async {
-      throw FirebaseAuthException(
-        code: 'unknown',
-        message: 'Failed to update display name.',
-      );
-    });
+    when(
+      () => mockAuth.signInAnonymously(),
+    ).thenThrow(FirebaseAuthException(code: 'network-request-failed'));
 
     await tester.pumpWidget(
       createWidgetUnderTest(navigatorObserver: mockObserver),
     );
     await tester.pumpAndSettle();
 
+    // Clear initial navigation interactions
     clearInteractions(mockObserver);
 
-    await tester.enterText(find.byType(TextField), 'Test Guest');
-    await tester.tap(
-      find.text(
-        AppLocalizations.of(tester.element(find.byType(GuestNamePage)))!.next,
-      ),
-    );
+    await tester.enterText(find.byType(TextField), 'Network Fail');
+    await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    // Verify error snackbar is shown
-    expect(find.byType(SnackBar), findsOneWidget);
-    expect(
-      find.textContaining(
-        AppLocalizations.of(
-          tester.element(find.byType(GuestNamePage)),
-        )!.errorLabel,
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Failed to update display name.'),
-      findsOneWidget,
+    final l10n = getL10n(tester);
+
+    // Verify loading gone
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text(l10n.retry), findsOneWidget);
+
+    // Check Error Message
+    expect(find.text(l10n.firstLoginRequiresInternet), findsOneWidget);
+
+    // Verify No Navigation
+    verifyNever(() => mockObserver.didPush(any(), any()));
+  });
+
+  testWidgets('displays generic error message for other errors', (
+    tester,
+  ) async {
+    when(() => mockAuth.signInAnonymously()).thenThrow(
+      FirebaseAuthException(code: 'unknown', message: 'Something went wrong'),
     );
 
-    // Check that we did NOT navigate away
-    verifyNever(() => mockObserver.didPush(any(), any()));
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'General Error');
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    final l10n = getL10n(tester);
+
+    // Check Error Message format: '${l10n.errorLabel}${e.message}'
+    expect(find.text('${l10n.errorLabel}Something went wrong'), findsOneWidget);
   });
 }

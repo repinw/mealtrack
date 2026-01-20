@@ -242,6 +242,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get yourName => 'Dein Name';
 
   @override
+  String get enterValidName => 'Bitte gib einen Namen ein';
+
+  @override
   String get next => 'Weiter';
 
   @override
@@ -424,4 +427,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get approximateCostLabel => 'UNGEFÄHRE KOSTEN';
+
+  @override
+  String get firstLoginRequiresInternet =>
+      'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.';
 }
