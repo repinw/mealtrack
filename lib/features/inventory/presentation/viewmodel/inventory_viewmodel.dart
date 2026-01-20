@@ -127,7 +127,7 @@ List<InventoryDisplayItem> _buildGroupList({
     displayList.add(
       InventoryHeaderItem(
         storeName: first.storeName,
-        entryDate: first.entryDate,
+        entryDate: first.receiptDate ?? first.entryDate,
         itemCount: group.length,
         receiptId: key,
         isFullyConsumed: isFullyConsumed,
