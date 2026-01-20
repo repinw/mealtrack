@@ -194,12 +194,18 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(FilledButton));
-    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // Verify validaton error
+    expect(find.text(getL10n(tester).enterValidName), findsOneWidget);
     verifyNever(() => mockAuth.signInAnonymously());
 
     await tester.enterText(find.byType(TextField), '   ');
     await tester.tap(find.byType(FilledButton));
-    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // Verify validaton error for whitespace
+    expect(find.text(getL10n(tester).enterValidName), findsOneWidget);
     verifyNever(() => mockAuth.signInAnonymously());
   });
 
