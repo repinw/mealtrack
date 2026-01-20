@@ -54,9 +54,11 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
             return;
           }
 
-          ref.read(latestSharedFileProvider.notifier).consume();
-
           final shouldScan = await _showConfirmationDialog(navigatorContext);
+
+          if (mounted) {
+            ref.read(latestSharedFileProvider.notifier).consume();
+          }
 
           if (shouldScan == true && mounted) {
             final processContext = ref

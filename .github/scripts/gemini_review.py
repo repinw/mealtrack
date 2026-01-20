@@ -85,8 +85,9 @@ try:
     model = genai.GenerativeModel(MODEL_NAME)
     
     generation_config = {
-        "temperature": 0.1,         # Fast 0 für strikte Code-Analyse
-        "max_output_tokens": 100000 # Viel Platz für lange Reviews
+        "temperature": 0.0,         # Volle Strenge
+        "top_p": 0.95,              # Stabile Wortwahl
+        "max_output_tokens": 65536  # Genug Platz für lange Reviews
     }
     
     response = model.generate_content(prompt, generation_config=generation_config)
