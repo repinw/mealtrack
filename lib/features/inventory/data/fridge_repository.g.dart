@@ -55,4 +55,4 @@ final class FridgeRepositoryProvider
   }
 }
 
-String _$fridgeRepositoryHash() => r'43bd8b2a7db857898ca49dfc9ed84fb01deb815f';
+String _$fridgeRepositoryHash() => r'731cc22129c32aab9295ee88364dc7d59384f22d';

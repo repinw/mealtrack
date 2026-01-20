@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/auth/presentation/guest_name_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/settings/presentation/settings_page.dart';
+import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 
 class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const InventoryAppBar({super.key, required this.title});
@@ -24,17 +24,11 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
 
-    final currencyFormat = NumberFormat.currency(locale: 'de_DE', symbol: '€');
-
-    const backgroundColor = AppTheme.primaryColor;
-    const accentColor = AppTheme.secondaryColor;
-    const textColor = AppTheme.white;
-    const labelColor = Colors.grey;
     const highlightColor = AppTheme.accentColor;
 
     return AppBar(
       toolbarHeight: kToolbarHeight,
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.primaryColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: false,
@@ -80,76 +74,22 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(_bottomHeight),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
+        child: SummaryHeader(
+          label: l10n.stockValue,
+          totalValue: stats.totalValue,
+          articleCount: stats.articleCount,
+          secondaryInfo: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.stockValue,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: labelColor,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    currencyFormat.format(stats.totalValue),
-                    style: const TextStyle(
-                      fontSize: 32,
-                      color: textColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              const Icon(
+                Icons.receipt_long_outlined,
+                color: Colors.grey,
+                size: 16,
               ),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.receipt_long_outlined,
-                        color: labelColor,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        l10n.purchases(stats.scanCount),
-                        style: const TextStyle(color: labelColor, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accentColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Text(
-                      l10n.items(stats.articleCount),
-                      style: const TextStyle(
-                        color: highlightColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 4),
+              Text(
+                l10n.purchases(stats.scanCount),
+                style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
             ],
           ),

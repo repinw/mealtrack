@@ -35,7 +35,7 @@ final class ShoppingListProvider
   ShoppingList create() => ShoppingList();
 }
 
-String _$shoppingListHash() => r'e623251912f2806a5a0580c85b0468b8034f6543';
+String _$shoppingListHash() => r'e8110959b649da03b547c733b995619198b7cfc7';
 
 abstract class _$ShoppingList extends $StreamNotifier<List<ShoppingListItem>> {
   Stream<List<ShoppingListItem>> build();
@@ -60,3 +60,50 @@ abstract class _$ShoppingList extends $StreamNotifier<List<ShoppingListItem>> {
     element.handleValue(ref, created);
   }
 }
+
+@ProviderFor(shoppingListStats)
+const shoppingListStatsProvider = ShoppingListStatsProvider._();
+
+final class ShoppingListStatsProvider
+    extends
+        $FunctionalProvider<
+          ShoppingListStats,
+          ShoppingListStats,
+          ShoppingListStats
+        >
+    with $Provider<ShoppingListStats> {
+  const ShoppingListStatsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shoppingListStatsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$shoppingListStatsHash();
+
+  @$internal
+  @override
+  $ProviderElement<ShoppingListStats> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ShoppingListStats create(Ref ref) {
+    return shoppingListStats(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ShoppingListStats value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ShoppingListStats>(value),
+    );
+  }
+}
+
+String _$shoppingListStatsHash() => r'818badc18c564db9ea5c1126bbf81ba4a87e005f';

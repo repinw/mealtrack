@@ -16,6 +16,16 @@ class MockShoppingListRepository implements ShoppingListRepository {
   }
 
   @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    required int quantity,
+    required double? unitPrice,
+  }) async {
+    addedItems.add(name);
+  }
+
+  @override
   Stream<List<ShoppingListItem>> watchItems() {
     return Stream.value([]);
   }

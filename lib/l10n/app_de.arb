@@ -194,5 +194,6 @@
   },
   "add": "Hinzufügen",
   "addItemTitle": "Artikel hinzufügen",
-  "addItemHint": "z.B. Milch"
+  "addItemHint": "z.B. Milch",
+  "approximateCostLabel": "UNGEFÄHRE KOSTEN"
 }

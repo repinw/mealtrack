@@ -1,3 +1,4 @@
+import 'package:mealtrack/features/shoppinglist/domain/shopping_list_stats.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
@@ -12,26 +13,19 @@ class ShoppingList extends _$ShoppingList {
     return repository.watchItems();
   }
 
-  Future<void> addItem(String name, {String? brand, int quantity = 1}) async {
+  Future<void> addItem(
+    String name, {
+    String? brand,
+    int quantity = 1,
+    double? unitPrice,
+  }) async {
     final repository = ref.read(shoppingListRepositoryProvider);
-    final items = await repository.watchItems().first;
-
-    try {
-      final existingItem = items.firstWhere(
-        (i) => i.name == name && i.brand == brand,
-      );
-      final updated = existingItem.copyWith(
-        quantity: existingItem.quantity + quantity,
-      );
-      await repository.updateItem(updated);
-    } catch (_) {
-      final item = ShoppingListItem.create(
-        name: name,
-        brand: brand,
-        quantity: quantity,
-      );
-      await repository.addItem(item);
-    }
+    await repository.addOrMergeItem(
+      name: name,
+      brand: brand,
+      quantity: quantity,
+      unitPrice: unitPrice,
+    );
   }
 
   Future<void> deleteItem(String id) async {
@@ -62,4 +56,35 @@ class ShoppingList extends _$ShoppingList {
     final repository = ref.read(shoppingListRepositoryProvider);
     await repository.clearList();
   }
+}
+
+@riverpod
+ShoppingListStats shoppingListStats(Ref ref) {
+  final itemsAsync = ref.watch(shoppingListProvider);
+
+  if (!itemsAsync.hasValue) {
+    return ShoppingListStats.empty;
+  }
+
+  final items = itemsAsync.value!;
+  final activeItems = items.where((i) => i.quantity > 0).toList();
+
+  final totalValue = activeItems.fold(
+    0.0,
+    (sum, i) => sum + (i.unitPrice ?? 0.0) * i.quantity,
+  );
+
+  final scanCount = activeItems
+      .map((e) => e.id)
+      .where((e) => e.isNotEmpty)
+      .toSet()
+      .length;
+
+  final articleCount = activeItems.fold(0, (sum, i) => sum + i.quantity);
+
+  return ShoppingListStats(
+    totalValue: totalValue,
+    scanCount: scanCount,
+    articleCount: articleCount,
+  );
 }

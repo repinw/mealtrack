@@ -74,7 +74,7 @@ void main() {
         expect(find.text('Item 1'), findsOneWidget);
         expect(find.text('Item 2'), findsOneWidget);
 
-        expect(find.textContaining('14.00'), findsOneWidget);
+        expect(find.textContaining('14,00'), findsOneWidget);
 
         final deleteIconFinder = find.byIcon(Icons.delete_outline).first;
         await tester.tap(deleteIconFinder);
@@ -83,12 +83,12 @@ void main() {
         expect(find.text('Item 1'), findsNothing);
         expect(find.text('Item 2'), findsOneWidget);
 
-        expect(find.textContaining('5.00'), findsAtLeastNWidgets(1));
+        expect(find.textContaining('5,00'), findsAtLeastNWidgets(1));
 
         final footerFinder = find.byType(ReceiptFooter);
         final footerTotalFinder = find.descendant(
           of: footerFinder,
-          matching: find.textContaining('5.00'),
+          matching: find.textContaining('5,00'),
         );
         expect(footerTotalFinder, findsOneWidget);
       },
@@ -109,7 +109,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('0.00'), findsOneWidget);
+      expect(find.textContaining('0,00'), findsOneWidget);
       expect(find.text('0 Artikel'), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsNothing);
     });
@@ -160,19 +160,19 @@ void main() {
       final footerFinder = find.byType(ReceiptFooter);
       final footerTotalFinder = find.descendant(
         of: footerFinder,
-        matching: find.textContaining('10.00'),
+        matching: find.textContaining('10,00'),
       );
       expect(footerTotalFinder, findsOneWidget);
 
-      final priceFinder = find.widgetWithText(TextField, '10.00');
+      final priceFinder = find.widgetWithText(TextField, '10,00');
       expect(priceFinder, findsOneWidget);
 
-      await tester.enterText(priceFinder, '20.00');
+      await tester.enterText(priceFinder, '20,00');
       await tester.pumpAndSettle();
 
       final footerTotalUpdatedFinder = find.descendant(
         of: footerFinder,
-        matching: find.textContaining('20.00'),
+        matching: find.textContaining('20,00'),
       );
       expect(footerTotalUpdatedFinder, findsOneWidget);
     });

@@ -8,6 +8,7 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
@@ -98,6 +99,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('VORRATSWERT'), findsOneWidget);
+      expect(find.byType(SummaryHeader), findsOneWidget);
     });
 
     testWidgets('displays inventory value when items exist', (tester) async {

@@ -855,6 +855,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'z.B. Milch'**
   String get addItemHint;
+
+  /// No description provided for @approximateCostLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'UNGEFÄHRE KOSTEN'**
+  String get approximateCostLabel;
 }
 
 class _AppLocalizationsDelegate

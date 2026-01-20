@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
 import 'package:mealtrack/core/config/app_config.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_service.g.dart';
@@ -9,11 +10,6 @@ part 'auth_service.g.dart';
 @riverpod
 FirebaseAuth firebaseAuth(Ref ref) {
   return FirebaseAuth.instance;
-}
-
-@riverpod
-FirebaseFirestore firebaseFirestore(Ref ref) {
-  return FirebaseFirestore.instance;
 }
 
 @riverpod

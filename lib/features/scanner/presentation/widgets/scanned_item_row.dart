@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 
 class ScannedItemRow extends StatefulWidget {
@@ -33,13 +34,38 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
     _brandController = TextEditingController(text: widget.item.brand ?? '');
-    _priceController = TextEditingController(
-      text: (widget.item.unitPrice * widget.item.quantity).toStringAsFixed(2),
-    );
+    _priceController = TextEditingController();
     _qtyController = TextEditingController(
       text: widget.item.quantity.toString(),
     );
     _weightController = TextEditingController(text: widget.item.weight ?? '');
+  }
+
+  String _getLocale() {
+    return widget.item.language ?? Localizations.localeOf(context).toString();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = _getLocale();
+    final decimalFormat = NumberFormat.decimalPattern(locale)
+      ..minimumFractionDigits = 2
+      ..maximumFractionDigits = 2;
+
+    final total = widget.item.unitPrice * widget.item.quantity;
+    final priceText = decimalFormat.format(total);
+
+    double? currentPriceVal;
+    try {
+      currentPriceVal = decimalFormat.parse(_priceController.text).toDouble();
+    } catch (_) {
+      currentPriceVal = null;
+    }
+
+    if (currentPriceVal != total) {
+      _priceController.text = priceText;
+    }
   }
 
   @override
@@ -50,13 +76,23 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         _nameController.text = widget.item.name;
       }
 
-      final total = widget.item.unitPrice * widget.item.quantity;
-      final priceText = total.toStringAsFixed(2);
-      final currentPriceVal = double.tryParse(
-        _priceController.text.replaceAll(',', '.'),
-      );
+      final locale = _getLocale();
+      final decimalFormat = NumberFormat.decimalPattern(locale)
+        ..minimumFractionDigits = 2
+        ..maximumFractionDigits = 2;
 
-      if (_priceController.text != priceText && currentPriceVal != total) {
+      final total = widget.item.unitPrice * widget.item.quantity;
+      final priceText = decimalFormat.format(total);
+
+      // Parse current text using the same format logic
+      double? currentPriceVal;
+      try {
+        currentPriceVal = decimalFormat.parse(_priceController.text).toDouble();
+      } catch (_) {
+        currentPriceVal = null;
+      }
+
+      if (currentPriceVal != total) {
         _priceController.text = priceText;
       }
       if (_qtyController.text != widget.item.quantity.toString()) {
@@ -90,12 +126,16 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: widget.item.discounts.entries.map((entry) {
+            final currencyFormat = NumberFormat.simpleCurrency(
+              locale: _getLocale(),
+              name: 'EUR',
+            );
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(entry.key),
                 Text(
-                  "-${entry.value.toStringAsFixed(2)} €",
+                  "-${currencyFormat.format(entry.value)}",
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
@@ -116,9 +156,19 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final weightText = _weightController.text;
     final brandText = _brandController.text;
 
-    final quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
-    final totalPrice =
-        double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
+    var quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
+    if (quantity < 1) quantity = 1;
+
+    final locale = _getLocale();
+    final decimalFormat = NumberFormat.decimalPattern(locale);
+
+    double totalPrice = 0.0;
+    try {
+      totalPrice = decimalFormat.parse(_priceController.text).toDouble();
+    } catch (_) {
+      // Fallback or keep 0.0 if parsing fails
+    }
+
     final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
 
     final newItem = widget.item.copyWith(
@@ -128,6 +178,8 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
       brand: brandText.isNotEmpty ? brandText : null,
       unitPrice: unitPrice,
       quantity: quantity,
+      // Ideally we shouldn't overwrite language here unless we want to lock it to the current context
+      // but keeping it as is from original item is safe.
     );
 
     widget.onChanged(newItem);
@@ -281,9 +333,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                       onChanged: (_) => _updateItem(),
                     ),
                   ),
-                  const Text(
-                    " €",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    " ${NumberFormat.simpleCurrency(locale: _getLocale(), name: 'EUR').currencySymbol}",
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
 
                   const SizedBox(width: 4),

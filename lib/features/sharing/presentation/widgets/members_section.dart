@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -131,7 +131,7 @@ class MembersSection extends ConsumerWidget {
               Navigator.pop(context);
               try {
                 await ref
-                    .read(firestoreServiceProvider)
+                    .read(householdRepositoryProvider)
                     .removeMember(member.uid);
               } catch (e) {
                 if (context.mounted) {

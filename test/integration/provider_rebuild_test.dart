@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mocktail/mocktail.dart';
@@ -122,8 +123,8 @@ void main() {
         ),
       });
 
-      final service = container.read(firestoreServiceProvider);
-      await service.joinHousehold('CODE123');
+      final repo = container.read(householdRepositoryProvider);
+      await repo.joinHousehold('CODE123');
 
       // 6. Verify Switch
       await poll(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_item_row.dart';
+import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ShoppingListPage extends ConsumerWidget {
@@ -13,6 +14,10 @@ class ShoppingListPage extends ConsumerWidget {
 
     final l10n = AppLocalizations.of(context)!;
 
+    final stats = ref.watch(shoppingListStatsProvider);
+
+    const double bottomHeight = 80.0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.shoppinglist),
@@ -22,6 +27,14 @@ class ShoppingListPage extends ConsumerWidget {
             onPressed: () => _confirmClearList(context, ref),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(bottomHeight),
+          child: SummaryHeader(
+            label: l10n.approximateCostLabel,
+            totalValue: stats.totalValue,
+            articleCount: stats.articleCount,
+          ),
+        ),
       ),
       body: shoppingListAsync.when(
         data: (items) {

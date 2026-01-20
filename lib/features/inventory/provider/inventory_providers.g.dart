@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'a1983fff9603bf1a98a3c851c937c4a6e30f2090';
+String _$fridgeItemsHash() => r'f38fe6e54e62faf62754896515e33581321e035b';
 
 abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
   Stream<List<FridgeItem>> build();
@@ -136,7 +136,7 @@ final class CollapsedReceiptGroupsProvider
 }
 
 String _$collapsedReceiptGroupsHash() =>
-    r'09713369449228ecf2bab9c3d4f2490da6ebc7bf';
+    r'19cda0172e939306153643f082692a2e2eeb709d';
 
 abstract class _$CollapsedReceiptGroups extends $AsyncNotifier<Set<String>> {
   FutureOr<Set<String>> build();

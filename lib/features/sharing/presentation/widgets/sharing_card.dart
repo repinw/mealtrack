@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -134,7 +134,7 @@ class SharingCard extends ConsumerWidget {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await ref.read(firestoreServiceProvider).leaveHousehold();
+                await ref.read(householdRepositoryProvider).leaveHousehold();
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

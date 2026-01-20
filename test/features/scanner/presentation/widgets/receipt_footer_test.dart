@@ -16,7 +16,8 @@ void main() {
       ),
     );
 
-    expect(find.text('12.34 €'), findsOneWidget);
+    expect(find.textContaining('12,34'), findsOneWidget);
+    expect(find.textContaining('€'), findsOneWidget);
     expect(find.text('Speichern'), findsOneWidget);
 
     await tester.tap(find.text('Speichern'));

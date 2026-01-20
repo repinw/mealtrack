@@ -1,5 +1,5 @@
+import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:mealtrack/core/provider/firestore_service.dart';
 
 part 'sharing_provider.g.dart';
 
@@ -13,8 +13,8 @@ class SharingViewModel extends _$SharingViewModel {
   Future<void> generateCode() async {
     state = const AsyncValue.loading();
     final result = await AsyncValue.guard(() async {
-      final firestore = ref.read(firestoreServiceProvider);
-      return await firestore.generateInviteCode();
+      final repository = ref.read(householdRepositoryProvider);
+      return await repository.generateInviteCode();
     });
     if (ref.mounted) {
       state = result;
@@ -24,8 +24,8 @@ class SharingViewModel extends _$SharingViewModel {
   Future<void> joinHousehold(String code) async {
     state = const AsyncValue.loading();
     final result = await AsyncValue.guard(() async {
-      final firestore = ref.read(firestoreServiceProvider);
-      await firestore.joinHousehold(code);
+      final repository = ref.read(householdRepositoryProvider);
+      await repository.joinHousehold(code);
       return 'JOINED';
     });
 

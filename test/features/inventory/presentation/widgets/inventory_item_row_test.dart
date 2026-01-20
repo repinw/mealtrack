@@ -261,7 +261,6 @@ void main() {
         reason: 'onUpdate should be null for archived items',
       );
 
-
       final minusButton = find.descendant(
         of: counterPillFinder,
         matching: find.byIcon(Icons.remove),
@@ -299,7 +298,14 @@ void main() {
       WidgetTester tester,
     ) async {
       final mockShoppingListRepo = MockShoppingListRepository();
-      when(() => mockShoppingListRepo.addItem(any())).thenAnswer((_) async {});
+      when(
+        () => mockShoppingListRepo.addOrMergeItem(
+          name: 'Test Apple',
+          brand: null,
+          quantity: 1,
+          unitPrice: 0.0,
+        ),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(
         ProviderScope(
@@ -323,15 +329,29 @@ void main() {
       await tester.drag(find.byType(InventoryItemRow), const Offset(500, 0));
       await tester.pumpAndSettle();
 
-      // Verify addItem was called
-      verify(() => mockShoppingListRepo.addItem(any())).called(1);
+      // Verify addOrMergeItem was called
+      verify(
+        () => mockShoppingListRepo.addOrMergeItem(
+          name: 'Test Apple',
+          brand: null,
+          quantity: 1,
+          unitPrice: 0.0,
+        ),
+      ).called(1);
     });
 
     testWidgets('long press adds item to shopping list', (
       WidgetTester tester,
     ) async {
       final mockShoppingListRepo = MockShoppingListRepository();
-      when(() => mockShoppingListRepo.addItem(any())).thenAnswer((_) async {});
+      when(
+        () => mockShoppingListRepo.addOrMergeItem(
+          name: 'Test Apple',
+          brand: null,
+          quantity: 1,
+          unitPrice: 0.0,
+        ),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(
         ProviderScope(
@@ -355,8 +375,15 @@ void main() {
       await tester.longPress(find.byType(InventoryItemRow));
       await tester.pumpAndSettle();
 
-      // Verify addItem was called
-      verify(() => mockShoppingListRepo.addItem(any())).called(1);
+      // Verify addOrMergeItem was called
+      verify(
+        () => mockShoppingListRepo.addOrMergeItem(
+          name: 'Test Apple',
+          brand: null,
+          quantity: 1,
+          unitPrice: 0.0,
+        ),
+      ).called(1);
     });
   });
 }
