@@ -873,6 +873,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.'**
   String get firstLoginRequiresInternet;
+
+  /// No description provided for @scanReceiptDialogTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Beleg scannen?'**
+  String get scanReceiptDialogTitle;
+
+  /// No description provided for @scanReceiptDialogContent.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du dieses Dokument als Kassenbon scannen?'**
+  String get scanReceiptDialogContent;
+
+  /// No description provided for @yes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get yes;
 }
 
 class _AppLocalizationsDelegate

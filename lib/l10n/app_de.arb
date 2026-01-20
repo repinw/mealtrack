@@ -197,5 +197,9 @@
   "addItemTitle": "Artikel hinzufügen",
   "addItemHint": "z.B. Milch",
   "approximateCostLabel": "UNGEFÄHRE KOSTEN",
-  "firstLoginRequiresInternet": "Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist."
+  "firstLoginRequiresInternet": "Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.",
+  
+  "scanReceiptDialogTitle": "Beleg scannen?",
+  "scanReceiptDialogContent": "Möchtest du dieses Dokument als Kassenbon scannen?",
+  "yes": "Ja"
 }

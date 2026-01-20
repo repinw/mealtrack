@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'scanner_viewmodel.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ScannerViewModel extends _$ScannerViewModel {
   @override
   Future<List<FridgeItem>> build() async {
@@ -64,6 +64,20 @@ class ScannerViewModel extends _$ScannerViewModel {
       }
 
       return await receiptRepository.analyzeReceipt(image);
+    });
+  }
+
+  Future<void> analyzeSharedFile(XFile file) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final receiptRepository = ref.read(receiptRepositoryProvider);
+
+      if (file.path.toLowerCase().endsWith('.pdf')) {
+        return await receiptRepository.analyzePdfReceipt(file);
+      } else {
+        // Assume image if not PDF (could verify mime type if needed)
+        return await receiptRepository.analyzeReceipt(file);
+      }
     });
   }
 }

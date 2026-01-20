@@ -431,4 +431,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get firstLoginRequiresInternet =>
       'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.';
+
+  @override
+  String get scanReceiptDialogTitle => 'Beleg scannen?';
+
+  @override
+  String get scanReceiptDialogContent =>
+      'Möchtest du dieses Dokument als Kassenbon scannen?';
+
+  @override
+  String get yes => 'Ja';
 }

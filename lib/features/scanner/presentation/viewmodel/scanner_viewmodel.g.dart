@@ -22,7 +22,7 @@ final class ScannerViewModelProvider
         argument: null,
         retry: null,
         name: r'scannerViewModelProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -35,7 +35,7 @@ final class ScannerViewModelProvider
   ScannerViewModel create() => ScannerViewModel();
 }
 
-String _$scannerViewModelHash() => r'bb1333a280d0e052efbd120b781e15864ef83c3b';
+String _$scannerViewModelHash() => r'4c165701dc63c657c24a53cb2d242fc13b00c49c';
 
 abstract class _$ScannerViewModel extends $AsyncNotifier<List<FridgeItem>> {
   FutureOr<List<FridgeItem>> build();
