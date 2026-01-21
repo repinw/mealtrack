@@ -11,6 +11,7 @@ import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.d
 import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/receipt_edit_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
+import 'package:mealtrack/features/scanner/presentation/widgets/receipt_verification_dialog.dart';
 
 class ReceiptEditPage extends ConsumerStatefulWidget {
   const ReceiptEditPage({super.key});
@@ -57,96 +58,58 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
 
-    // AI Date Detection - Header Verification Dialog
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showVerificationDialog();
-      // If there is a detected date, update the controller/state before showing dialog if needed
-      // But the controller is already init with 'now'.
-      // We should check if we want to overwrite 'now' with 'detected' if available.
       final items = ref.read(receiptEditViewModelProvider).items;
       if (items.isNotEmpty) {
         final detectedDate = items.first.receiptDate;
-        // ReceiptDate in items IS the detected date (or fallback from parser).
-        // The parser logic: rootReceiptDate ??= DateTime.now().
-        // So items.first.receiptDate is likely already set to a valid date.
         if (detectedDate != null) {
           _dateController.text = DateFormat(
             defaultDateFormat,
           ).format(detectedDate);
-          // No need to call updateReceiptDate here as it matches the item state already.
         }
       }
     });
   }
 
   void _onConfirmVerification() {
+    if (!mounted) return;
     setState(() {
       _isVerified = true;
     });
     _animController.forward();
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(true);
   }
 
   void _showVerificationDialog() {
-    showDialog(
+    showDialog<bool>(
       context: context,
-      barrierDismissible: false, // Force user to verify
+      barrierDismissible: false,
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Hero(
-                tag: 'receipt_header',
-                child: Material(
-                  color: Colors.transparent,
-                  child: ReceiptHeader(
-                    merchantController: _merchantController,
-                    dateController: _dateController,
-                    onMerchantChanged: (value) {
-                      ref
-                          .read(receiptEditViewModelProvider.notifier)
-                          .updateMerchantName(value);
-                    },
-                    onDateTap: () => _pickDate(context),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: _onConfirmVerification,
-                  child: Text(
-                    AppLocalizations.of(context)!.confirm,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return ReceiptVerificationDialog(
+          merchantController: _merchantController,
+          dateController: _dateController,
+          onConfirm: _onConfirmVerification,
+          onCancel: () => Navigator.of(context).pop(false),
+          onDateTap: () => _pickDate(context),
+          onMerchantChanged: (value) {
+            ref
+                .read(receiptEditViewModelProvider.notifier)
+                .updateMerchantName(value);
+          },
         );
       },
-    );
+    ).then((isConfirmed) {
+      if (!mounted) return;
+      if ((isConfirmed != true) && !_isVerified) {
+        Navigator.of(context).pop();
+      }
+    });
   }
 
   Future<void> _pickDate(BuildContext context, {DateTime? initialDate}) async {
     final now = DateTime.now();
 
-    // Parse current text to find initial date if possible
     DateTime? startInitDate = initialDate;
     if (startInitDate == null) {
       try {
@@ -159,8 +122,8 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: startInitDate ?? now,
-      firstDate: DateTime(2000),
-      lastDate: now.add(const Duration(days: 365)),
+      firstDate: DateTime(minDatePickerYear),
+      lastDate: now.add(const Duration(days: datePickerFutureDays)),
     );
 
     if (!mounted) return;
@@ -204,7 +167,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackgroundColor,
-      // Removed extendBodyBehindAppBar to prevent overlap issues
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: FadeTransition(
@@ -231,13 +193,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Only show the header destination once verification is done (or starts flying).
-                  // Hero will fly TO this widget. If it is opacity 0, flight might end invisibly?
-                  // No, Hero animation handles the transition. We want the destination to be "there" but invisible
-                  // until the moment the flight ends or valid state is reached.
-                  // Actually, standard Hero behavior: Destination is hidden *during* flight.
-                  // But here Destination is visible *before* flight (bad).
-                  // So we hide it initially.
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: Hero(

@@ -596,5 +596,121 @@ void main() {
 
       expect(find.widgetWithText(TextField, '15.01.2025'), findsOneWidget);
     });
+
+    testWidgets('Dismissing verification dialog closes the page', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
+                  ),
+                  child: const Text('Go'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReceiptEditPage), findsOneWidget);
+      expect(find.byType(Dialog), findsOneWidget);
+
+      // Simulate back button / dismissal
+      final dynamic widgetsAppState = tester.state(find.byType(WidgetsApp));
+      await widgetsAppState.didPopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReceiptEditPage), findsNothing);
+    });
+
+    testWidgets('Clicking Abbrechen in verification dialog closes the page', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
+                  ),
+                  child: const Text('Go'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReceiptEditPage), findsOneWidget);
+      expect(find.byType(Dialog), findsOneWidget);
+
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReceiptEditPage), findsNothing);
+    });
+
+    testWidgets('System back / pop dismissal closes the page', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
+                  ),
+                  child: const Text('Go'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReceiptEditPage), findsOneWidget);
+      expect(find.byType(Dialog), findsOneWidget);
+
+      // Simulate pop route (e.g. system back button)
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      // Page should be closed
+      expect(find.byType(ReceiptEditPage), findsNothing);
+    });
   });
 }

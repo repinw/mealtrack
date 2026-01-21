@@ -382,6 +382,62 @@ void main() {
       expect(displayList[2], isA<InventoryProductItem>());
       expect(displayList[3], isA<InventorySpacerItem>());
     });
+
+    test(
+      'sorts items correctly when receiptDate is null by falling back to entryDate',
+      () async {
+        final now = DateTime(2023, 10, 1);
+        final dateEarlier = DateTime(2023, 9, 1);
+        final dateLater = DateTime(2023, 11, 1);
+
+        // Item 1: No receiptDate, entryDate is "now"
+        final itemEntryNow = FridgeItem.create(
+          name: 'Entry Now',
+          storeName: 'Store A',
+          now: () => now,
+        ).copyWith(receiptId: 'R1');
+
+        // Item 2: receiptDate is earlier
+        final itemReceiptEarlier = FridgeItem.create(
+          name: 'Receipt Earlier',
+          storeName: 'Store B',
+          now: () => now,
+        ).copyWith(receiptId: 'R2', receiptDate: dateEarlier);
+
+        // Item 3: receiptDate is later
+        final itemReceiptLater = FridgeItem.create(
+          name: 'Receipt Later',
+          storeName: 'Store C',
+          now: () => now,
+        ).copyWith(receiptId: 'R3', receiptDate: dateLater);
+
+        when(() => mockRepository.watchItems()).thenAnswer(
+          (_) => Stream.value([
+            itemEntryNow,
+            itemReceiptEarlier,
+            itemReceiptLater,
+          ]),
+        );
+
+        final container = makeContainer();
+        container.listen(fridgeItemsProvider, (_, _) {});
+        await container.read(fridgeItemsProvider.future);
+
+        final displayListAsync = container.read(inventoryDisplayListProvider);
+        final displayList = displayListAsync.value!;
+
+        // Expected Order (descending):
+        // 1. Receipt Later (Nov)
+        // 2. Entry Now (Oct)
+        // 3. Receipt Earlier (Sept)
+
+        final headers = displayList.whereType<InventoryHeaderItem>().toList();
+        expect(headers, hasLength(3));
+        expect(headers[0].storeName, 'Store C');
+        expect(headers[1].storeName, 'Store A');
+        expect(headers[2].storeName, 'Store B');
+      },
+    );
   });
 
   group('Collapsing Logic', () {
