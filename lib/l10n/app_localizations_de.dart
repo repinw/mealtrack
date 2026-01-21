@@ -162,7 +162,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get initializingApp => 'App wird initialisiert...';
 
   @override
-  String errorInitializing(Object error) {
+  String errorInitializing(String error) {
     return 'Fehler beim Initialisieren der App: $error';
   }
 
@@ -412,7 +412,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Möchtest du wirklich alle Einträge löschen?';
 
   @override
-  String errorDisplay(Object error) {
+  String errorDisplay(String error) {
     return 'Fehler: $error';
   }
 
@@ -431,4 +431,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get firstLoginRequiresInternet =>
       'Erste Anmeldung benötigt eine Internetverbindung. Versuche es erneut, sobald die Verbindung hergestellt ist.';
+
+  @override
+  String get scanReceiptDialogTitle => 'Beleg scannen?';
+
+  @override
+  String get scanReceiptDialogContent =>
+      'Möchtest du dieses Dokument als Kassenbon scannen?';
+
+  @override
+  String get yes => 'Ja';
 }

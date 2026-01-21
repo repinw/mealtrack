@@ -8,6 +8,7 @@ import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.d
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/receipt_edit_viewmodel.dart';
+import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 
 class ReceiptEditPage extends ConsumerStatefulWidget {
   const ReceiptEditPage({super.key});
@@ -225,6 +226,9 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                 await ref
                     .read(fridgeItemsProvider.notifier)
                     .addItems(itemsToSave);
+
+                ref.invalidate(scannerViewModelProvider);
+
                 if (context.mounted) {
                   Navigator.of(context).pop();
                 }

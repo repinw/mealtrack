@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/app_providers.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'scanner_viewmodel.g.dart';
@@ -64,6 +65,24 @@ class ScannerViewModel extends _$ScannerViewModel {
       }
 
       return await receiptRepository.analyzeReceipt(image);
+    });
+  }
+
+  Future<void> analyzeSharedFile(XFile file) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final receiptRepository = ref.read(receiptRepositoryProvider);
+
+      final mimeType = lookupMimeType(file.path);
+      final isPdf =
+          mimeType == 'application/pdf' ||
+          (mimeType == null && file.path.toLowerCase().endsWith('.pdf'));
+
+      if (isPdf) {
+        return await receiptRepository.analyzePdfReceipt(file);
+      } else {
+        return await receiptRepository.analyzeReceipt(file);
+      }
     });
   }
 }

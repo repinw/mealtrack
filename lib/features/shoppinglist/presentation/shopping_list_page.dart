@@ -63,7 +63,8 @@ class ShoppingListPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text(l10n.errorDisplay(err))),
+        error: (err, stack) =>
+            Center(child: Text(l10n.errorDisplay(err.toString()))),
       ),
     );
   }
