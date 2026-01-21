@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
@@ -40,7 +39,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
 
     final now = DateTime.now();
     _dateController = TextEditingController(
-      text: DateFormat(defaultDateFormat).format(now),
+      text: standardDateFormat.format(now),
     );
 
     _animController = AnimationController(
@@ -64,9 +63,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
       if (items.isNotEmpty) {
         final detectedDate = items.first.receiptDate;
         if (detectedDate != null) {
-          _dateController.text = DateFormat(
-            defaultDateFormat,
-          ).format(detectedDate);
+          _dateController.text = standardDateFormat.format(detectedDate);
         }
       }
     });
@@ -113,9 +110,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
     DateTime? startInitDate = initialDate;
     if (startInitDate == null) {
       try {
-        startInitDate = DateFormat(
-          defaultDateFormat,
-        ).parse(_dateController.text);
+        startInitDate = standardDateFormat.parse(_dateController.text);
       } catch (_) {}
     }
 
@@ -130,7 +125,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
 
     if (pickedDate != null) {
       setState(() {
-        _dateController.text = DateFormat(defaultDateFormat).format(pickedDate);
+        _dateController.text = standardDateFormat.format(pickedDate);
       });
       ref
           .read(receiptEditViewModelProvider.notifier)
