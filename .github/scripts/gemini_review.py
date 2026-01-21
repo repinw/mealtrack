@@ -61,12 +61,16 @@ KONTEXT:
 AUFGABE:
 1. Suche nach Bugs, Sicherheitslücken und Clean Code Verstößen.
 2. PRÜFE TESTS: Wenn neue Logik ohne Tests kommt -> Schreibe **⚠️ TESTS FEHLEN**.
-3. SPRACHE: Kommentare/Namen müssen Englisch sein.
-4. STIL: Keine unnötigen Einleitungen.
+3. PRÜFE ARCHITEKTUR (Feature-First): Neuer Code muss feature-basiert sein (lib/features/...). Warne, wenn Business-Logik/Widgets global statt im Feature liegen.
+4. SPRACHE: Kommentare/Namen müssen Englisch sein.
+5. STIL: Keine unnötigen Einleitungen.
 
 ANTWORT FORMAT (Markdown):
 ### 🛡️ Review Zusammenfassung
 (Urteil & Status)
+
+### 🏗️ Architecture & Feature-First
+(Prüfe Feature-First Einhaltung. Liegen Dateien in lib/features/...?)
 
 ### 🐛 Bugs & Anmerkungen
 (Kritische Fehler)

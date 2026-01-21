@@ -56,8 +56,10 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
 
           final shouldScan = await _showConfirmationDialog(navigatorContext);
 
-          if (mounted) {
-            ref.read(latestSharedFileProvider.notifier).consume();
+          if (shouldScan != true) {
+            if (mounted) {
+              ref.read(latestSharedFileProvider.notifier).consume();
+            }
           }
 
           if (shouldScan == true && mounted) {
@@ -81,6 +83,7 @@ class _ShareIntentListenerState extends ConsumerState<ShareIntentListener> {
 
               if (processContext.mounted &&
                   !ref.read(shareIntentControllerProvider).hasError) {
+                ref.read(latestSharedFileProvider.notifier).consume();
                 Navigator.push(
                   processContext,
                   MaterialPageRoute(builder: (_) => const ReceiptEditPage()),
