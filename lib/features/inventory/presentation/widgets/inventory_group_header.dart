@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 
@@ -41,7 +42,7 @@ class InventoryGroupHeader extends ConsumerWidget {
             const SizedBox(width: 4),
             Expanded(
               child: Text(
-                '${DateFormat('dd.MM.yyyy').format(header.entryDate)} • ${header.storeName}',
+                '${DateFormat(defaultDateFormat).format(header.entryDate)} • ${header.storeName}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: _headerTextColor,

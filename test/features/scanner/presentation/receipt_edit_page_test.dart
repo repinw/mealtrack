@@ -70,6 +70,8 @@ void main() {
         );
 
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Bestätigen'));
+        await tester.pumpAndSettle();
 
         expect(find.text('Item 1'), findsOneWidget);
         expect(find.text('Item 2'), findsOneWidget);
@@ -108,6 +110,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
 
       expect(find.textContaining('0,00'), findsOneWidget);
       expect(find.text('0 Artikel'), findsOneWidget);
@@ -134,6 +138,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
 
       expect(find.widgetWithText(TextField, 'SuperMarket X'), findsOneWidget);
     });
@@ -155,6 +161,8 @@ void main() {
           child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
       await tester.pumpAndSettle();
 
       final footerFinder = find.byType(ReceiptFooter);
@@ -189,6 +197,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
       expect(find.text('Speichern'), findsOneWidget);
     });
 
@@ -218,6 +228,8 @@ void main() {
 
       await tester.tap(find.text('Go to Receipt'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ReceiptEditPage), findsOneWidget);
 
@@ -244,6 +256,8 @@ void main() {
           child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
       await tester.pumpAndSettle();
 
       final merchantField = find.widgetWithText(TextField, 'Original Store');
@@ -280,6 +294,8 @@ void main() {
           child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
         ),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
       await tester.pumpAndSettle();
 
       expect(find.text('1 Artikel'), findsOneWidget);
@@ -332,6 +348,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
       await tester.pumpAndSettle();
 
       expect(find.byType(ReceiptEditPage), findsOneWidget);
@@ -391,6 +409,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Go'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestätigen'));
       await tester.pumpAndSettle();
 
       expect(find.text('Normal Item'), findsOneWidget);
@@ -471,6 +491,8 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Go'));
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Bestätigen'));
+        await tester.pumpAndSettle();
 
         await tester.tap(find.text('Speichern'));
         await tester.pumpAndSettle();
@@ -490,5 +512,89 @@ void main() {
         expect(savedItem.discounts.containsKey('Pfand'), isFalse);
       },
     );
+
+    testWidgets('Verification dialog appears on start', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
+        ),
+      );
+      await tester.pump(); // Start building
+
+      // Finding by text "Bestätigen" which is in the dialog
+      expect(find.text('Bestätigen'), findsOneWidget);
+    });
+
+    testWidgets('Bestätigen button closes dialog and shows positions', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bestätigen'), findsOneWidget);
+      expect(find.text('POSITIONEN'), findsNothing);
+
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bestätigen'), findsNothing);
+      expect(find.text('POSITIONEN'), findsOneWidget);
+    });
+
+    testWidgets('Date picker updates header date', (tester) async {
+      final now = DateTime(2025, 1, 1);
+      final item = FridgeItem.create(
+        name: 'Item',
+        storeName: 'Store',
+        unitPrice: 10.0,
+        receiptDate: now,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scannerViewModelProvider.overrideWith(
+              () => MockScannerViewModel([item]),
+            ),
+          ],
+          child: buildLocalizedMaterialApp(home: const ReceiptEditPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap on date field to open picker (target the one in the dialog)
+      final dateField = find.descendant(
+        of: find.byType(Dialog),
+        matching: find.widgetWithText(TextField, '01.01.2025'),
+      );
+      await tester.tap(dateField);
+      await tester.pumpAndSettle();
+
+      // In the date picker, select another date (e.g. 15th)
+      // Note: DatePicker internal structure varies, but we can try finding by text '15'
+      await tester.tap(find.text('15').last);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      // Confirm dialog to see the updated header in the main view
+      await tester.tap(find.text('Bestätigen'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextField, '15.01.2025'), findsOneWidget);
+    });
   });
 }

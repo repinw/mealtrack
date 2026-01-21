@@ -571,5 +571,9 @@
   "yes": "Ja",
   "@yes": {
     "description": "Translation for yes"
+  },
+  "confirm": "Bestätigen",
+  "@confirm": {
+    "description": "Translation for confirm"
   }
 }

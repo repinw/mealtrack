@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -38,7 +39,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
 
     final now = DateTime.now();
     _dateController = TextEditingController(
-      text: DateFormat('dd.MM.yyyy').format(now),
+      text: DateFormat(defaultDateFormat).format(now),
     );
 
     _animController = AnimationController(
@@ -69,7 +70,9 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
         // The parser logic: rootReceiptDate ??= DateTime.now().
         // So items.first.receiptDate is likely already set to a valid date.
         if (detectedDate != null) {
-          _dateController.text = DateFormat('dd.MM.yyyy').format(detectedDate);
+          _dateController.text = DateFormat(
+            defaultDateFormat,
+          ).format(detectedDate);
           // No need to call updateReceiptDate here as it matches the item state already.
         }
       }
@@ -123,9 +126,9 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
                     ),
                   ),
                   onPressed: _onConfirmVerification,
-                  child: const Text(
-                    "Bestätigen",
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)!.confirm,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -147,7 +150,9 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
     DateTime? startInitDate = initialDate;
     if (startInitDate == null) {
       try {
-        startInitDate = DateFormat('dd.MM.yyyy').parse(_dateController.text);
+        startInitDate = DateFormat(
+          defaultDateFormat,
+        ).parse(_dateController.text);
       } catch (_) {}
     }
 
@@ -158,9 +163,11 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
       lastDate: now.add(const Duration(days: 365)),
     );
 
+    if (!mounted) return;
+
     if (pickedDate != null) {
       setState(() {
-        _dateController.text = DateFormat('dd.MM.yyyy').format(pickedDate);
+        _dateController.text = DateFormat(defaultDateFormat).format(pickedDate);
       });
       ref
           .read(receiptEditViewModelProvider.notifier)
@@ -231,8 +238,8 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
                   // Actually, standard Hero behavior: Destination is hidden *during* flight.
                   // But here Destination is visible *before* flight (bad).
                   // So we hide it initially.
-                  Opacity(
-                    opacity: _isVerified ? 1.0 : 0.0,
+                  FadeTransition(
+                    opacity: _fadeAnimation,
                     child: Hero(
                       tag: 'receipt_header',
                       child: Material(

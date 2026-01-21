@@ -891,6 +891,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ja'**
   String get yes;
+
+  /// Translation for confirm
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätigen'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate

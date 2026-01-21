@@ -441,4 +441,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get yes => 'Ja';
+
+  @override
+  String get confirm => 'Bestätigen';
 }
