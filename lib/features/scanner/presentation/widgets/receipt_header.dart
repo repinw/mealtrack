@@ -4,12 +4,14 @@ class ReceiptHeader extends StatelessWidget {
   final TextEditingController merchantController;
   final TextEditingController dateController;
   final ValueChanged<String>? onMerchantChanged;
+  final VoidCallback? onDateTap;
 
   const ReceiptHeader({
     super.key,
     required this.merchantController,
     required this.dateController,
     this.onMerchantChanged,
+    this.onDateTap,
   });
 
   @override
@@ -97,6 +99,7 @@ class ReceiptHeader extends StatelessWidget {
                 TextField(
                   controller: dateController,
                   readOnly: true,
+                  onTap: onDateTap,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

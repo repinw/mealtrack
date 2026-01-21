@@ -386,7 +386,7 @@ void main() {
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
-          'isArchived': false
+          'isArchived': false,
         });
       });
 
@@ -412,7 +412,7 @@ void main() {
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
-          'isArchived': false
+          'isArchived': false,
         });
       });
 
@@ -453,8 +453,8 @@ void main() {
         expect(itemFromJson, expectedItem);
       });
 
-      test('fromJson uses DateTime.now() for invalid entryDate', () {
-        final json = {
+      test('fromJson uses DateTime.now() for invalid or missing entryDate', () {
+        final jsonInvalid = {
           'id': 'test-uuid-invalid-date',
           'name': 'Test',
           'entryDate': 'not-a-valid-date',
@@ -462,10 +462,22 @@ void main() {
           'quantity': 1,
         };
 
-        final itemFromJson = FridgeItem.fromJson(json);
+        final jsonMissing = {
+          'id': 'test-uuid-missing-date',
+          'name': 'Test',
+          'storeName': 'Store',
+          'quantity': 1,
+        };
+
+        final itemInvalid = FridgeItem.fromJson(jsonInvalid);
+        final itemMissing = FridgeItem.fromJson(jsonMissing);
 
         expect(
-          itemFromJson.entryDate.difference(DateTime.now()).inSeconds.abs(),
+          itemInvalid.entryDate.difference(DateTime.now()).inSeconds.abs(),
+          lessThan(2),
+        );
+        expect(
+          itemMissing.entryDate.difference(DateTime.now()).inSeconds.abs(),
           lessThan(2),
         );
       });

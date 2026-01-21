@@ -93,7 +93,16 @@ List<InventoryDisplayItem> _buildGroupList({
 }) {
   final displayList = <InventoryDisplayItem>[];
   final groups = <String, List<FridgeItem>>{};
-  for (final item in items) {
+
+  // Sort items by date descending to ensure consistent grouping and header placement
+  final sortedItems = List<FridgeItem>.from(items)
+    ..sort((a, b) {
+      final dateA = a.receiptDate ?? a.entryDate;
+      final dateB = b.receiptDate ?? b.entryDate;
+      return dateB.compareTo(dateA);
+    });
+
+  for (final item in sortedItems) {
     final key = item.receiptId ?? '';
     groups.putIfAbsent(key, () => []).add(item);
   }
@@ -127,7 +136,7 @@ List<InventoryDisplayItem> _buildGroupList({
     displayList.add(
       InventoryHeaderItem(
         storeName: first.storeName,
-        entryDate: first.entryDate,
+        entryDate: first.receiptDate ?? first.entryDate,
         itemCount: group.length,
         receiptId: key,
         isFullyConsumed: isFullyConsumed,

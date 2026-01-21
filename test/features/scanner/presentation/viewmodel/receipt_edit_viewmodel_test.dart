@@ -202,5 +202,52 @@ void main() {
       final updatedState = container.read(receiptEditViewModelProvider);
       expect(updatedState.items.first.name, 'Green Apple');
     });
+
+    test('updateReceiptDate updates receipt date for all items', () {
+      final items = [item1, item2];
+      final container = ProviderContainer(
+        overrides: [
+          scannerViewModelProvider.overrideWith(
+            () => MockScannerViewModel(AsyncValue.data(items)),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+
+      final newDate = DateTime(2025, 12, 25);
+      notifier.updateReceiptDate(newDate);
+
+      final updatedState = container.read(receiptEditViewModelProvider);
+      expect(
+        updatedState.items.every((item) => item.receiptDate == newDate),
+        isTrue,
+      );
+    });
+
+    test('updateReceiptDate ensures state immutability', () {
+      final items = [item1];
+      final container = ProviderContainer(
+        overrides: [
+          scannerViewModelProvider.overrideWith(
+            () => MockScannerViewModel(AsyncValue.data(items)),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final prevState = container.read(receiptEditViewModelProvider);
+      final notifier = container.read(receiptEditViewModelProvider.notifier);
+
+      final newDate = DateTime(2025, 12, 25);
+      notifier.updateReceiptDate(newDate);
+
+      final updatedState = container.read(receiptEditViewModelProvider);
+
+      expect(updatedState, isNot(same(prevState)));
+      expect(updatedState.items, isNot(same(prevState.items)));
+      expect(prevState.items.first.receiptDate, isNot(newDate));
+    });
   });
 }
