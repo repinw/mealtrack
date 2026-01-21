@@ -398,18 +398,19 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
                       }
                     }
 
-                await ref
-                    .read(fridgeItemsProvider.notifier)
-                    .addItems(itemsToSave);
+                    await ref
+                        .read(fridgeItemsProvider.notifier)
+                        .addItems(itemsToSave);
 
-                ref.invalidate(scannerViewModelProvider);
+                    ref.invalidate(scannerViewModelProvider);
 
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              },
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
