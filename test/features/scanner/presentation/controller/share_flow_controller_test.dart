@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 class FakeScannerViewModel extends ScannerViewModel {
   int analyzeCallCount = 0;
   XFile? analyzedFile;
+  bool shouldFail = false;
 
   @override
   Future<List<FridgeItem>> build() async => [];
@@ -18,6 +19,9 @@ class FakeScannerViewModel extends ScannerViewModel {
   Future<void> analyzeSharedFile(XFile file) async {
     analyzeCallCount++;
     analyzedFile = file;
+    if (shouldFail) {
+      throw Exception('Simulated Error');
+    }
   }
 }
 
@@ -94,5 +98,37 @@ void main() {
       );
       expect(container.read(latestSharedFileProvider), null);
     });
+
+    test(
+      'confirmScan handles error state from ScannerViewModel without exception',
+      () async {
+        final container = makeContainer();
+        container.listen(shareFlowControllerProvider, (_, _) {});
+        // Keep scannerViewModelProvider alive
+        container.listen(scannerViewModelProvider, (_, _) {});
+
+        fakeScannerViewModel.shouldFail = true;
+        final file = XFile('test.jpg');
+
+        // Set initial state
+        container.read(latestSharedFileProvider.notifier).state = file;
+
+        // Act
+        await container
+            .read(shareFlowControllerProvider.notifier)
+            .confirmScan();
+
+        // Assert error state
+        final state = container.read(shareFlowControllerProvider);
+
+        // Verification of failure: currently expected to fail because ShareFlowController sets success
+        state.maybeWhen(
+          error: (e) => expect(e.toString(), contains('Simulated Error')),
+          orElse: () => fail('Expected error state, but got $state'),
+        );
+
+        expect(container.read(latestSharedFileProvider), null);
+      },
+    );
   });
 }

@@ -39,6 +39,14 @@ class ShareFlowController extends _$ShareFlowController {
 
     try {
       await ref.read(scannerViewModelProvider.notifier).analyzeSharedFile(file);
+
+      final scannerState = ref.read(scannerViewModelProvider);
+      if (scannerState.hasError) {
+        state = ShareFlowState.error(scannerState.error ?? 'Unknown error');
+        ref.read(latestSharedFileProvider.notifier).consume();
+        return;
+      }
+
       ref.read(latestSharedFileProvider.notifier).consume();
 
       state = const ShareFlowState.success();
