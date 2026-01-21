@@ -39,11 +39,43 @@ class FakeScannerViewModel extends AsyncNotifier<List<FridgeItem>>
 class MockShareService extends AsyncNotifier<void>
     with Mock
     implements ShareService {
+  bool buildCalled = false;
+
   @override
-  Future<void> build() async {}
+  Future<void> build() async {
+    buildCalled = true;
+  }
 }
 
 void main() {
+  testWidgets('ShareIntentListener initializes ShareService on build', (
+    tester,
+  ) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          shareServiceProvider.overrideWith(() => MockShareService()),
+          navigatorKeyProvider.overrideWithValue(navigatorKey),
+        ],
+        child: ShareIntentListener(
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            home: const Scaffold(body: Text('Home')),
+          ),
+        ),
+      ),
+    );
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ShareIntentListener)),
+    );
+    final shareService =
+        container.read(shareServiceProvider.notifier) as MockShareService;
+    expect(shareService.buildCalled, isTrue);
+  });
+
   testWidgets('ShareIntentListener shows dialog when file is shared', (
     tester,
   ) async {

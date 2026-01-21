@@ -51,7 +51,6 @@ void main() {
       final state = container.read(shareFlowControllerProvider);
       expect(state, const ShareFlowState.initial());
     });
-
     test(
       'updates to ConfirmationPending when latestSharedFileProvider receives file',
       () async {
@@ -130,5 +129,47 @@ void main() {
         expect(container.read(latestSharedFileProvider), null);
       },
     );
+
+    test('can retry after error handled', () async {
+      final container = makeContainer();
+      container.listen(shareFlowControllerProvider, (_, _) {});
+      container.listen(scannerViewModelProvider, (_, _) {});
+
+      // 1. Fail first attempt
+      fakeScannerViewModel.shouldFail = true;
+      final file1 = XFile('test1.jpg');
+      container.read(latestSharedFileProvider.notifier).state = file1;
+
+      await container.read(shareFlowControllerProvider.notifier).confirmScan();
+
+      expect(
+        container.read(shareFlowControllerProvider),
+        isA<ShareFlowState>().having(
+          (s) => s.maybeMap(error: (_) => true, orElse: () => false),
+          'error',
+          true,
+        ),
+      );
+
+      // Handle error
+      container.read(shareFlowControllerProvider.notifier).errorHandled();
+      expect(
+        container.read(shareFlowControllerProvider),
+        const ShareFlowState.initial(),
+      );
+
+      // 2. Success second attempt
+      fakeScannerViewModel.shouldFail = false;
+      final file2 = XFile('test2.jpg');
+      container.read(latestSharedFileProvider.notifier).state = file2;
+
+      await container.read(shareFlowControllerProvider.notifier).confirmScan();
+
+      expect(
+        container.read(shareFlowControllerProvider),
+        const ShareFlowState.success(),
+      );
+      expect(fakeScannerViewModel.analyzeCallCount, 2);
+    });
   });
 }

@@ -4,6 +4,7 @@ import 'package:mealtrack/core/router/app_router.dart';
 import 'package:mealtrack/features/scanner/presentation/controller/share_flow_controller.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_confirmation_dialog.dart';
+import 'package:mealtrack/features/scanner/service/share_service.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ShareIntentListener extends ConsumerWidget {
@@ -13,6 +14,8 @@ class ShareIntentListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(shareServiceProvider);
+
     ref.watch(shareFlowControllerProvider);
 
     ref.listen(shareFlowControllerProvider, (previous, next) async {
