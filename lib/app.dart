@@ -14,21 +14,20 @@ class MealTrackApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ShareIntentListener(
-      child: MaterialApp(
-        navigatorKey: ref.watch(navigatorKeyProvider),
-        title: 'MealTrack',
-        theme: AppTheme.theme,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          FirebaseUILocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const AuthGate(),
-      ),
+    return MaterialApp(
+      navigatorKey: ref.watch(navigatorKeyProvider),
+      title: 'MealTrack',
+      theme: AppTheme.theme,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        FirebaseUILocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const AuthGate(),
+      builder: (context, child) => ShareIntentListener(child: child!),
     );
   }
 }
