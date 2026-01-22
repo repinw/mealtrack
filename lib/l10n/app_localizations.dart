@@ -945,6 +945,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Datum'**
   String get dateHint;
+
+  /// Confirmation message when deleting an item from receipt
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel wirklich löschen?'**
+  String get deleteItemConfirmation;
 }
 
 class _AppLocalizationsDelegate

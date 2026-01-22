@@ -607,5 +607,9 @@
   "dateHint": "Datum",
   "@dateHint": {
     "description": "Placeholder hint for date input"
+  },
+  "deleteItemConfirmation": "Artikel wirklich löschen?",
+  "@deleteItemConfirmation": {
+    "description": "Confirmation message when deleting an item from receipt"
   }
 }

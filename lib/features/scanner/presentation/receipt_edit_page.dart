@@ -209,9 +209,30 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           return ScannedItemRow(
                             key: ValueKey(item.id),
                             item: item,
-                            onDelete: () => ref
-                                .read(receiptEditViewModelProvider.notifier)
-                                .deleteItem(index),
+                            onDelete: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text(l10n.deleteItemConfirmation),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: Text(l10n.cancel),
+                                    ),
+                                    FilledButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: Text(l10n.delete),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true) {
+                                ref
+                                    .read(receiptEditViewModelProvider.notifier)
+                                    .deleteItem(index);
+                              }
+                            },
                             onChanged: (newItem) => ref
                                 .read(receiptEditViewModelProvider.notifier)
                                 .updateItem(index, newItem),

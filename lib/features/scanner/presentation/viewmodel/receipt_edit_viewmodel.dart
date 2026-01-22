@@ -52,7 +52,16 @@ class ReceiptEditViewModel extends _$ReceiptEditViewModel {
 
   void deleteItem(int index) {
     final updatedItems = List<FridgeItem>.from(state.items);
+    final itemToDelete = updatedItems[index];
+
     updatedItems.removeAt(index);
+
+    if (!itemToDelete.isDeposit && !itemToDelete.isDiscount) {
+      while (index < updatedItems.length && updatedItems[index].isDeposit) {
+        updatedItems.removeAt(index);
+      }
+    }
+
     state = state.copyWith(items: updatedItems);
   }
 

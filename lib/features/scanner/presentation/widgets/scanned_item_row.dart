@@ -30,6 +30,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   late TextEditingController _qtyController;
   late TextEditingController _weightController;
 
+  String? _cachedLocale;
+  late NumberFormat _decimalFormat;
+  late NumberFormat _currencyFormat;
+
   @override
   void initState() {
     super.initState();
@@ -46,20 +50,24 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     return widget.item.language ?? Localizations.localeOf(context).toString();
   }
 
-  NumberFormat get _decimalFormat {
+  void _updateNumberFormats() {
     final locale = _getLocale();
-    return NumberFormat.decimalPattern(locale)
-      ..minimumFractionDigits = 2
-      ..maximumFractionDigits = 2;
-  }
-
-  NumberFormat get _currencyFormat {
-    return NumberFormat.simpleCurrency(locale: _getLocale(), name: 'EUR');
+    if (_cachedLocale != locale) {
+      _cachedLocale = locale;
+      _decimalFormat = NumberFormat.decimalPattern(locale)
+        ..minimumFractionDigits = 2
+        ..maximumFractionDigits = 2;
+      _currencyFormat = NumberFormat.simpleCurrency(
+        locale: locale,
+        name: 'EUR',
+      );
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _updateNumberFormats();
     final total = widget.item.unitPrice * widget.item.quantity;
     final priceText = _decimalFormat.format(total);
 

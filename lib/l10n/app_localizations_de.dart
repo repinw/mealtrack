@@ -468,4 +468,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dateHint => 'Datum';
+
+  @override
+  String get deleteItemConfirmation => 'Artikel wirklich löschen?';
 }
