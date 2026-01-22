@@ -444,4 +444,31 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get confirm => 'Bestätigen';
+
+  @override
+  String get includedDiscounts => 'Enthaltene Rabatte';
+
+  @override
+  String get brandHint => 'Marke';
+
+  @override
+  String get itemNameHint => 'Artikelname';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get merchantLabel => 'HÄNDLER';
+
+  @override
+  String get merchantHint => 'Händlername';
+
+  @override
+  String get dateLabel => 'DATUM';
+
+  @override
+  String get dateHint => 'Datum';
+
+  @override
+  String get deleteItemConfirmation => 'Artikel wirklich löschen?';
 }

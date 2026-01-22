@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ReceiptHeader extends StatelessWidget {
   final TextEditingController merchantController;
@@ -16,6 +17,7 @@ class ReceiptHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -49,9 +51,9 @@ class ReceiptHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "HÄNDLER",
-                  style: TextStyle(
+                Text(
+                  l10n.merchantLabel,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
@@ -66,11 +68,11 @@ class ReceiptHeader extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                     border: InputBorder.none,
-                    hintText: "Händlername",
+                    hintText: l10n.merchantHint,
                   ),
                 ),
               ],
@@ -87,9 +89,9 @@ class ReceiptHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "DATUM",
-                  style: TextStyle(
+                Text(
+                  l10n.dateLabel,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
@@ -105,11 +107,11 @@ class ReceiptHeader extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                     border: InputBorder.none,
-                    hintText: "Datum",
+                    hintText: l10n.dateHint,
                   ),
                 ),
               ],

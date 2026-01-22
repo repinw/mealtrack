@@ -82,6 +82,10 @@ void main() {
         await tester.tap(deleteIconFinder);
         await tester.pumpAndSettle();
 
+        // Confirm deletion in dialog
+        await tester.tap(find.text('Löschen'));
+        await tester.pumpAndSettle();
+
         expect(find.text('Item 1'), findsNothing);
         expect(find.text('Item 2'), findsOneWidget);
 

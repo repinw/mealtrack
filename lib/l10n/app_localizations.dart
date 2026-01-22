@@ -897,6 +897,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bestätigen'**
   String get confirm;
+
+  /// Dialog title for showing discounts included in an item
+  ///
+  /// In de, this message translates to:
+  /// **'Enthaltene Rabatte'**
+  String get includedDiscounts;
+
+  /// Placeholder hint for brand input field
+  ///
+  /// In de, this message translates to:
+  /// **'Marke'**
+  String get brandHint;
+
+  /// Placeholder hint for item name input field
+  ///
+  /// In de, this message translates to:
+  /// **'Artikelname'**
+  String get itemNameHint;
+
+  /// Translation for OK button
+  ///
+  /// In de, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// Label for merchant/store name field
+  ///
+  /// In de, this message translates to:
+  /// **'HÄNDLER'**
+  String get merchantLabel;
+
+  /// Placeholder hint for merchant name input
+  ///
+  /// In de, this message translates to:
+  /// **'Händlername'**
+  String get merchantHint;
+
+  /// Label for date field
+  ///
+  /// In de, this message translates to:
+  /// **'DATUM'**
+  String get dateLabel;
+
+  /// Placeholder hint for date input
+  ///
+  /// In de, this message translates to:
+  /// **'Datum'**
+  String get dateHint;
+
+  /// Confirmation message when deleting an item from receipt
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel wirklich löschen?'**
+  String get deleteItemConfirmation;
 }
 
 class _AppLocalizationsDelegate
