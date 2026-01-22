@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('ReceiptHeader renders controllers and handles input', (
@@ -12,6 +13,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: ReceiptHeader(
             merchantController: merchantController,

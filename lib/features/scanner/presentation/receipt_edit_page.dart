@@ -7,6 +7,7 @@ import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
+import 'package:mealtrack/features/scanner/presentation/widgets/receipt_column_headers.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/receipt_edit_viewmodel.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
@@ -19,14 +20,10 @@ class ReceiptEditPage extends ConsumerStatefulWidget {
   ConsumerState<ReceiptEditPage> createState() => _ReceiptEditPageState();
 }
 
-class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
-    with SingleTickerProviderStateMixin {
+class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   bool _isVerified = false;
   late TextEditingController _merchantController;
   late TextEditingController _dateController;
-  late AnimationController _animController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -41,21 +38,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
     _dateController = TextEditingController(
       text: standardDateFormat.format(now),
     );
-
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeIn,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showVerificationDialog();
@@ -74,7 +56,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
     setState(() {
       _isVerified = true;
     });
-    _animController.forward();
     Navigator.of(context).pop(true);
   }
 
@@ -137,7 +118,6 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
   void dispose() {
     _merchantController.dispose();
     _dateController.dispose();
-    _animController.dispose();
     super.dispose();
   }
 
@@ -162,25 +142,21 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackgroundColor,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: AppBar(
-            backgroundColor: AppTheme.primaryColor,
-            elevation: 0,
-            centerTitle: false,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppTheme.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: Text(
-              l10n.verifyScan,
-              style: Theme.of(context).appBarTheme.titleTextStyle,
-            ),
-          ),
-        ),
-      ),
+      appBar: _isVerified
+          ? AppBar(
+              backgroundColor: AppTheme.primaryColor,
+              elevation: 0,
+              centerTitle: false,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppTheme.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: Text(
+                l10n.verifyScan,
+                style: Theme.of(context).appBarTheme.titleTextStyle,
+              ),
+            )
+          : null,
       body: Column(
         children: [
           Expanded(
@@ -188,184 +164,88 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage>
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Hero(
-                      tag: 'receipt_header',
-                      child: Material(
-                        color: Colors.transparent,
-                        child: ReceiptHeader(
-                          merchantController: _merchantController,
-                          dateController: _dateController,
-                          onMerchantChanged: (value) {
-                            ref
-                                .read(receiptEditViewModelProvider.notifier)
-                                .updateMerchantName(value);
-                          },
-                          onDateTap: () => _pickDate(context),
-                        ),
-                      ),
+                  if (_isVerified)
+                    ReceiptHeader(
+                      merchantController: _merchantController,
+                      dateController: _dateController,
+                      onMerchantChanged: (value) {
+                        ref
+                            .read(receiptEditViewModelProvider.notifier)
+                            .updateMerchantName(value);
+                      },
+                      onDateTap: () => _pickDate(context),
                     ),
-                  ),
 
                   if (_isVerified)
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: Column(
+                    Column(
+                      children: [
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.positions,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Text(
-                                  l10n.articles(viewModel.totalQuantity),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12.0,
-                              ),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: ScannedItemRow.colQtyWidth,
-                                    child: Text(
-                                      l10n.amountAbbr,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 9,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      l10n.brandDescription,
-                                      style: const TextStyle(
-                                        fontSize: 9,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  SizedBox(
-                                    width: ScannedItemRow.colWeightWidth,
-                                    child: Text(
-                                      l10n.weight,
-                                      textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 9,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 2),
-                                  SizedBox(
-                                    width: ScannedItemRow.colPriceWidth,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        right: 28.0,
-                                      ),
-                                      child: Text(
-                                        l10n.price,
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 9,
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                            Text(
+                              l10n.positions,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            ...items.asMap().entries.map((entry) {
-                              int index = entry.key;
-                              FridgeItem item = entry.value;
-
-                              return ScannedItemRow(
-                                key: ValueKey(item.id),
-                                item: item,
-                                onDelete: () => ref
-                                    .read(receiptEditViewModelProvider.notifier)
-                                    .deleteItem(index),
-                                onChanged: (newItem) => ref
-                                    .read(receiptEditViewModelProvider.notifier)
-                                    .updateItem(index, newItem),
-                              );
-                            }),
-                            const SizedBox(height: 24),
+                            Text(
+                              l10n.articles(viewModel.totalQuantity),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        const ReceiptColumnHeaders(),
+                        const SizedBox(height: 4),
+                        ...items.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          FridgeItem item = entry.value;
+
+                          return ScannedItemRow(
+                            key: ValueKey(item.id),
+                            item: item,
+                            onDelete: () => ref
+                                .read(receiptEditViewModelProvider.notifier)
+                                .deleteItem(index),
+                            onChanged: (newItem) => ref
+                                .read(receiptEditViewModelProvider.notifier)
+                                .updateItem(index, newItem),
+                          );
+                        }),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                 ],
               ),
             ),
           ),
           if (_isVerified)
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ReceiptFooter(
-                  total: total,
-                  onSave: () async {
-                    debugPrint("Saving ${items.length} Items");
-                    final itemsToSave = <FridgeItem>[];
-                    FridgeItem? lastNormalItem;
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ReceiptFooter(
+                total: total,
+                onSave: () async {
+                  final itemsToSave = ref
+                      .read(receiptEditViewModelProvider.notifier)
+                      .getItemsForSave();
 
-                    for (final item in items) {
-                      if (!item.isDeposit) {
-                        itemsToSave.add(item);
-                        lastNormalItem = item;
-                      } else if (item.isDiscount && lastNormalItem != null) {
-                        final updatedDiscounts = Map<String, double>.from(
-                          lastNormalItem.discounts,
-                        );
-                        updatedDiscounts[item.name] = item.unitPrice;
+                  debugPrint("Saving ${itemsToSave.length} Items");
 
-                        final updatedItem = lastNormalItem.copyWith(
-                          discounts: updatedDiscounts,
-                        );
+                  await ref
+                      .read(fridgeItemsProvider.notifier)
+                      .addItems(itemsToSave);
 
-                        itemsToSave.removeLast();
-                        itemsToSave.add(updatedItem);
-                        lastNormalItem = updatedItem;
-                      }
-                    }
+                  ref.invalidate(scannerViewModelProvider);
 
-                    await ref
-                        .read(fridgeItemsProvider.notifier)
-                        .addItems(itemsToSave);
-
-                    ref.invalidate(scannerViewModelProvider);
-
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                ),
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
               ),
             ),
         ],

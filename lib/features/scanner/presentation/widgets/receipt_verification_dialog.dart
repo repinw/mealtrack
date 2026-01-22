@@ -11,6 +11,28 @@ class ReceiptVerificationDialog extends StatelessWidget {
   final VoidCallback onDateTap;
   final ValueChanged<String> onMerchantChanged;
 
+  static final _confirmButtonStyle = ElevatedButton.styleFrom(
+    backgroundColor: AppTheme.primaryColor,
+    minimumSize: const Size.fromHeight(56),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  );
+
+  static final _cancelButtonStyle = TextButton.styleFrom(
+    minimumSize: const Size.fromHeight(48),
+    foregroundColor: Colors.white70,
+  );
+
+  static const _confirmTextStyle = TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.bold,
+    fontSize: 16,
+  );
+
+  static const _cancelTextStyle = TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 15,
+  );
+
   const ReceiptVerificationDialog({
     super.key,
     required this.merchantController,
@@ -31,17 +53,11 @@ class ReceiptVerificationDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Hero(
-            tag: 'receipt_header',
-            child: Material(
-              color: Colors.transparent,
-              child: ReceiptHeader(
-                merchantController: merchantController,
-                dateController: dateController,
-                onMerchantChanged: onMerchantChanged,
-                onDateTap: onDateTap,
-              ),
-            ),
+          ReceiptHeader(
+            merchantController: merchantController,
+            dateController: dateController,
+            onMerchantChanged: onMerchantChanged,
+            onDateTap: onDateTap,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -49,37 +65,15 @@ class ReceiptVerificationDialog extends StatelessWidget {
             child: Column(
               children: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    minimumSize: const Size.fromHeight(56),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  style: _confirmButtonStyle,
                   onPressed: onConfirm,
-                  child: Text(
-                    l10n.confirm,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: Text(l10n.confirm, style: _confirmTextStyle),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    foregroundColor: Colors.white70,
-                  ),
+                  style: _cancelButtonStyle,
                   onPressed: onCancel,
-                  child: Text(
-                    l10n.cancel,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: Text(l10n.cancel, style: _cancelTextStyle),
                 ),
               ],
             ),

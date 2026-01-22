@@ -139,15 +139,7 @@ void main() {
       FridgeItem? updatedItem;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ScannedItemRow(
-              item: item,
-              onDelete: () {},
-              onChanged: (val) => updatedItem = val,
-            ),
-          ),
-        ),
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
       );
 
       final brandFinder = find.byKey(const Key('brandField'));
@@ -262,7 +254,6 @@ void main() {
     });
 
     testWidgets('Discount dialog can be dismissed', (tester) async {
-      // ignore: invalid_use_of_internal_member
       final item = FridgeItem(
         id: 'test-id',
         name: 'Test Item',

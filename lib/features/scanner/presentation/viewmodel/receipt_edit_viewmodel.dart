@@ -72,4 +72,31 @@ class ReceiptEditViewModel extends _$ReceiptEditViewModel {
 
     state = state.copyWith(items: updatedItems);
   }
+
+  List<FridgeItem> getItemsForSave() {
+    final itemsToSave = <FridgeItem>[];
+    FridgeItem? lastNormalItem;
+
+    for (final item in state.items) {
+      if (!item.isDeposit) {
+        itemsToSave.add(item);
+        lastNormalItem = item;
+      } else if (item.isDiscount && lastNormalItem != null) {
+        final updatedDiscounts = Map<String, double>.from(
+          lastNormalItem.discounts,
+        );
+        updatedDiscounts[item.name] = item.unitPrice;
+
+        final updatedItem = lastNormalItem.copyWith(
+          discounts: updatedDiscounts,
+        );
+
+        itemsToSave.removeLast();
+        itemsToSave.add(updatedItem);
+        lastNormalItem = updatedItem;
+      }
+    }
+
+    return itemsToSave;
+  }
 }

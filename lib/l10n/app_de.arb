@@ -575,5 +575,37 @@
   "confirm": "Bestätigen",
   "@confirm": {
     "description": "Translation for confirm"
+  },
+  "includedDiscounts": "Enthaltene Rabatte",
+  "@includedDiscounts": {
+    "description": "Dialog title for showing discounts included in an item"
+  },
+  "brandHint": "Marke",
+  "@brandHint": {
+    "description": "Placeholder hint for brand input field"
+  },
+  "itemNameHint": "Artikelname",
+  "@itemNameHint": {
+    "description": "Placeholder hint for item name input field"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Translation for OK button"
+  },
+  "merchantLabel": "HÄNDLER",
+  "@merchantLabel": {
+    "description": "Label for merchant/store name field"
+  },
+  "merchantHint": "Händlername",
+  "@merchantHint": {
+    "description": "Placeholder hint for merchant name input"
+  },
+  "dateLabel": "DATUM",
+  "@dateLabel": {
+    "description": "Label for date field"
+  },
+  "dateHint": "Datum",
+  "@dateHint": {
+    "description": "Placeholder hint for date input"
   }
 }
