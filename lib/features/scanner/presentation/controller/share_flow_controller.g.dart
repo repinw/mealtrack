@@ -44,7 +44,7 @@ final class ShareFlowControllerProvider
 }
 
 String _$shareFlowControllerHash() =>
-    r'5db5aabb62d3523adfc93e48fdd4e427f484de0a';
+    r'c7986f933e978b5d724ed2bbfad1f58f7b4f0a58';
 
 abstract class _$ShareFlowController extends $Notifier<ShareFlowState> {
   ShareFlowState build();

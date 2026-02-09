@@ -373,7 +373,6 @@ void main() {
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': true,
           'consumptionEvents': [consumptionDate.toIso8601String()],
-          'consumptionDate': consumptionDate.toIso8601String(),
           'storeName': 'Alnatura',
           'quantity': 1,
           'unitPrice': 3.49,
@@ -399,7 +398,6 @@ void main() {
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': false,
           'consumptionEvents': [],
-          'consumptionDate': null,
           'storeName': 'Supermarkt',
           'quantity': 6,
           'unitPrice': 0.0,
@@ -452,81 +450,6 @@ void main() {
 
         expect(itemFromJson, expectedItem);
       });
-
-      test('fromJson uses DateTime.now() for invalid or missing entryDate', () {
-        final jsonInvalid = {
-          'id': 'test-uuid-invalid-date',
-          'name': 'Test',
-          'entryDate': 'not-a-valid-date',
-          'storeName': 'Store',
-          'quantity': 1,
-        };
-
-        final jsonMissing = {
-          'id': 'test-uuid-missing-date',
-          'name': 'Test',
-          'storeName': 'Store',
-          'quantity': 1,
-        };
-
-        final itemInvalid = FridgeItem.fromJson(jsonInvalid);
-        final itemMissing = FridgeItem.fromJson(jsonMissing);
-
-        expect(
-          itemInvalid.entryDate.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
-        );
-        expect(
-          itemMissing.entryDate.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
-        );
-      });
-
-      test('fromJson handles legacy consumptionDate field', () {
-        final legacyDate = DateTime(2025, 12, 5, 14, 30);
-        final json = {
-          'id': 'test-uuid-legacy',
-          'name': 'Legacy Item',
-          'entryDate': entryDate.toIso8601String(),
-          'storeName': 'Store',
-          'quantity': 1,
-          'consumptionDate': legacyDate.toIso8601String(),
-        };
-
-        final itemFromJson = FridgeItem.fromJson(json);
-
-        expect(itemFromJson.consumptionEvents.length, 1);
-        expect(itemFromJson.consumptionEvents.first, legacyDate);
-        expect(itemFromJson.consumptionDate, legacyDate);
-      });
-
-      test(
-        'fromJson prefers consumptionEvents over legacy consumptionDate',
-        () {
-          final legacyDate = DateTime(2025, 12, 5, 14, 30);
-          final eventsDate1 = DateTime(2025, 12, 6, 10, 0);
-          final eventsDate2 = DateTime(2025, 12, 7, 12, 0);
-          final json = {
-            'id': 'test-uuid-both',
-            'name': 'Both Fields Item',
-            'entryDate': entryDate.toIso8601String(),
-            'storeName': 'Store',
-            'quantity': 1,
-            'consumptionEvents': [
-              eventsDate1.toIso8601String(),
-              eventsDate2.toIso8601String(),
-            ],
-            'consumptionDate': legacyDate.toIso8601String(),
-          };
-
-          final itemFromJson = FridgeItem.fromJson(json);
-
-          // Should use consumptionEvents, not legacy field
-          expect(itemFromJson.consumptionEvents.length, 2);
-          expect(itemFromJson.consumptionEvents[0], eventsDate1);
-          expect(itemFromJson.consumptionEvents[1], eventsDate2);
-        },
-      );
     });
 
     group('adjustQuantity', () {
@@ -760,6 +683,201 @@ void main() {
         );
         expect(item.effectiveUnitPrice, 8.5);
         expect(item.totalPrice, 17.0);
+      });
+    });
+
+    group('Custom JSON Converters', () {
+      group('DateTime parsing (entryDate)', () {
+        test('parses valid ISO8601 date string', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 1,
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.entryDate, DateTime(2025, 12, 1, 10, 30));
+        });
+
+        test('falls back to DateTime.now() for null entryDate', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': null,
+            'storeName': 'Store',
+            'quantity': 1,
+          };
+
+          final before = DateTime.now();
+          final item = FridgeItem.fromJson(json);
+          final after = DateTime.now();
+
+          expect(
+            item.entryDate.isAfter(before.subtract(const Duration(seconds: 1))),
+            isTrue,
+          );
+          expect(
+            item.entryDate.isBefore(after.add(const Duration(seconds: 1))),
+            isTrue,
+          );
+        });
+
+        test('falls back to DateTime.now() for empty string entryDate', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '',
+            'storeName': 'Store',
+            'quantity': 1,
+          };
+
+          final before = DateTime.now();
+          final item = FridgeItem.fromJson(json);
+          final after = DateTime.now();
+
+          expect(
+            item.entryDate.isAfter(before.subtract(const Duration(seconds: 1))),
+            isTrue,
+          );
+          expect(
+            item.entryDate.isBefore(after.add(const Duration(seconds: 1))),
+            isTrue,
+          );
+        });
+
+        test('falls back to DateTime.now() for invalid date string', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': 'not-a-date',
+            'storeName': 'Store',
+            'quantity': 1,
+          };
+
+          final before = DateTime.now();
+          final item = FridgeItem.fromJson(json);
+          final after = DateTime.now();
+
+          expect(
+            item.entryDate.isAfter(before.subtract(const Duration(seconds: 1))),
+            isTrue,
+          );
+          expect(
+            item.entryDate.isBefore(after.add(const Duration(seconds: 1))),
+            isTrue,
+          );
+        });
+      });
+
+      group('Nullable DateTime parsing (receiptDate)', () {
+        test('parses valid ISO8601 date string', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 1,
+            'receiptDate': '2025-11-30T08:00:00.000',
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.receiptDate, DateTime(2025, 11, 30, 8, 0));
+        });
+
+        test('returns null for null receiptDate', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 1,
+            'receiptDate': null,
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.receiptDate, isNull);
+        });
+
+        test('returns null for empty string receiptDate', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 1,
+            'receiptDate': '',
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.receiptDate, isNull);
+        });
+
+        test('returns null for invalid date string receiptDate', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 1,
+            'receiptDate': 'invalid-date',
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.receiptDate, isNull);
+        });
+      });
+
+      group('initialQuantity fallback', () {
+        test('uses initialQuantity when present', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 3,
+            'initialQuantity': 5,
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.initialQuantity, 5);
+        });
+
+        test('falls back to quantity when initialQuantity is missing', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 7,
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.initialQuantity, 7);
+        });
+
+        test('falls back to quantity when initialQuantity is null', () {
+          final json = {
+            'id': 'test-id',
+            'name': 'Item',
+            'entryDate': '2025-12-01T10:30:00.000',
+            'storeName': 'Store',
+            'quantity': 4,
+            'initialQuantity': null,
+          };
+
+          final item = FridgeItem.fromJson(json);
+
+          expect(item.initialQuantity, 4);
+        });
       });
     });
   });

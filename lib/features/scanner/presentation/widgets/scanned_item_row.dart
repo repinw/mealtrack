@@ -179,12 +179,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final newItem = widget.item.copyWith(
       name: _nameController.text,
       weight: weightText.isNotEmpty ? weightText : null,
-      clearWeight: weightText.isEmpty,
       brand: brandText.isNotEmpty ? brandText : null,
       unitPrice: unitPrice,
       quantity: quantity,
-      // Ideally we shouldn't overwrite language here unless we want to lock it to the current context
-      // but keeping it as is from original item is safe.
     );
 
     widget.onChanged(newItem);

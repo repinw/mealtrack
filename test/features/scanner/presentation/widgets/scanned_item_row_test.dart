@@ -374,29 +374,26 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Clearing brand field keeps original brand (cannot be cleared to null)',
-      (tester) async {
-        final item = FridgeItem.create(
-          name: 'Test Item',
-          storeName: 'Store',
-          quantity: 1,
-          unitPrice: 10.0,
-          brand: 'TestBrand',
-        );
-        FridgeItem? updatedItem;
+    testWidgets('Clearing brand field sets brand to null', (tester) async {
+      final item = FridgeItem.create(
+        name: 'Test Item',
+        storeName: 'Store',
+        quantity: 1,
+        unitPrice: 10.0,
+        brand: 'TestBrand',
+      );
+      FridgeItem? updatedItem;
 
-        await tester.pumpWidget(
-          createTestWidget(item, onChanged: (val) => updatedItem = val),
-        );
+      await tester.pumpWidget(
+        createTestWidget(item, onChanged: (val) => updatedItem = val),
+      );
 
-        final brandFinder = find.byKey(const Key('brandField'));
-        await tester.enterText(brandFinder, '');
-        await tester.pump();
+      final brandFinder = find.byKey(const Key('brandField'));
+      await tester.enterText(brandFinder, '');
+      await tester.pump();
 
-        expect(updatedItem?.brand, 'TestBrand');
-      },
-    );
+      expect(updatedItem?.brand, isNull);
+    });
 
     testWidgets('Locale en: Price field parses dot correctly', (tester) async {
       final item = createItem(unitPrice: 10.0, language: 'en');
