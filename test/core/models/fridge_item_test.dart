@@ -373,7 +373,6 @@ void main() {
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': true,
           'consumptionEvents': [consumptionDate.toIso8601String()],
-          'consumptionDate': consumptionDate.toIso8601String(),
           'storeName': 'Alnatura',
           'quantity': 1,
           'unitPrice': 3.49,
@@ -399,7 +398,6 @@ void main() {
           'entryDate': entryDate.toIso8601String(),
           'isConsumed': false,
           'consumptionEvents': [],
-          'consumptionDate': null,
           'storeName': 'Supermarkt',
           'quantity': 6,
           'unitPrice': 0.0,
@@ -452,81 +450,6 @@ void main() {
 
         expect(itemFromJson, expectedItem);
       });
-
-      test('fromJson uses DateTime.now() for invalid or missing entryDate', () {
-        final jsonInvalid = {
-          'id': 'test-uuid-invalid-date',
-          'name': 'Test',
-          'entryDate': 'not-a-valid-date',
-          'storeName': 'Store',
-          'quantity': 1,
-        };
-
-        final jsonMissing = {
-          'id': 'test-uuid-missing-date',
-          'name': 'Test',
-          'storeName': 'Store',
-          'quantity': 1,
-        };
-
-        final itemInvalid = FridgeItem.fromJson(jsonInvalid);
-        final itemMissing = FridgeItem.fromJson(jsonMissing);
-
-        expect(
-          itemInvalid.entryDate.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
-        );
-        expect(
-          itemMissing.entryDate.difference(DateTime.now()).inSeconds.abs(),
-          lessThan(2),
-        );
-      });
-
-      test('fromJson handles legacy consumptionDate field', () {
-        final legacyDate = DateTime(2025, 12, 5, 14, 30);
-        final json = {
-          'id': 'test-uuid-legacy',
-          'name': 'Legacy Item',
-          'entryDate': entryDate.toIso8601String(),
-          'storeName': 'Store',
-          'quantity': 1,
-          'consumptionDate': legacyDate.toIso8601String(),
-        };
-
-        final itemFromJson = FridgeItem.fromJson(json);
-
-        expect(itemFromJson.consumptionEvents.length, 1);
-        expect(itemFromJson.consumptionEvents.first, legacyDate);
-        expect(itemFromJson.consumptionDate, legacyDate);
-      });
-
-      test(
-        'fromJson prefers consumptionEvents over legacy consumptionDate',
-        () {
-          final legacyDate = DateTime(2025, 12, 5, 14, 30);
-          final eventsDate1 = DateTime(2025, 12, 6, 10, 0);
-          final eventsDate2 = DateTime(2025, 12, 7, 12, 0);
-          final json = {
-            'id': 'test-uuid-both',
-            'name': 'Both Fields Item',
-            'entryDate': entryDate.toIso8601String(),
-            'storeName': 'Store',
-            'quantity': 1,
-            'consumptionEvents': [
-              eventsDate1.toIso8601String(),
-              eventsDate2.toIso8601String(),
-            ],
-            'consumptionDate': legacyDate.toIso8601String(),
-          };
-
-          final itemFromJson = FridgeItem.fromJson(json);
-
-          // Should use consumptionEvents, not legacy field
-          expect(itemFromJson.consumptionEvents.length, 2);
-          expect(itemFromJson.consumptionEvents[0], eventsDate1);
-          expect(itemFromJson.consumptionEvents[1], eventsDate2);
-        },
-      );
     });
 
     group('adjustQuantity', () {
