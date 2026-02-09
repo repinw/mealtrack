@@ -4,6 +4,31 @@ import 'package:uuid/uuid.dart';
 part 'fridge_item.freezed.dart';
 part 'fridge_item.g.dart';
 
+/// Robust DateTime parser that returns DateTime.now() on invalid/null input
+DateTime _dateTimeFromJson(dynamic json) {
+  if (json == null) return DateTime.now();
+  if (json is DateTime) return json;
+  if (json is String && json.isNotEmpty) {
+    return DateTime.tryParse(json) ?? DateTime.now();
+  }
+  return DateTime.now();
+}
+
+/// Robust nullable DateTime parser that returns null on invalid input
+DateTime? _nullableDateTimeFromJson(dynamic json) {
+  if (json == null) return null;
+  if (json is DateTime) return json;
+  if (json is String && json.isNotEmpty) {
+    return DateTime.tryParse(json);
+  }
+  return null;
+}
+
+/// Reads initialQuantity from JSON, falling back to quantity for legacy data
+Object? _readInitialQuantity(Map<dynamic, dynamic> json, String key) {
+  return json[key] ?? json['quantity'];
+}
+
 @freezed
 abstract class FridgeItem with _$FridgeItem {
   const FridgeItem._();
@@ -11,16 +36,16 @@ abstract class FridgeItem with _$FridgeItem {
   const factory FridgeItem({
     required String id,
     required String name,
-    required DateTime entryDate,
+    @JsonKey(fromJson: _dateTimeFromJson) required DateTime entryDate,
     @Default(false) bool isConsumed,
     required String storeName,
     required int quantity,
-    @Default(1) int initialQuantity,
+    @JsonKey(readValue: _readInitialQuantity) @Default(1) int initialQuantity,
     @Default(0.0) double unitPrice,
     String? weight,
     @Default([]) List<DateTime> consumptionEvents,
     String? receiptId,
-    DateTime? receiptDate,
+    @JsonKey(fromJson: _nullableDateTimeFromJson) DateTime? receiptDate,
     String? language,
     String? brand,
     @Default({}) Map<String, double> discounts,

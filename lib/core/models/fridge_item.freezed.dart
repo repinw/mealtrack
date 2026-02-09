@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FridgeItem {
 
- String get id; String get name; DateTime get entryDate; bool get isConsumed; String get storeName; int get quantity; int get initialQuantity; double get unitPrice; String? get weight; List<DateTime> get consumptionEvents; String? get receiptId; DateTime? get receiptDate; String? get language; String? get brand; Map<String, double> get discounts; bool get isDeposit; bool get isDiscount; bool get isArchived;
+ String get id; String get name;@JsonKey(fromJson: _dateTimeFromJson) DateTime get entryDate; bool get isConsumed; String get storeName; int get quantity;@JsonKey(readValue: _readInitialQuantity) int get initialQuantity; double get unitPrice; String? get weight; List<DateTime> get consumptionEvents; String? get receiptId;@JsonKey(fromJson: _nullableDateTimeFromJson) DateTime? get receiptDate; String? get language; String? get brand; Map<String, double> get discounts; bool get isDeposit; bool get isDiscount; bool get isArchived;
 /// Create a copy of FridgeItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $FridgeItemCopyWith<$Res>  {
   factory $FridgeItemCopyWith(FridgeItem value, $Res Function(FridgeItem) _then) = _$FridgeItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, DateTime entryDate, bool isConsumed, String storeName, int quantity, int initialQuantity, double unitPrice, String? weight, List<DateTime> consumptionEvents, String? receiptId, DateTime? receiptDate, String? language, String? brand, Map<String, double> discounts, bool isDeposit, bool isDiscount, bool isArchived
+ String id, String name,@JsonKey(fromJson: _dateTimeFromJson) DateTime entryDate, bool isConsumed, String storeName, int quantity,@JsonKey(readValue: _readInitialQuantity) int initialQuantity, double unitPrice, String? weight, List<DateTime> consumptionEvents, String? receiptId,@JsonKey(fromJson: _nullableDateTimeFromJson) DateTime? receiptDate, String? language, String? brand, Map<String, double> discounts, bool isDeposit, bool isDiscount, bool isArchived
 });
 
 
@@ -170,7 +170,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity,  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId,  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(fromJson: _dateTimeFromJson)  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity, @JsonKey(readValue: _readInitialQuantity)  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId, @JsonKey(fromJson: _nullableDateTimeFromJson)  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FridgeItem() when $default != null:
 return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.storeName,_that.quantity,_that.initialQuantity,_that.unitPrice,_that.weight,_that.consumptionEvents,_that.receiptId,_that.receiptDate,_that.language,_that.brand,_that.discounts,_that.isDeposit,_that.isDiscount,_that.isArchived);case _:
@@ -191,7 +191,7 @@ return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.store
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity,  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId,  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(fromJson: _dateTimeFromJson)  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity, @JsonKey(readValue: _readInitialQuantity)  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId, @JsonKey(fromJson: _nullableDateTimeFromJson)  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)  $default,) {final _that = this;
 switch (_that) {
 case _FridgeItem():
 return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.storeName,_that.quantity,_that.initialQuantity,_that.unitPrice,_that.weight,_that.consumptionEvents,_that.receiptId,_that.receiptDate,_that.language,_that.brand,_that.discounts,_that.isDeposit,_that.isDiscount,_that.isArchived);case _:
@@ -211,7 +211,7 @@ return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.store
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity,  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId,  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @JsonKey(fromJson: _dateTimeFromJson)  DateTime entryDate,  bool isConsumed,  String storeName,  int quantity, @JsonKey(readValue: _readInitialQuantity)  int initialQuantity,  double unitPrice,  String? weight,  List<DateTime> consumptionEvents,  String? receiptId, @JsonKey(fromJson: _nullableDateTimeFromJson)  DateTime? receiptDate,  String? language,  String? brand,  Map<String, double> discounts,  bool isDeposit,  bool isDiscount,  bool isArchived)?  $default,) {final _that = this;
 switch (_that) {
 case _FridgeItem() when $default != null:
 return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.storeName,_that.quantity,_that.initialQuantity,_that.unitPrice,_that.weight,_that.consumptionEvents,_that.receiptId,_that.receiptDate,_that.language,_that.brand,_that.discounts,_that.isDeposit,_that.isDiscount,_that.isArchived);case _:
@@ -226,16 +226,16 @@ return $default(_that.id,_that.name,_that.entryDate,_that.isConsumed,_that.store
 @JsonSerializable()
 
 class _FridgeItem extends FridgeItem {
-  const _FridgeItem({required this.id, required this.name, required this.entryDate, this.isConsumed = false, required this.storeName, required this.quantity, this.initialQuantity = 1, this.unitPrice = 0.0, this.weight, final  List<DateTime> consumptionEvents = const [], this.receiptId, this.receiptDate, this.language, this.brand, final  Map<String, double> discounts = const {}, this.isDeposit = false, this.isDiscount = false, this.isArchived = false}): _consumptionEvents = consumptionEvents,_discounts = discounts,super._();
+  const _FridgeItem({required this.id, required this.name, @JsonKey(fromJson: _dateTimeFromJson) required this.entryDate, this.isConsumed = false, required this.storeName, required this.quantity, @JsonKey(readValue: _readInitialQuantity) this.initialQuantity = 1, this.unitPrice = 0.0, this.weight, final  List<DateTime> consumptionEvents = const [], this.receiptId, @JsonKey(fromJson: _nullableDateTimeFromJson) this.receiptDate, this.language, this.brand, final  Map<String, double> discounts = const {}, this.isDeposit = false, this.isDiscount = false, this.isArchived = false}): _consumptionEvents = consumptionEvents,_discounts = discounts,super._();
   factory _FridgeItem.fromJson(Map<String, dynamic> json) => _$FridgeItemFromJson(json);
 
 @override final  String id;
 @override final  String name;
-@override final  DateTime entryDate;
+@override@JsonKey(fromJson: _dateTimeFromJson) final  DateTime entryDate;
 @override@JsonKey() final  bool isConsumed;
 @override final  String storeName;
 @override final  int quantity;
-@override@JsonKey() final  int initialQuantity;
+@override@JsonKey(readValue: _readInitialQuantity) final  int initialQuantity;
 @override@JsonKey() final  double unitPrice;
 @override final  String? weight;
  final  List<DateTime> _consumptionEvents;
@@ -246,7 +246,7 @@ class _FridgeItem extends FridgeItem {
 }
 
 @override final  String? receiptId;
-@override final  DateTime? receiptDate;
+@override@JsonKey(fromJson: _nullableDateTimeFromJson) final  DateTime? receiptDate;
 @override final  String? language;
 @override final  String? brand;
  final  Map<String, double> _discounts;
@@ -293,7 +293,7 @@ abstract mixin class _$FridgeItemCopyWith<$Res> implements $FridgeItemCopyWith<$
   factory _$FridgeItemCopyWith(_FridgeItem value, $Res Function(_FridgeItem) _then) = __$FridgeItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, DateTime entryDate, bool isConsumed, String storeName, int quantity, int initialQuantity, double unitPrice, String? weight, List<DateTime> consumptionEvents, String? receiptId, DateTime? receiptDate, String? language, String? brand, Map<String, double> discounts, bool isDeposit, bool isDiscount, bool isArchived
+ String id, String name,@JsonKey(fromJson: _dateTimeFromJson) DateTime entryDate, bool isConsumed, String storeName, int quantity,@JsonKey(readValue: _readInitialQuantity) int initialQuantity, double unitPrice, String? weight, List<DateTime> consumptionEvents, String? receiptId,@JsonKey(fromJson: _nullableDateTimeFromJson) DateTime? receiptDate, String? language, String? brand, Map<String, double> discounts, bool isDeposit, bool isDiscount, bool isArchived
 });
 
 

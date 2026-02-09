@@ -11,11 +11,12 @@ part of 'fridge_item.dart';
 _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   id: json['id'] as String,
   name: json['name'] as String,
-  entryDate: DateTime.parse(json['entryDate'] as String),
+  entryDate: _dateTimeFromJson(json['entryDate']),
   isConsumed: json['isConsumed'] as bool? ?? false,
   storeName: json['storeName'] as String,
   quantity: (json['quantity'] as num).toInt(),
-  initialQuantity: (json['initialQuantity'] as num?)?.toInt() ?? 1,
+  initialQuantity:
+      (_readInitialQuantity(json, 'initialQuantity') as num?)?.toInt() ?? 1,
   unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
   weight: json['weight'] as String?,
   consumptionEvents:
@@ -24,9 +25,7 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
           .toList() ??
       const [],
   receiptId: json['receiptId'] as String?,
-  receiptDate: json['receiptDate'] == null
-      ? null
-      : DateTime.parse(json['receiptDate'] as String),
+  receiptDate: _nullableDateTimeFromJson(json['receiptDate']),
   language: json['language'] as String?,
   brand: json['brand'] as String?,
   discounts:
