@@ -24,11 +24,6 @@ DateTime? _nullableDateTimeFromJson(dynamic json) {
   return null;
 }
 
-/// Reads initialQuantity from JSON, falling back to quantity for legacy data
-Object? _readInitialQuantity(Map<dynamic, dynamic> json, String key) {
-  return json[key] ?? json['quantity'];
-}
-
 @freezed
 abstract class FridgeItem with _$FridgeItem {
   const FridgeItem._();
@@ -37,10 +32,9 @@ abstract class FridgeItem with _$FridgeItem {
     required String id,
     required String name,
     @JsonKey(fromJson: _dateTimeFromJson) required DateTime entryDate,
-    @Default(false) bool isConsumed,
     required String storeName,
     required int quantity,
-    @JsonKey(readValue: _readInitialQuantity) @Default(1) int initialQuantity,
+    @Default(1) int initialQuantity,
     @Default(0.0) double unitPrice,
     String? weight,
     @Default([]) List<DateTime> consumptionEvents,
@@ -92,7 +86,6 @@ abstract class FridgeItem with _$FridgeItem {
       unitPrice: unitPrice,
       weight: weight,
       entryDate: (now ?? DateTime.now)(),
-      isConsumed: false,
       receiptId: receiptId,
       receiptDate: receiptDate,
       language: language,
@@ -105,6 +98,9 @@ abstract class FridgeItem with _$FridgeItem {
       isArchived: isArchived,
     );
   }
+
+  /// Computed property: an item is consumed when its quantity reaches 0.
+  bool get isConsumed => quantity == 0;
 
   factory FridgeItem.fromJson(Map<String, dynamic> json) =>
       _$FridgeItemFromJson(json);
@@ -129,15 +125,12 @@ abstract class FridgeItem with _$FridgeItem {
   /// - Adjusts the quantity by the given delta
   /// - Adds a consumption event when quantity decreases (delta < 0)
   /// - Removes the last consumption event when quantity increases (delta > 0)
-  /// - Sets isConsumed to true when quantity reaches 0
-  /// - Sets isConsumed to false when quantity increases from 0
   ///
   /// The [now] parameter allows injecting a custom DateTime for testing.
   FridgeItem adjustQuantity(int delta, {DateTime Function()? now}) {
     final currentTime = (now ?? DateTime.now)();
 
     var newQuantity = quantity + delta;
-    var newIsConsumed = isConsumed;
     final newConsumptionEvents = List<DateTime>.from(consumptionEvents);
 
     if (delta < 0) {
@@ -152,16 +145,12 @@ abstract class FridgeItem with _$FridgeItem {
       );
     }
 
-    if (newQuantity <= 0) {
+    if (newQuantity < 0) {
       newQuantity = 0;
-      newIsConsumed = true;
-    } else if (newIsConsumed) {
-      newIsConsumed = false;
     }
 
     return copyWith(
       quantity: newQuantity,
-      isConsumed: newIsConsumed,
       consumptionEvents: newConsumptionEvents,
     );
   }

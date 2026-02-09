@@ -229,20 +229,18 @@ void main() {
           id: '1',
           name: 'a',
           entryDate: date,
-          isConsumed: true,
           consumptionEvents: [date],
           storeName: 'S',
-          quantity: 1,
+          quantity: 0,
         );
         // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: '1',
           name: 'a',
           entryDate: date,
-          isConsumed: true,
           consumptionEvents: [date],
           storeName: 'S',
-          quantity: 1,
+          quantity: 0,
         );
         expect(item1, equals(item2));
       });
@@ -255,7 +253,6 @@ void main() {
           id: id,
           name: name,
           entryDate: entryDate,
-          isConsumed: false,
           storeName: storeName,
           quantity: quantity,
         );
@@ -276,8 +273,8 @@ void main() {
 
         final updatedItem = item.copyWith(
           name: 'Käse (alt)',
-          isConsumed: true,
           consumptionEvents: [newDate],
+          quantity: 0,
         );
 
         expect(updatedItem.id, item.id);
@@ -285,7 +282,7 @@ void main() {
         expect(updatedItem.isConsumed, isTrue);
         expect(updatedItem.consumptionDate, newDate);
         expect(updatedItem.storeName, item.storeName);
-        expect(updatedItem.quantity, item.quantity);
+        expect(updatedItem.quantity, 0);
       });
 
       test('creates an identical copy when no arguments are provided', () {
@@ -305,8 +302,7 @@ void main() {
           name: 'Joghurt',
           entryDate: DateTime(2025, 11, 20),
           storeName: 'Rewe',
-          quantity: 4,
-          isConsumed: true,
+          quantity: 0,
           consumptionEvents: [consumptionDate],
         );
 
@@ -316,7 +312,7 @@ void main() {
         );
 
         expect(updatedItem.name, 'Joghurt');
-        expect(updatedItem.isConsumed, isTrue);
+        expect(updatedItem.isConsumed, isFalse);
         expect(updatedItem.consumptionDate, consumptionDate);
         expect(updatedItem.storeName, 'Rewe Center');
         expect(updatedItem.quantity, 2);
@@ -344,10 +340,9 @@ void main() {
         id: 'test-uuid-123',
         name: 'Bio Eier 6er',
         entryDate: entryDate,
-        isConsumed: true,
         consumptionEvents: [consumptionDate],
         storeName: 'Alnatura',
-        quantity: 1,
+        quantity: 0,
         unitPrice: 3.49,
         weight: '6 Stk',
         discounts: discounts,
@@ -371,10 +366,9 @@ void main() {
           'id': 'test-uuid-123',
           'name': 'Bio Eier 6er',
           'entryDate': entryDate.toIso8601String(),
-          'isConsumed': true,
           'consumptionEvents': [consumptionDate.toIso8601String()],
           'storeName': 'Alnatura',
-          'quantity': 1,
+          'quantity': 0,
           'unitPrice': 3.49,
           'weight': '6 Stk',
           'discounts': discounts,
@@ -396,7 +390,6 @@ void main() {
           'id': 'test-uuid-456',
           'name': 'Wasser',
           'entryDate': entryDate.toIso8601String(),
-          'isConsumed': false,
           'consumptionEvents': [],
           'storeName': 'Supermarkt',
           'quantity': 6,
@@ -537,7 +530,6 @@ void main() {
           entryDate: DateTime(2025, 12, 1),
           storeName: 'Store',
           quantity: 0,
-          isConsumed: true,
           consumptionEvents: [event],
         );
 
@@ -850,7 +842,7 @@ void main() {
           expect(item.initialQuantity, 5);
         });
 
-        test('falls back to quantity when initialQuantity is missing', () {
+        test('uses default 1 when initialQuantity is missing', () {
           final json = {
             'id': 'test-id',
             'name': 'Item',
@@ -861,10 +853,10 @@ void main() {
 
           final item = FridgeItem.fromJson(json);
 
-          expect(item.initialQuantity, 7);
+          expect(item.initialQuantity, 1); // Default value, no legacy fallback
         });
 
-        test('falls back to quantity when initialQuantity is null', () {
+        test('uses default 1 when initialQuantity is null', () {
           final json = {
             'id': 'test-id',
             'name': 'Item',
@@ -876,7 +868,7 @@ void main() {
 
           final item = FridgeItem.fromJson(json);
 
-          expect(item.initialQuantity, 4);
+          expect(item.initialQuantity, 1); // Default value, no legacy fallback
         });
       });
     });

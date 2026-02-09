@@ -12,11 +12,9 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   id: json['id'] as String,
   name: json['name'] as String,
   entryDate: _dateTimeFromJson(json['entryDate']),
-  isConsumed: json['isConsumed'] as bool? ?? false,
   storeName: json['storeName'] as String,
   quantity: (json['quantity'] as num).toInt(),
-  initialQuantity:
-      (_readInitialQuantity(json, 'initialQuantity') as num?)?.toInt() ?? 1,
+  initialQuantity: (json['initialQuantity'] as num?)?.toInt() ?? 1,
   unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
   weight: json['weight'] as String?,
   consumptionEvents:
@@ -43,7 +41,6 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'id': instance.id,
       'name': instance.name,
       'entryDate': instance.entryDate.toIso8601String(),
-      'isConsumed': instance.isConsumed,
       'storeName': instance.storeName,
       'quantity': instance.quantity,
       'initialQuantity': instance.initialQuantity,
