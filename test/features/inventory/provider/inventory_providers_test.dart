@@ -443,7 +443,7 @@ void main() {
         storeName: 'S',
         quantity: 1,
         receiptId: 'R2',
-      ).copyWith(isConsumed: true, quantity: 0);
+      ).copyWith(quantity: 0);
 
       when(
         () => mockRepository.watchItems(),
@@ -473,7 +473,7 @@ void main() {
           storeName: 'S',
           quantity: 1,
           receiptId: 'R1',
-        ).copyWith(isConsumed: true, quantity: 0);
+        ).copyWith(quantity: 0);
 
         when(
           () => mockRepository.watchItems(),

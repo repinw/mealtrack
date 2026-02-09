@@ -46,7 +46,7 @@ void main() {
       final updatedItem = FridgeItem.fromJson(snapshot.data()!);
 
       expect(updatedItem.quantity, 0);
-      expect(updatedItem.isConsumed, true);
+      expect(updatedItem.isConsumed, true); // computed from quantity == 0
     });
 
     test('getItems returns items', () async {
@@ -113,7 +113,7 @@ void main() {
         name: 'Banana',
         storeName: 'Store',
         quantity: 1,
-      ).copyWith(quantity: 0, isConsumed: true);
+      ).copyWith(quantity: 0);
       await repository.addItems([item1, item2]);
 
       final result = await repository.getAvailableItems();
