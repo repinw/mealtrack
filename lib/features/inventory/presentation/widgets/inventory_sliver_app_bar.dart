@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/collapsed_summary.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -27,8 +26,6 @@ class InventorySliverAppBar extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
     final errorColor = Theme.of(context).colorScheme.error;
-    final secondaryInfoColor = AppTheme.summaryLabelStyle.color ?? Colors.grey;
-    const highlightColor = AppTheme.accentColor;
     final expandedSummary = RepaintBoundary(
       child: SummaryHeader(
         label: l10n.stockValue,
@@ -37,15 +34,11 @@ class InventorySliverAppBar extends ConsumerWidget {
         secondaryInfo: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              color: secondaryInfoColor,
-              size: 16,
-            ),
+            const Icon(Icons.receipt_long_outlined, size: 16),
             const SizedBox(width: 4),
             Text(
               l10n.purchases(stats.scanCount),
-              style: TextStyle(color: secondaryInfoColor, fontSize: 13),
+              style: const TextStyle(fontSize: 13),
             ),
           ],
         ),
@@ -61,7 +54,6 @@ class InventorySliverAppBar extends ConsumerWidget {
     return SliverAppBar(
       pinned: true,
       expandedHeight: _expandedHeight,
-      backgroundColor: AppTheme.primaryColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -126,7 +118,6 @@ class InventorySliverAppBar extends ConsumerWidget {
                             child: Text(
                               title.toUpperCase(),
                               style: const TextStyle(
-                                color: highlightColor,
                                 fontSize: 14,
                                 letterSpacing: 1.2,
                               ),
