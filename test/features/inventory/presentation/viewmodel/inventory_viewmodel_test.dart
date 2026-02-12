@@ -7,6 +7,7 @@ import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_vi
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../../shared/test_helpers.dart';
 
 import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,7 +55,7 @@ void main() {
     });
 
     test('deleteAllItems calls repository and invalidates providers', () async {
-      final initialItem = FridgeItem.create(
+      final initialItem = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Test Store',
         quantity: 1,
@@ -87,13 +88,13 @@ void main() {
     });
 
     test('deleteItem calls repository and updates state correctly', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'Item 1',
         storeName: 'Store',
         quantity: 2,
         unitPrice: 10.0,
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'Item 2',
         storeName: 'Store',
         quantity: 3,
@@ -130,19 +131,19 @@ void main() {
   group('inventoryDisplayListProvider', () {
     final fixedDate = DateTime(2023, 1, 1, 12, 0, 0);
     final sharedReceiptId = 'receipt-123';
-    final item1 = FridgeItem.create(
+    final item1 = createTestFridgeItem(
       name: 'Apple',
       storeName: 'Store A',
       quantity: 5,
       now: () => fixedDate,
     ).copyWith(receiptId: sharedReceiptId);
-    final item2 = FridgeItem.create(
+    final item2 = createTestFridgeItem(
       name: 'Banana',
       storeName: 'Store A',
       quantity: 1,
       now: () => fixedDate,
     ).copyWith(quantity: 0, receiptId: sharedReceiptId);
-    final item3 = FridgeItem.create(
+    final item3 = createTestFridgeItem(
       name: 'Carrot',
       storeName: 'Store B',
       quantity: 2,
@@ -296,19 +297,19 @@ void main() {
       'groups items with null receiptId together and shows valid header',
       () async {
         final fixedDate = DateTime(2023, 6, 15, 10, 30, 0);
-        final itemWithNullReceipt1 = FridgeItem.create(
+        final itemWithNullReceipt1 = createTestFridgeItem(
           name: 'Milk',
           storeName: 'Local Shop',
           quantity: 2,
           now: () => fixedDate,
         );
-        final itemWithNullReceipt2 = FridgeItem.create(
+        final itemWithNullReceipt2 = createTestFridgeItem(
           name: 'Bread',
           storeName: 'Local Shop',
           quantity: 1,
           now: () => fixedDate,
         );
-        final itemWithReceipt = FridgeItem.create(
+        final itemWithReceipt = createTestFridgeItem(
           name: 'Apple',
           storeName: 'Supermarket',
           quantity: 3,
@@ -350,13 +351,13 @@ void main() {
 
     test('items with empty string receiptId grouped same as null', () async {
       final fixedDate = DateTime(2023, 6, 15);
-      final itemWithNullReceipt = FridgeItem.create(
+      final itemWithNullReceipt = createTestFridgeItem(
         name: 'Item A',
         storeName: 'Store',
         quantity: 1,
         now: () => fixedDate,
       );
-      final itemWithEmptyReceipt = FridgeItem.create(
+      final itemWithEmptyReceipt = createTestFridgeItem(
         name: 'Item B',
         storeName: 'Store',
         quantity: 1,
@@ -391,21 +392,21 @@ void main() {
         final dateLater = DateTime(2023, 11, 1);
 
         // Item 1: No receiptDate, entryDate is "now"
-        final itemEntryNow = FridgeItem.create(
+        final itemEntryNow = createTestFridgeItem(
           name: 'Entry Now',
           storeName: 'Store A',
           now: () => now,
         ).copyWith(receiptId: 'R1');
 
         // Item 2: receiptDate is earlier
-        final itemReceiptEarlier = FridgeItem.create(
+        final itemReceiptEarlier = createTestFridgeItem(
           name: 'Receipt Earlier',
           storeName: 'Store B',
           now: () => now,
         ).copyWith(receiptId: 'R2', receiptDate: dateEarlier);
 
         // Item 3: receiptDate is later
-        final itemReceiptLater = FridgeItem.create(
+        final itemReceiptLater = createTestFridgeItem(
           name: 'Receipt Later',
           storeName: 'Store C',
           now: () => now,
@@ -442,13 +443,13 @@ void main() {
 
   group('Collapsing Logic', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final item1 = FridgeItem.create(
+    final item1 = createTestFridgeItem(
       name: 'Item 1',
       storeName: 'Store',
       receiptId: 'R1',
       now: () => fixedDate,
     );
-    final item2 = FridgeItem.create(
+    final item2 = createTestFridgeItem(
       name: 'Item 2',
       storeName: 'Store',
       receiptId: 'R1',
@@ -491,13 +492,13 @@ void main() {
 
   group('Archived Section Visibility', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final activeItem = FridgeItem.create(
+    final activeItem = createTestFridgeItem(
       name: 'Active',
       storeName: 'Store',
       receiptId: 'R1',
       now: () => fixedDate,
     );
-    final archivedItem = FridgeItem.create(
+    final archivedItem = createTestFridgeItem(
       name: 'Archived',
       storeName: 'Store',
       receiptId: 'R2',

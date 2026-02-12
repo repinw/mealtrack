@@ -10,6 +10,7 @@ import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/features/scanner/presentation/receipt_edit_page.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scan_options_bottom_sheet.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../../shared/test_helpers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockImagePicker extends Mock implements ImagePicker {}
@@ -144,7 +145,11 @@ void main() {
       tester,
     ) async {
       final items = <FridgeItem>[
-        FridgeItem.create(name: 'Milk', storeName: 'Test Store', quantity: 1),
+        createTestFridgeItem(
+          name: 'Milk',
+          storeName: 'Test Store',
+          quantity: 1,
+        ),
       ];
 
       when(

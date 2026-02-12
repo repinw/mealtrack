@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
+import '../../../shared/test_helpers.dart';
 
 void main() {
   late FridgeRepository repository;
@@ -20,7 +21,7 @@ void main() {
 
   group('FridgeRepository', () {
     test('addItems adds items to collection', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Banana',
         storeName: 'Store',
         quantity: 3,
@@ -33,7 +34,7 @@ void main() {
     });
 
     test('updateQuantity updates item', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'TestItem',
         storeName: 'TestStore',
         quantity: 1,
@@ -50,7 +51,7 @@ void main() {
     });
 
     test('getItems returns items', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 5,
@@ -64,7 +65,7 @@ void main() {
     });
 
     test('updateItem updates item', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 5,
@@ -79,7 +80,7 @@ void main() {
     });
 
     test('deleteItem removes item', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 1,
@@ -93,8 +94,8 @@ void main() {
     });
 
     test('deleteAllItems removes all items', () async {
-      final item1 = FridgeItem.create(name: 'Apple', storeName: 'Store');
-      final item2 = FridgeItem.create(name: 'Banana', storeName: 'Store');
+      final item1 = createTestFridgeItem(name: 'Apple', storeName: 'Store');
+      final item2 = createTestFridgeItem(name: 'Banana', storeName: 'Store');
       await repository.addItems([item1, item2]);
 
       await repository.deleteAllItems();
@@ -104,12 +105,12 @@ void main() {
     });
 
     test('getAvailableItems returns only items with quantity > 0', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 1,
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'Banana',
         storeName: 'Store',
         quantity: 1,
@@ -122,17 +123,17 @@ void main() {
     });
 
     test('getGroupedItems groups by receiptId', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         receiptId: 'r1',
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'Banana',
         storeName: 'Store',
         receiptId: 'r1',
       );
-      final item3 = FridgeItem.create(
+      final item3 = createTestFridgeItem(
         name: 'Orange',
         storeName: 'Store',
         receiptId: 'r2',

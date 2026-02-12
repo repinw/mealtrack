@@ -1,9 +1,17 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mealtrack/core/models/user_profile.dart';
+import 'package:mealtrack/core/provider/firebase_providers.dart';
+import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/core/config/app_config.dart';
+import 'package:mocktail/mocktail.dart';
+
+class _MockUser extends Mock implements User {}
 
 void main() {
   late ShoppingListRepository repository;
@@ -30,6 +38,7 @@ void main() {
       expect(snapshot.exists, isTrue);
       expect(snapshot.data()!['name'], 'Apples');
       expect(snapshot.data()!['unitPrice'], 1.99);
+      expect(snapshot.data()!.containsKey('createdAt'), isTrue);
     });
 
     test('updateItem updates an existing item (merge)', () async {
@@ -88,7 +97,7 @@ void main() {
       expect(snapshot.docs.isEmpty, isTrue);
     });
 
-    test('watchItems returns a sorted stream of items', () async {
+    test('watchItems returns items ordered by createdAt (insertion order)', () async {
       final itemA = ShoppingListItem.create(name: 'Bananas');
       final itemB = ShoppingListItem.create(name: 'Apples');
       final itemC = ShoppingListItem.create(name: 'Cherries');
@@ -101,8 +110,8 @@ void main() {
       final firstResult = await stream.first;
 
       expect(firstResult.length, 3);
-      expect(firstResult[0].name, 'Apples');
-      expect(firstResult[1].name, 'Bananas');
+      expect(firstResult[0].name, 'Bananas');
+      expect(firstResult[1].name, 'Apples');
       expect(firstResult[2].name, 'Cherries');
     });
 
@@ -325,5 +334,81 @@ void main() {
         expect(docBakeryBrand.exists, isTrue);
       },
     );
+
+    test('addOrMergeItem keeps old unitPrice when new unitPrice is null', () async {
+      await repository.addOrMergeItem(
+        name: 'Milk',
+        brand: 'Farm',
+        quantity: 1,
+        unitPrice: 2.0,
+      );
+      await repository.addOrMergeItem(
+        name: 'Milk',
+        brand: 'Farm',
+        quantity: 1,
+        unitPrice: null,
+      );
+
+      final snapshot = await fakeFirestore
+          .collection(usersCollection)
+          .doc(testUid)
+          .collection(shoppingListCollection)
+          .get();
+
+      expect(snapshot.docs.length, 1);
+      final data = snapshot.docs.first.data();
+      expect(data['quantity'], 2);
+      expect(data['unitPrice'], 2.0);
+    });
+  });
+
+  group('shoppingListRepositoryProvider', () {
+    late FakeFirebaseFirestore firestore;
+    late _MockUser user;
+
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      user = _MockUser();
+      when(() => user.uid).thenReturn('user-id');
+    });
+
+    test('uses householdId when profile has one', () async {
+      final container = ProviderContainer(
+        overrides: [
+          firebaseFirestoreProvider.overrideWith((ref) => firestore),
+          authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
+          userProfileProvider.overrideWith(
+            (ref) => Stream.value(const UserProfile(uid: 'user-id', householdId: 'hh')),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(authStateChangesProvider, (_, _) {});
+      container.listen(userProfileProvider, (_, _) {});
+      await container.read(authStateChangesProvider.future);
+      await container.read(userProfileProvider.future);
+
+      final repo = container.read(shoppingListRepositoryProvider);
+      expect(repo, isA<ShoppingListRepository>());
+    });
+
+    test('throws when user is null', () {
+      final container = ProviderContainer(
+        overrides: [
+          firebaseFirestoreProvider.overrideWith((ref) => firestore),
+          authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+          userProfileProvider.overrideWith((ref) => Stream.value(null)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(authStateChangesProvider, (_, _) {});
+
+      expect(
+        () => container.read(shoppingListRepositoryProvider),
+        throwsA(isA<Exception>()),
+      );
+    });
   });
 }

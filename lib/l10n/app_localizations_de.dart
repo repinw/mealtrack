@@ -471,4 +471,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deleteItemConfirmation => 'Artikel wirklich löschen?';
+
+  @override
+  String get suggestions => 'Vorschläge';
 }

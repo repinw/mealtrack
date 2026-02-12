@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ShoppingListItem {
 
- String get id; String get name; bool get isChecked; int get quantity; String? get brand; double? get unitPrice;
+ String get id; String get name; bool get isChecked; int get quantity; String? get brand; double? get unitPrice; String? get category;
 /// Create a copy of ShoppingListItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ShoppingListItemCopyWith<ShoppingListItem> get copyWith => _$ShoppingListItemCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ShoppingListItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ShoppingListItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.category, category) || other.category == category));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,isChecked,quantity,brand,unitPrice);
+int get hashCode => Object.hash(runtimeType,id,name,isChecked,quantity,brand,unitPrice,category);
 
 @override
 String toString() {
-  return 'ShoppingListItem(id: $id, name: $name, isChecked: $isChecked, quantity: $quantity, brand: $brand, unitPrice: $unitPrice)';
+  return 'ShoppingListItem(id: $id, name: $name, isChecked: $isChecked, quantity: $quantity, brand: $brand, unitPrice: $unitPrice, category: $category)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ShoppingListItemCopyWith<$Res>  {
   factory $ShoppingListItemCopyWith(ShoppingListItem value, $Res Function(ShoppingListItem) _then) = _$ShoppingListItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, bool isChecked, int quantity, String? brand, double? unitPrice
+ String id, String name, bool isChecked, int quantity, String? brand, double? unitPrice, String? category
 });
 
 
@@ -65,7 +65,7 @@ class _$ShoppingListItemCopyWithImpl<$Res>
 
 /// Create a copy of ShoppingListItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? isChecked = null,Object? quantity = null,Object? brand = freezed,Object? unitPrice = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? isChecked = null,Object? quantity = null,Object? brand = freezed,Object? unitPrice = freezed,Object? category = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,8 @@ as String,isChecked: null == isChecked ? _self.isChecked : isChecked // ignore: 
 as bool,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
 as String?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -158,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice,  String? category)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ShoppingListItem() when $default != null:
-return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice);case _:
+return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice,_that.category);case _:
   return orElse();
 
 }
@@ -179,10 +180,10 @@ return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice,  String? category)  $default,) {final _that = this;
 switch (_that) {
 case _ShoppingListItem():
-return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice);case _:
+return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice,_that.category);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +200,10 @@ return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  bool isChecked,  int quantity,  String? brand,  double? unitPrice,  String? category)?  $default,) {final _that = this;
 switch (_that) {
 case _ShoppingListItem() when $default != null:
-return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice);case _:
+return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_that.unitPrice,_that.category);case _:
   return null;
 
 }
@@ -214,7 +215,7 @@ return $default(_that.id,_that.name,_that.isChecked,_that.quantity,_that.brand,_
 @JsonSerializable()
 
 class _ShoppingListItem implements ShoppingListItem {
-  const _ShoppingListItem({required this.id, required this.name, this.isChecked = false, this.quantity = 1, this.brand, this.unitPrice});
+  const _ShoppingListItem({required this.id, required this.name, this.isChecked = false, this.quantity = 1, this.brand, this.unitPrice, this.category});
   factory _ShoppingListItem.fromJson(Map<String, dynamic> json) => _$ShoppingListItemFromJson(json);
 
 @override final  String id;
@@ -223,6 +224,7 @@ class _ShoppingListItem implements ShoppingListItem {
 @override@JsonKey() final  int quantity;
 @override final  String? brand;
 @override final  double? unitPrice;
+@override final  String? category;
 
 /// Create a copy of ShoppingListItem
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ShoppingListItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ShoppingListItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.category, category) || other.category == category));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,isChecked,quantity,brand,unitPrice);
+int get hashCode => Object.hash(runtimeType,id,name,isChecked,quantity,brand,unitPrice,category);
 
 @override
 String toString() {
-  return 'ShoppingListItem(id: $id, name: $name, isChecked: $isChecked, quantity: $quantity, brand: $brand, unitPrice: $unitPrice)';
+  return 'ShoppingListItem(id: $id, name: $name, isChecked: $isChecked, quantity: $quantity, brand: $brand, unitPrice: $unitPrice, category: $category)';
 }
 
 
@@ -257,7 +259,7 @@ abstract mixin class _$ShoppingListItemCopyWith<$Res> implements $ShoppingListIt
   factory _$ShoppingListItemCopyWith(_ShoppingListItem value, $Res Function(_ShoppingListItem) _then) = __$ShoppingListItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, bool isChecked, int quantity, String? brand, double? unitPrice
+ String id, String name, bool isChecked, int quantity, String? brand, double? unitPrice, String? category
 });
 
 
@@ -274,7 +276,7 @@ class __$ShoppingListItemCopyWithImpl<$Res>
 
 /// Create a copy of ShoppingListItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? isChecked = null,Object? quantity = null,Object? brand = freezed,Object? unitPrice = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? isChecked = null,Object? quantity = null,Object? brand = freezed,Object? unitPrice = freezed,Object? category = freezed,}) {
   return _then(_ShoppingListItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -282,7 +284,8 @@ as String,isChecked: null == isChecked ? _self.isChecked : isChecked // ignore: 
 as bool,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
 as String?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

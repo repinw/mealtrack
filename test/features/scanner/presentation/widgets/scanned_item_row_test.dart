@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../../../shared/test_helpers.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/scanned_item_row.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -13,7 +14,7 @@ void main() {
       String? brand,
       String? language,
     }) {
-      return FridgeItem.create(
+      return createTestFridgeItem(
         name: name,
         storeName: 'Test Store',
         quantity: quantity,
@@ -149,7 +150,7 @@ void main() {
     });
 
     testWidgets('Happy Path: Changing weight updates item', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -169,7 +170,7 @@ void main() {
     });
 
     testWidgets('Clearing weight field sets weight to null', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -375,7 +376,7 @@ void main() {
     );
 
     testWidgets('Clearing brand field sets brand to null', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -439,7 +440,7 @@ void main() {
     );
 
     testWidgets('Edge Case: Quantity 0 defaults to 1', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 5,

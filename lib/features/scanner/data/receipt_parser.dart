@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 // p = totalPrice
 // w = weight
 // b = brand
+// c = category
 // d = discounts
 // a = amount (in discount)
 // if = isFood (isDeposit = !isFood)
@@ -117,16 +118,21 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
 
       final weight = (map['w']) as String?;
       final brand = (map['b']) as String?;
+      final category = (map['c']) as String?;
 
       final isFood = (map['if']) as bool? ?? true;
 
-      return FridgeItem.create(
+      return FridgeItem(
+        id: const Uuid().v4(),
         name: name.isEmpty ? 'Unknown' : name,
+        entryDate: DateTime.now(),
         storeName: store.isEmpty ? 'Unknown' : store,
         quantity: quantity,
+        initialQuantity: quantity,
         unitPrice: unitPrice,
         weight: weight,
         brand: brand,
+        category: category,
         discounts: discounts,
         receiptId: receiptId,
         receiptDate: rootReceiptDate,

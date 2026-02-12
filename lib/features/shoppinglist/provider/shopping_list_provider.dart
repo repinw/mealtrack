@@ -18,6 +18,7 @@ class ShoppingList extends _$ShoppingList {
     String? brand,
     int quantity = 1,
     double? unitPrice,
+    String? category,
   }) async {
     final repository = ref.read(shoppingListRepositoryProvider);
     await repository.addOrMergeItem(
@@ -25,6 +26,7 @@ class ShoppingList extends _$ShoppingList {
       brand: brand,
       quantity: quantity,
       unitPrice: unitPrice,
+      category: category,
     );
   }
 

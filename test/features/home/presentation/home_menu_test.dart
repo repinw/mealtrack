@@ -31,6 +31,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   Future<void> addOrMergeItem({
     required String name,
     required String? brand,
+    String? category,
     required int quantity,
     required double? unitPrice,
   }) async {}

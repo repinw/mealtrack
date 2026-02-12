@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 part 'fridge_item.freezed.dart';
 part 'fridge_item.g.dart';
@@ -42,62 +41,12 @@ abstract class FridgeItem with _$FridgeItem {
     @JsonKey(fromJson: _nullableDateTimeFromJson) DateTime? receiptDate,
     String? language,
     String? brand,
+    String? category,
     @Default({}) Map<String, double> discounts,
     @Default(false) bool isDeposit,
     @Default(false) bool isDiscount,
     @Default(false) bool isArchived,
   }) = _FridgeItem;
-
-  /// Creates a new instance of [FridgeItem] with a generated UUID and the current date.
-  ///
-  /// Optionally accepts a [Uuid] instance and a [now] function for testing purposes.
-  factory FridgeItem.create({
-    required String name,
-    Uuid? uuid,
-    required String storeName,
-    int quantity = 1,
-    double unitPrice = 0,
-    String? weight,
-    String? receiptId,
-    DateTime? receiptDate,
-    String? language,
-    String? brand,
-    Map<String, double>? discounts,
-    DateTime Function()? now,
-    bool isDeposit = false,
-    bool isDiscount = false,
-    bool isArchived = false,
-  }) {
-    if (name.trim().isEmpty) {
-      throw ArgumentError.value(name, 'name', 'must not be empty');
-    }
-    if (storeName.trim().isEmpty) {
-      throw ArgumentError.value(storeName, 'storeName', 'must not be empty');
-    }
-    if (quantity <= 0) {
-      throw ArgumentError.value(quantity, 'quantity', 'must be greater than 0');
-    }
-
-    return FridgeItem(
-      id: (uuid ?? const Uuid()).v4(),
-      name: name,
-      storeName: storeName,
-      quantity: quantity,
-      unitPrice: unitPrice,
-      weight: weight,
-      entryDate: (now ?? DateTime.now)(),
-      receiptId: receiptId,
-      receiptDate: receiptDate,
-      language: language,
-      brand: brand,
-      discounts: discounts ?? {},
-      initialQuantity: quantity,
-      consumptionEvents: const [],
-      isDeposit: isDeposit,
-      isDiscount: isDiscount,
-      isArchived: isArchived,
-    );
-  }
 
   /// Computed property: an item is consumed when its quantity reaches 0.
   bool get isConsumed => quantity == 0;
@@ -122,35 +71,35 @@ abstract class FridgeItem with _$FridgeItem {
   /// Returns a new [FridgeItem] with the quantity adjusted by [delta].
   ///
   /// This method encapsulates all logic for quantity changes:
-  /// - Adjusts the quantity by the given delta
-  /// - Adds a consumption event when quantity decreases (delta < 0)
-  /// - Removes the last consumption event when quantity increases (delta > 0)
+  /// - Clamps quantity at 0
+  /// - Adds consumption events only for effective decrements
+  /// - Removes consumption events only for effective increments
   ///
   /// The [now] parameter allows injecting a custom DateTime for testing.
   FridgeItem adjustQuantity(int delta, {DateTime Function()? now}) {
-    final currentTime = (now ?? DateTime.now)();
+    final candidateQuantity = quantity + delta;
+    final clampedQuantity = candidateQuantity < 0 ? 0 : candidateQuantity;
+    final appliedDelta = clampedQuantity - quantity;
 
-    var newQuantity = quantity + delta;
+    if (appliedDelta == 0) return this;
+
     final newConsumptionEvents = List<DateTime>.from(consumptionEvents);
 
-    if (delta < 0) {
+    if (appliedDelta < 0) {
+      final currentTime = (now ?? DateTime.now)();
       newConsumptionEvents.addAll(
-        List.generate(delta.abs(), (_) => currentTime),
+        List.generate(-appliedDelta, (_) => currentTime),
       );
-    } else if (delta > 0) {
-      final eventsToRemove = delta.clamp(0, newConsumptionEvents.length);
+    } else {
+      final eventsToRemove = appliedDelta.clamp(0, newConsumptionEvents.length);
       newConsumptionEvents.removeRange(
         newConsumptionEvents.length - eventsToRemove,
         newConsumptionEvents.length,
       );
     }
 
-    if (newQuantity < 0) {
-      newQuantity = 0;
-    }
-
     return copyWith(
-      quantity: newQuantity,
+      quantity: clampedQuantity,
       consumptionEvents: newConsumptionEvents,
     );
   }

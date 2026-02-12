@@ -37,6 +37,7 @@ class ShoppingListRepository {
     try {
       final json = item.toJson();
       json['normalizedName'] = item.name.toLowerCase();
+      json['createdAt'] = FieldValue.serverTimestamp();
       await _collection.doc(item.id).set(json);
     } catch (e) {
       rethrow;
@@ -48,6 +49,7 @@ class ShoppingListRepository {
     required String? brand,
     required int quantity,
     required double? unitPrice,
+    String? category,
   }) async {
     try {
       final normalizedName = name.toLowerCase();
@@ -75,9 +77,11 @@ class ShoppingListRepository {
             brand: brand,
             quantity: quantity,
             unitPrice: unitPrice,
+            category: category,
           );
           final json = newItem.toJson();
           json['normalizedName'] = normalizedName;
+          json['createdAt'] = FieldValue.serverTimestamp();
           transaction.set(_collection.doc(newItem.id), json);
         }
       });
@@ -117,7 +121,7 @@ class ShoppingListRepository {
   }
 
   Stream<List<ShoppingListItem>> watchItems() => _collection
-      .orderBy('name')
+      .orderBy('createdAt')
       .snapshots()
       .map(
         (snapshot) => snapshot.docs

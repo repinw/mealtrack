@@ -11,6 +11,7 @@ import 'package:mealtrack/features/sharing/data/household_repository.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mocktail/mocktail.dart';
+import '../shared/test_helpers.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
@@ -41,7 +42,7 @@ void main() {
     'Integration: Inventory Provider switches from Personal to Shared on Join',
     () async {
       // 1. Setup Personal Data
-      final personalItem = FridgeItem.create(
+      final personalItem = createTestFridgeItem(
         name: 'Personal Apple',
         storeName: 'Shop',
         quantity: 1,
@@ -55,7 +56,7 @@ void main() {
           .set(personalItem.toJson());
 
       // 2. Setup Shared Data
-      final sharedItem = FridgeItem.create(
+      final sharedItem = createTestFridgeItem(
         name: 'Shared Banana',
         storeName: 'Market',
         quantity: 5,

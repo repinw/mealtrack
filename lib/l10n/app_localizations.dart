@@ -951,6 +951,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Artikel wirklich löschen?'**
   String get deleteItemConfirmation;
+
+  /// Label for the suggestions area in shopping list
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschläge'**
+  String get suggestions;
 }
 
 class _AppLocalizationsDelegate

@@ -16,6 +16,7 @@ _ShoppingListItem _$ShoppingListItemFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       brand: json['brand'] as String?,
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
+      category: json['category'] as String?,
     );
 
 Map<String, dynamic> _$ShoppingListItemToJson(_ShoppingListItem instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$ShoppingListItemToJson(_ShoppingListItem instance) =>
       'quantity': instance.quantity,
       'brand': instance.brand,
       'unitPrice': instance.unitPrice,
+      'category': instance.category,
     };
