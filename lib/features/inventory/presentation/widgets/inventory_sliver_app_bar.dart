@@ -1,0 +1,192 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
+import 'package:mealtrack/core/theme/app_theme.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
+import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+
+class InventorySliverAppBar extends ConsumerWidget {
+  const InventorySliverAppBar({super.key, required this.title});
+
+  final String title;
+
+  static const double _expandedHeight = 160.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final stats = ref.watch(inventoryStatsProvider);
+    const highlightColor = AppTheme.accentColor;
+
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: _expandedHeight,
+      backgroundColor: AppTheme.primaryColor,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      actions: [
+        if (kDebugMode)
+          IconButton(
+            icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+            tooltip: l10n.debugHiveReset,
+            onPressed: () async {
+              await ref.read(fridgeItemsProvider.notifier).deleteAll();
+              if (context.mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l10n.debugDataDeleted)));
+              }
+            },
+          ),
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SharingPage()),
+            );
+          },
+          icon: const Icon(Icons.people_outline),
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings, color: Colors.blue),
+          tooltip: l10n.settings,
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          },
+        ),
+      ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final topPadding = MediaQuery.paddingOf(context).top;
+          final minHeight = kToolbarHeight + topPadding;
+          final maxHeight = _expandedHeight + topPadding;
+          final range = (maxHeight - minHeight).clamp(1.0, double.infinity);
+          final t = ((constraints.maxHeight - minHeight) / range).clamp(
+            0.0,
+            1.0,
+          );
+
+          return SafeArea(
+            bottom: false,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(
+                  opacity: t,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: kToolbarHeight,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              title.toUpperCase(),
+                              style: const TextStyle(
+                                color: highlightColor,
+                                fontSize: 14,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: SummaryHeader(
+                            label: l10n.stockValue,
+                            totalValue: stats.totalValue,
+                            articleCount: stats.articleCount,
+                            secondaryInfo: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.receipt_long_outlined,
+                                  color: Colors.grey,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  l10n.purchases(stats.scanCount),
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IgnorePointer(
+                  ignoring: t > 0.1,
+                  child: Opacity(
+                    opacity: 1 - t,
+                    child: SizedBox(
+                      height: kToolbarHeight,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: 16,
+                          end: 152,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _CollapsedSummary(
+                            totalValue: stats.totalValue,
+                            articleCount: stats.articleCount,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CollapsedSummary extends StatelessWidget {
+  const _CollapsedSummary({
+    required this.totalValue,
+    required this.articleCount,
+  });
+
+  final double totalValue;
+  final int articleCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final currency = NumberFormat.simpleCurrency(
+      locale: Localizations.localeOf(context).toString(),
+      name: 'EUR',
+    ).format(totalValue);
+
+    return Text(
+      '$currency • ${l10n.items(articleCount)}',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        color: AppTheme.accentColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}

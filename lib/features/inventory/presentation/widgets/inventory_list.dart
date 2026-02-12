@@ -11,6 +11,7 @@ import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
 class InventoryList extends ConsumerWidget {
   const InventoryList({super.key});
+  static const double _scrollBottomSpacing = 144;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,6 +42,7 @@ class InventoryList extends ConsumerWidget {
               }
 
               return ListView.builder(
+                padding: const EdgeInsets.only(bottom: _scrollBottomSpacing),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_app_bar.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_sliver_app_bar.dart';
 
 class InventoryPage extends StatelessWidget {
   final String title;
@@ -11,8 +11,12 @@ class InventoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: InventoryAppBar(title: title),
-      body: const Column(children: [Expanded(child: InventoryList())]),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [InventorySliverAppBar(title: title)];
+        },
+        body: const InventoryList(),
+      ),
     );
   }
 }
