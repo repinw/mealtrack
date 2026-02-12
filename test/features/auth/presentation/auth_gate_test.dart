@@ -15,6 +15,8 @@ import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_vi
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
+import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
+import 'package:mealtrack/features/shoppinglist/domain/category_suggestion.dart';
 import 'package:mealtrack/core/models/user_profile.dart';
 import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmodel.dart';
 import 'package:mocktail/mocktail.dart';
@@ -177,12 +179,19 @@ void main() {
             ),
           ),
           shoppingListProvider.overrideWith(() => MockShoppingList()),
+          suggestionsProvider.overrideWith(
+            (ref) => <CategorySuggestion>[],
+          ),
+          quickProductSuggestionsProvider.overrideWith(
+            (ref) => const [],
+          ),
         ],
       );
       addTearDown(container.dispose);
 
       await tester.pumpWidget(createWidgetUnderTest(container));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump();
 
       expect(find.byType(InventoryPage), findsOneWidget);
     });

@@ -20,6 +20,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   Future<void> addOrMergeItem({
     required String name,
     required String? brand,
+    String? category,
     required int quantity,
     required double? unitPrice,
   }) async {
@@ -30,6 +31,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
       final updatedItem = existingItem.copyWith(
         quantity: existingItem.quantity + quantity,
         unitPrice: unitPrice ?? existingItem.unitPrice,
+        category: category ?? existingItem.category,
       );
       final newItems = List<ShoppingListItem>.from(current);
       newItems[index] = updatedItem;
@@ -38,6 +40,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
       final newItem = ShoppingListItem.create(
         name: name,
         brand: brand,
+        category: category,
         quantity: quantity,
         unitPrice: unitPrice,
       );

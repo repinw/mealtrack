@@ -35,7 +35,7 @@ final class ShoppingListProvider
   ShoppingList create() => ShoppingList();
 }
 
-String _$shoppingListHash() => r'e8110959b649da03b547c733b995619198b7cfc7';
+String _$shoppingListHash() => r'69eac0663175e8d1bab4c964533cfcfb97208383';
 
 abstract class _$ShoppingList extends $StreamNotifier<List<ShoppingListItem>> {
   Stream<List<ShoppingListItem>> build();

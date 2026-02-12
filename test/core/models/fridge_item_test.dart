@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:uuid/uuid.dart';
+import '../../shared/test_helpers.dart';
 
 class MockUuid extends Mock implements Uuid {}
 
@@ -16,7 +17,6 @@ void main() {
     const weight = '100g';
 
     test('can be instantiated with default values', () {
-      // ignore: invalid_use_of_internal_member
       final item = FridgeItem(
         id: id,
         name: name,
@@ -41,9 +41,9 @@ void main() {
       expect(item.isDiscount, isFalse);
     });
 
-    group('FridgeItem.create factory', () {
+    group('createTestFridgeItem helper', () {
       test('creates an instance with generated values', () {
-        final item = FridgeItem.create(name: 'Milch', storeName: 'Lidl');
+        final item = createTestFridgeItem(name: 'Milch', storeName: 'Lidl');
 
         expect(item.id, isNotNull);
         expect(
@@ -69,7 +69,7 @@ void main() {
 
       test('creates an instance with all optional values', () {
         final discounts = {'Rabatt': 0.50};
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Milch',
           storeName: 'Lidl',
           quantity: 5,
@@ -90,10 +90,10 @@ void main() {
         DateTime mockNow() => specificDate;
         when(() => mockUuid.v4()).thenReturn('mocked-uuid');
 
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Test Item',
           storeName: 'Test Store',
-          uuid: mockUuid,
+          id: mockUuid.v4(),
           now: mockNow,
         );
 
@@ -102,44 +102,9 @@ void main() {
         expect(item.storeName, 'Test Store');
       });
 
-      test('throws ArgumentError if name is empty or whitespace', () {
-        expect(
-          () => FridgeItem.create(name: '', storeName: 'S'),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => FridgeItem.create(name: '   ', storeName: 'S'),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
-      test('throws ArgumentError if storeName is empty or whitespace', () {
-        expect(
-          () => FridgeItem.create(name: 'Milch', storeName: ''),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () => FridgeItem.create(name: 'Milch', storeName: '   '),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
-      test('throws ArgumentError if quantity is less than or equal to 0', () {
-        expect(
-          () =>
-              FridgeItem.create(name: 'Milch', storeName: 'Lidl', quantity: 0),
-          throwsA(isA<ArgumentError>()),
-        );
-        expect(
-          () =>
-              FridgeItem.create(name: 'Milch', storeName: 'Lidl', quantity: -1),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
       test('initializes with receiptId if provided', () {
         const receiptId = 'receipt-123';
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Milch',
           storeName: 'Lidl',
           receiptId: receiptId,
@@ -151,7 +116,6 @@ void main() {
     group('Equality', () {
       test('two instances with the same properties should be equal', () {
         final discounts = {'Rabatt': 1.0};
-        // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
           name: name,
@@ -160,7 +124,6 @@ void main() {
           quantity: quantity,
           discounts: discounts,
         );
-        // ignore: invalid_use_of_internal_member
         final item2 = FridgeItem(
           id: id,
           name: name,
@@ -175,7 +138,6 @@ void main() {
       });
 
       test('two instances with different properties should not be equal', () {
-        // ignore: invalid_use_of_internal_member
         final item1 = FridgeItem(
           id: id,
           name: name,
@@ -183,7 +145,7 @@ void main() {
           storeName: storeName,
           quantity: quantity,
         );
-        // ignore: invalid_use_of_internal_member
+
         final item2 = FridgeItem(
           id: 'another-id',
           name: name,
@@ -199,7 +161,6 @@ void main() {
       test(
         'two instances with different properties via helper should not be equal',
         () {
-          // ignore: invalid_use_of_internal_member
           FridgeItem createItem({
             String storeName = 'S',
             int quantity = 1,
@@ -224,7 +185,7 @@ void main() {
 
       test('two instances with all properties set should be equal', () {
         final date = DateTime.now();
-        // ignore: invalid_use_of_internal_member
+
         final item1 = FridgeItem(
           id: '1',
           name: 'a',
@@ -233,7 +194,7 @@ void main() {
           storeName: 'S',
           quantity: 0,
         );
-        // ignore: invalid_use_of_internal_member
+
         final item2 = FridgeItem(
           id: '1',
           name: 'a',
@@ -248,7 +209,6 @@ void main() {
 
     group('toString', () {
       test('returns a string with all properties', () {
-        // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: id,
           name: name,
@@ -268,7 +228,7 @@ void main() {
 
     group('copyWith', () {
       test('creates a copy with updated values', () {
-        final item = FridgeItem.create(name: 'Käse', storeName: 'Aldi');
+        final item = createTestFridgeItem(name: 'Käse', storeName: 'Aldi');
         final newDate = DateTime(2025, 12, 24);
 
         final updatedItem = item.copyWith(
@@ -286,7 +246,7 @@ void main() {
       });
 
       test('creates an identical copy when no arguments are provided', () {
-        final item = FridgeItem.create(name: 'Käse', storeName: 'Aldi');
+        final item = createTestFridgeItem(name: 'Käse', storeName: 'Aldi');
         final copiedItem = item.copyWith();
 
         expect(copiedItem, item);
@@ -296,7 +256,7 @@ void main() {
 
       test('copies values correctly when other properties are updated', () {
         final consumptionDate = DateTime(2025, 11, 30);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Joghurt',
@@ -321,7 +281,7 @@ void main() {
 
     group('Bug Fixes & Edge Cases', () {
       test('allows negative unitPrice', () {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Brot',
           storeName: 'Bäcker',
           unitPrice: -2.50,
@@ -335,7 +295,6 @@ void main() {
       final consumptionDate = DateTime(2025, 12, 5, 18, 0);
       final discounts = {'Aktion': 0.5, 'Treuebonus': 1.0};
 
-      // ignore: invalid_use_of_internal_member
       final fullItem = FridgeItem(
         id: 'test-uuid-123',
         name: 'Bio Eier 6er',
@@ -350,7 +309,6 @@ void main() {
         brand: 'Alnatura',
       );
 
-      // ignore: invalid_use_of_internal_member
       final minimalItem = FridgeItem(
         id: 'test-uuid-456',
         name: 'Wasser',
@@ -376,6 +334,7 @@ void main() {
           'receiptDate': null,
           'language': null,
           'brand': 'Alnatura',
+          'category': null,
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
@@ -400,6 +359,7 @@ void main() {
           'receiptDate': null,
           'language': null,
           'brand': null,
+          'category': null,
           'initialQuantity': 1,
           'isDeposit': false,
           'isDiscount': false,
@@ -432,7 +392,6 @@ void main() {
 
         final itemFromJson = FridgeItem.fromJson(json);
 
-        // ignore: invalid_use_of_internal_member
         final expectedItem = FridgeItem(
           id: 'test-uuid-789',
           name: 'Kaffee',
@@ -448,7 +407,7 @@ void main() {
     group('adjustQuantity', () {
       test('decreases quantity and adds consumption event', () {
         final fixedNow = DateTime(2025, 12, 15, 10, 30);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -468,7 +427,7 @@ void main() {
       test('increases quantity and removes last consumption event', () {
         final event1 = DateTime(2025, 12, 10);
         final event2 = DateTime(2025, 12, 12);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -488,7 +447,7 @@ void main() {
 
       test('sets isConsumed true when quantity reaches zero', () {
         final fixedNow = DateTime(2025, 12, 15);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -506,7 +465,7 @@ void main() {
 
       test('clamps quantity at zero for negative result', () {
         final fixedNow = DateTime(2025, 12, 15);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -523,7 +482,7 @@ void main() {
 
       test('restores item when increasing from zero', () {
         final event = DateTime(2025, 12, 10);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -541,7 +500,6 @@ void main() {
       });
 
       test('does not remove event when increasing with empty events', () {
-        // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -557,7 +515,6 @@ void main() {
       });
 
       test('delta of zero returns item with same state', () {
-        // ignore: invalid_use_of_internal_member
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -575,7 +532,7 @@ void main() {
 
       test('adds multiple events when delta is less than -1', () {
         final fixedNow = DateTime(2025, 12, 15, 10, 30);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -596,7 +553,7 @@ void main() {
         final event1 = DateTime(2025, 12, 10);
         final event2 = DateTime(2025, 12, 11);
         final event3 = DateTime(2025, 12, 12);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -615,7 +572,7 @@ void main() {
 
       test('removes only available events when delta exceeds events count', () {
         final event1 = DateTime(2025, 12, 10);
-        // ignore: invalid_use_of_internal_member
+
         final item = FridgeItem(
           id: 'test-id',
           name: 'Milk',
@@ -634,7 +591,7 @@ void main() {
 
     group('Price Calculations', () {
       test('effectiveUnitPrice returns unitPrice when no discounts', () {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Item',
           storeName: 'Store',
           unitPrice: 10.0,
@@ -644,7 +601,7 @@ void main() {
       });
 
       test('effectiveUnitPrice subtracts discounts', () {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Item',
           storeName: 'Store',
           unitPrice: 10.0,
@@ -654,7 +611,7 @@ void main() {
       });
 
       test('totalPrice reflects quantity and discounts', () {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Item',
           storeName: 'Store',
           unitPrice: 10.0,
@@ -666,7 +623,7 @@ void main() {
       });
 
       test('handles multiple discounts', () {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Item',
           storeName: 'Store',
           unitPrice: 10.0,

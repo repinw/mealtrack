@@ -8,6 +8,7 @@ import 'package:mealtrack/features/scanner/presentation/viewmodel/scanner_viewmo
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../shared/test_helpers.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
@@ -42,7 +43,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
 
-        final item1 = FridgeItem.create(
+        final item1 = createTestFridgeItem(
           name: 'Item 1',
           storeName: 'Test Store',
           unitPrice: 9.0,
@@ -50,7 +51,7 @@ void main() {
           discounts: const {'D1': 1.0},
         );
 
-        final item2 = FridgeItem.create(
+        final item2 = createTestFridgeItem(
           name: 'Item 2',
           storeName: 'Test Store',
           unitPrice: 5.0,
@@ -125,7 +126,7 @@ void main() {
     testWidgets('Extracts store name from items and populates header', (
       tester,
     ) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Item',
         storeName: 'SuperMarket X',
         unitPrice: 10.0,
@@ -149,7 +150,7 @@ void main() {
     });
 
     testWidgets('Updates total when item price changes', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Item',
         storeName: 'Store',
         unitPrice: 10.0,
@@ -244,7 +245,7 @@ void main() {
     });
 
     testWidgets('Editing merchant name updates viewmodel', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Item',
         storeName: 'Original Store',
         unitPrice: 10.0,
@@ -281,7 +282,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Item',
         storeName: 'Store',
         unitPrice: 10.0,
@@ -319,7 +320,7 @@ void main() {
       when(() => mockRepository.getItems()).thenAnswer((_) async => []);
       when(() => mockRepository.addItems(any())).thenAnswer((_) async {});
 
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Save Item',
         storeName: 'Store',
         unitPrice: 15.0,
@@ -371,7 +372,7 @@ void main() {
       when(() => mockRepository.getItems()).thenAnswer((_) async => []);
       when(() => mockRepository.addItems(any())).thenAnswer((_) async {});
 
-      final normalItem = FridgeItem.create(
+      final normalItem = createTestFridgeItem(
         name: 'Normal Item',
         storeName: 'Store',
         unitPrice: 10.0,
@@ -379,7 +380,7 @@ void main() {
         isDeposit: false,
       );
 
-      final depositItem = FridgeItem.create(
+      final depositItem = createTestFridgeItem(
         name: 'Pfand Item',
         storeName: 'Store',
         unitPrice: -0.25,
@@ -440,7 +441,7 @@ void main() {
         when(() => mockRepository.getItems()).thenAnswer((_) async => []);
         when(() => mockRepository.addItems(any())).thenAnswer((_) async {});
 
-        final normalItem = FridgeItem.create(
+        final normalItem = createTestFridgeItem(
           name: 'Coffee',
           storeName: 'Store',
           unitPrice: 5.0,
@@ -448,7 +449,7 @@ void main() {
           isDeposit: false,
         );
 
-        final discountItem = FridgeItem.create(
+        final discountItem = createTestFridgeItem(
           name: 'Sonderrabatt',
           storeName: 'Store',
           unitPrice: -1.0,
@@ -457,7 +458,7 @@ void main() {
           isDiscount: true,
         );
 
-        final pfandItem = FridgeItem.create(
+        final pfandItem = createTestFridgeItem(
           name: 'Pfand',
           storeName: 'Store',
           unitPrice: 0.25,
@@ -561,7 +562,7 @@ void main() {
 
     testWidgets('Date picker updates header date', (tester) async {
       final now = DateTime(2025, 1, 1);
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Item',
         storeName: 'Store',
         unitPrice: 10.0,

@@ -22,6 +22,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
     required String name,
     required String? brand,
     required int quantity,
+    String? category,
     required double? unitPrice,
   }) async {}
   @override
@@ -127,5 +128,25 @@ void main() {
     );
 
     expect(find.text(longString), findsNWidgets(2)); // Name + Brand
+  });
+
+  testWidgets('checked item renders with line-through style', (tester) async {
+    const item = ShoppingListItem(
+      id: '1',
+      name: 'Done item',
+      isChecked: true,
+      quantity: 2,
+    );
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: ProviderScope(child: ShoppingListItemRow(item: item)),
+        ),
+      ),
+    );
+
+    final text = tester.widget<Text>(find.text('Done item'));
+    expect(text.style?.decoration, TextDecoration.lineThrough);
   });
 }

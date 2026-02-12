@@ -26,6 +26,7 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   receiptDate: _nullableDateTimeFromJson(json['receiptDate']),
   language: json['language'] as String?,
   brand: json['brand'] as String?,
+  category: json['category'] as String?,
   discounts:
       (json['discounts'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, (e as num).toDouble()),
@@ -53,6 +54,7 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'receiptDate': instance.receiptDate?.toIso8601String(),
       'language': instance.language,
       'brand': instance.brand,
+      'category': instance.category,
       'discounts': instance.discounts,
       'isDeposit': instance.isDeposit,
       'isDiscount': instance.isDiscount,

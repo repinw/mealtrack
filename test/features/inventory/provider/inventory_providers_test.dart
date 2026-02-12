@@ -7,6 +7,7 @@ import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../shared/test_helpers.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
@@ -25,7 +26,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
     registerFallbackValue(<FridgeItem>[]);
     registerFallbackValue(
-      FridgeItem.create(name: 'fallback', storeName: 'fallback'),
+      createTestFridgeItem(name: 'fallback', storeName: 'fallback'),
     );
 
     when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
@@ -49,13 +50,13 @@ void main() {
 
   group('FridgeItems Notifier', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final item1 = FridgeItem.create(
+    final item1 = createTestFridgeItem(
       name: 'Item 1',
       storeName: 'Store A',
       quantity: 1,
       now: () => fixedDate,
     );
-    final item2 = FridgeItem.create(
+    final item2 = createTestFridgeItem(
       name: 'Item 2',
       storeName: 'Store B',
       quantity: 2,
@@ -123,21 +124,21 @@ void main() {
     });
 
     test('deleteItemsByReceipt calls deleteItem for matching items', () async {
-      final itemWithReceipt1 = FridgeItem.create(
+      final itemWithReceipt1 = createTestFridgeItem(
         name: 'Item A',
         storeName: 'Store',
         quantity: 1,
         now: () => fixedDate,
         receiptId: 'receipt-1',
       );
-      final itemWithReceipt2 = FridgeItem.create(
+      final itemWithReceipt2 = createTestFridgeItem(
         name: 'Item B',
         storeName: 'Store',
         quantity: 1,
         now: () => fixedDate,
         receiptId: 'receipt-1',
       );
-      final itemWithDifferentReceipt = FridgeItem.create(
+      final itemWithDifferentReceipt = createTestFridgeItem(
         name: 'Item C',
         storeName: 'Store',
         quantity: 1,
@@ -196,8 +197,12 @@ void main() {
 
   group('availableFridgeItems', () {
     test('returns only items with quantity > 0', () async {
-      final item1 = FridgeItem.create(name: 'A', storeName: 'S', quantity: 1);
-      final item2 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
+        name: 'A',
+        storeName: 'S',
+        quantity: 1,
+      );
+      final item2 = createTestFridgeItem(
         name: 'B',
         storeName: 'S',
         quantity: 1,
@@ -221,22 +226,22 @@ void main() {
 
   group('groupedFridgeItems', () {
     test('groups items by receiptId', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'A',
         storeName: 'S',
         receiptId: 'R1',
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'B',
         storeName: 'S',
         receiptId: 'R1',
       );
-      final item3 = FridgeItem.create(
+      final item3 = createTestFridgeItem(
         name: 'C',
         storeName: 'S',
         receiptId: 'R2',
       );
-      final item4 = FridgeItem.create(
+      final item4 = createTestFridgeItem(
         name: 'D',
         storeName: 'S',
       ); // Null receiptId
@@ -260,7 +265,7 @@ void main() {
 
   group('updateQuantity optimistic update', () {
     test('updates state immediately', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 5,
@@ -288,7 +293,7 @@ void main() {
     });
 
     test('rolls back on error', () async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Apple',
         storeName: 'Store',
         quantity: 5,
@@ -328,14 +333,14 @@ void main() {
     });
 
     test('calculates stats correctly for active items', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'Item 1',
         storeName: 'Store A',
         quantity: 2,
         unitPrice: 1.5,
         receiptId: 'R1',
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'Item 2',
         storeName: 'Store B',
         quantity: 3,
@@ -362,13 +367,13 @@ void main() {
     });
 
     test('ignores items with quantity 0', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'Item 1',
         storeName: 'Store A',
         quantity: 2,
         unitPrice: 10.0,
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'Item 2',
         storeName: 'Store B',
         quantity: 1,
@@ -392,25 +397,25 @@ void main() {
     });
 
     test('counts unique receipts correctly', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'A',
         storeName: 'S',
         quantity: 1,
         receiptId: 'R1',
       );
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'B',
         storeName: 'S',
         quantity: 1,
         receiptId: 'R1',
       );
-      final item3 = FridgeItem.create(
+      final item3 = createTestFridgeItem(
         name: 'C',
         storeName: 'S',
         quantity: 1,
         receiptId: 'R2',
       );
-      final item4 = FridgeItem.create(
+      final item4 = createTestFridgeItem(
         name: 'D',
         storeName: 'S',
         quantity: 1,
@@ -432,13 +437,13 @@ void main() {
     });
 
     test('excludes consumed items from scanCount and articleCount', () async {
-      final itemActive = FridgeItem.create(
+      final itemActive = createTestFridgeItem(
         name: 'Active',
         storeName: 'S',
         quantity: 1,
         receiptId: 'R1',
       );
-      final itemConsumed = FridgeItem.create(
+      final itemConsumed = createTestFridgeItem(
         name: 'Consumed',
         storeName: 'S',
         quantity: 1,
@@ -462,13 +467,13 @@ void main() {
     test(
       'counts receipt once if it has both active and consumed items',
       () async {
-        final item1 = FridgeItem.create(
+        final item1 = createTestFridgeItem(
           name: 'Active',
           storeName: 'S',
           quantity: 1,
           receiptId: 'R1',
         );
-        final item2 = FridgeItem.create(
+        final item2 = createTestFridgeItem(
           name: 'Consumed',
           storeName: 'S',
           quantity: 1,
@@ -493,7 +498,7 @@ void main() {
 
   group('archiveReceipt and unarchiveReceipt state persistence', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final item = FridgeItem.create(
+    final item = createTestFridgeItem(
       name: 'Item',
       storeName: 'Store',
       receiptId: 'R1',
@@ -566,7 +571,7 @@ void main() {
 
   group('archiveReceipt error handling', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final item = FridgeItem.create(
+    final item = createTestFridgeItem(
       name: 'Item',
       storeName: 'Store',
       receiptId: 'R1',
@@ -616,7 +621,7 @@ void main() {
 
   group('unarchiveReceipt error handling', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final item = FridgeItem.create(
+    final item = createTestFridgeItem(
       name: 'Item',
       storeName: 'Store',
       receiptId: 'R1',
@@ -647,12 +652,12 @@ void main() {
     });
 
     test('verifies batch update call contains all items', () async {
-      final item1 = FridgeItem.create(
+      final item1 = createTestFridgeItem(
         name: 'A',
         storeName: 'S',
         receiptId: 'R1',
       ).copyWith(isArchived: true);
-      final item2 = FridgeItem.create(
+      final item2 = createTestFridgeItem(
         name: 'B',
         storeName: 'S',
         receiptId: 'R1',

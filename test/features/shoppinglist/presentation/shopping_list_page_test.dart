@@ -2,9 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:mealtrack/features/shoppinglist/data/category_stats_repository.dart';
+import 'package:mealtrack/features/shoppinglist/domain/category_suggestion.dart';
+import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
+import 'package:mealtrack/features/shoppinglist/domain/product_suggestion.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 
@@ -31,6 +36,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   Future<void> addOrMergeItem({
     required String name,
     required String? brand,
+    String? category,
     required int quantity,
     required double? unitPrice,
   }) async {
@@ -38,6 +44,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
     final newItem = ShoppingListItem.create(
       name: name,
       brand: brand,
+      category: category,
       quantity: quantity,
       unitPrice: unitPrice,
     );
@@ -69,15 +76,65 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   }
 }
 
+class ErrorShoppingListRepository implements ShoppingListRepository {
+  @override
+  Future<void> addItem(ShoppingListItem item) async {}
+
+  @override
+  Future<void> addOrMergeItem({
+    required String name,
+    required String? brand,
+    String? category,
+    required int quantity,
+    required double? unitPrice,
+  }) async {}
+
+  @override
+  Future<void> clearList() async {}
+
+  @override
+  Future<void> deleteItem(String id) async {}
+
+  @override
+  Future<void> updateItem(ShoppingListItem item) async {}
+
+  @override
+  Stream<List<ShoppingListItem>> watchItems() {
+    return Stream<List<ShoppingListItem>>.error(Exception('boom'));
+  }
+}
+
+class FakeCategoryStatsRepository extends CategoryStatsRepository {
+  FakeCategoryStatsRepository(this.products)
+    : super(FakeFirebaseFirestore(), 'uid');
+
+  final List<ProductSuggestion> products;
+
+  @override
+  Stream<List<ProductSuggestion>> watchProductsForCategory(String category) {
+    return Stream.value(products);
+  }
+}
+
 void main() {
   Future<void> pumpShoppingListPage(
     WidgetTester tester,
     ShoppingListRepository repository,
-  ) async {
+    List<CategorySuggestion> suggestions,
+    CategoryStatsRepository categoryStatsRepository, {
+    List<ProductQuickSuggestion> quickSuggestions = const [],
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           shoppingListRepositoryProvider.overrideWith((ref) => repository),
+          suggestionsProvider.overrideWith((ref) => suggestions),
+          quickProductSuggestionsProvider.overrideWith(
+            (ref) => quickSuggestions,
+          ),
+          categoryStatsRepositoryProvider.overrideWith(
+            (ref) => categoryStatsRepository,
+          ),
         ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -96,7 +153,12 @@ void main() {
 
     final repository = FakeShoppingListRepository([item1, item2]);
 
-    await pumpShoppingListPage(tester, repository);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
 
     // Verify Title
     expect(find.text('Einkaufsliste'), findsOneWidget);
@@ -113,7 +175,12 @@ void main() {
   testWidgets('ShoppingListPage renders empty state', (tester) async {
     final repository = FakeShoppingListRepository([]);
 
-    await pumpShoppingListPage(tester, repository);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
 
     expect(find.text('Keine Einträge'), findsOneWidget);
   });
@@ -122,7 +189,12 @@ void main() {
     const item = ShoppingListItem(id: '1', name: 'Apples');
     final repository = FakeShoppingListRepository([item]);
 
-    await pumpShoppingListPage(tester, repository);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
 
     // Swipe item
     await tester.drag(find.text('Apples'), const Offset(-500, 0));
@@ -137,7 +209,12 @@ void main() {
   ) async {
     final repository = FakeShoppingListRepository([]);
 
-    await pumpShoppingListPage(tester, repository);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
 
     // Tap delete all button
     await tester.tap(find.byIcon(Icons.delete_sweep));
@@ -156,5 +233,72 @@ void main() {
 
     // Verify clearList was called
     expect(repository.clearListCalled, true);
+  });
+
+  testWidgets('cancel clear dialog does not clear list', (tester) async {
+    final repository = FakeShoppingListRepository([]);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
+
+    await tester.tap(find.byIcon(Icons.delete_sweep));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+
+    expect(repository.clearListCalled, false);
+  });
+
+  testWidgets('tapping suggestion opens category dialog', (tester) async {
+    final repository = FakeShoppingListRepository([]);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [CategorySuggestion(name: 'Dairy', averagePrice: 1.5)],
+      FakeCategoryStatsRepository(const [
+        ProductSuggestion(name: 'Milk', averagePrice: 1.5, count: 2),
+      ]),
+    );
+
+    await tester.tap(find.text('Dairy'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dairy'), findsWidgets);
+    expect(find.text('Milk'), findsOneWidget);
+  });
+
+  testWidgets('tapping quick suggestion adds item directly', (tester) async {
+    final repository = FakeShoppingListRepository([]);
+    await pumpShoppingListPage(
+      tester,
+      repository,
+      const [],
+      FakeCategoryStatsRepository(const []),
+      quickSuggestions: const [
+        (name: 'Milk', category: 'Dairy', averagePrice: 1.5, count: 4),
+      ],
+    );
+
+    await tester.tap(find.text('Milk'));
+    await tester.pumpAndSettle();
+
+    expect(repository.items.length, 1);
+    expect(repository.items.first.name, 'Milk');
+    expect(repository.items.first.category, 'Dairy');
+    expect(repository.items.first.unitPrice, 1.5);
+  });
+
+  testWidgets('renders error state when stream fails', (tester) async {
+    await pumpShoppingListPage(
+      tester,
+      ErrorShoppingListRepository(),
+      const [],
+      FakeCategoryStatsRepository(const []),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('boom'), findsOneWidget);
   });
 }

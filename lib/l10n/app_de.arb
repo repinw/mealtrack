@@ -611,5 +611,9 @@
   "deleteItemConfirmation": "Artikel wirklich löschen?",
   "@deleteItemConfirmation": {
     "description": "Confirmation message when deleting an item from receipt"
+  },
+  "suggestions": "Vorschläge",
+  "@suggestions": {
+    "description": "Label for the suggestions area in shopping list"
   }
 }

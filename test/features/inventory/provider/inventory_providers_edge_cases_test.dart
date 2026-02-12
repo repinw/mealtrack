@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../shared/test_helpers.dart';
 
 class MockFridgeRepository extends Mock implements FridgeRepository {}
 
@@ -24,7 +25,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(<FridgeItem>[]));
     registerFallbackValue(<FridgeItem>[]);
     registerFallbackValue(
-      FridgeItem.create(name: 'fallback', storeName: 'fallback'),
+      createTestFridgeItem(name: 'fallback', storeName: 'fallback'),
     );
 
     when(() => mockSharedPreferences.getStringList(any())).thenReturn(null);
@@ -76,13 +77,13 @@ void main() {
 
   group('Mixed Item States in archiveReceipt', () {
     final fixedDate = DateTime(2023, 1, 1);
-    final activeItem = FridgeItem.create(
+    final activeItem = createTestFridgeItem(
       name: 'Active',
       storeName: 'S',
       receiptId: 'R1',
       now: () => fixedDate,
     );
-    final archivedItem = FridgeItem.create(
+    final archivedItem = createTestFridgeItem(
       name: 'Archived',
       storeName: 'S',
       receiptId: 'R1',

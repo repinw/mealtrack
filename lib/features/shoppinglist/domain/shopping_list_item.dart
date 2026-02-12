@@ -13,6 +13,7 @@ abstract class ShoppingListItem with _$ShoppingListItem {
     @Default(1) int quantity,
     String? brand,
     double? unitPrice,
+    String? category,
   }) = _ShoppingListItem;
 
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) =>
@@ -23,6 +24,7 @@ abstract class ShoppingListItem with _$ShoppingListItem {
     int quantity = 1,
     String? brand,
     double? unitPrice,
+    String? category,
   }) {
     return ShoppingListItem(
       id: const Uuid().v4(),
@@ -30,6 +32,7 @@ abstract class ShoppingListItem with _$ShoppingListItem {
       quantity: quantity,
       brand: brand,
       unitPrice: unitPrice,
+      category: category,
     );
   }
 }

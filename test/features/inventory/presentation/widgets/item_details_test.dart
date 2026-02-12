@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../../../shared/test_helpers.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/item_details.dart';
 
@@ -14,7 +15,7 @@ void main() {
 
   group('ItemDetails', () {
     testWidgets('displays item name', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -26,7 +27,7 @@ void main() {
     });
 
     testWidgets('displays brand when provided', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -39,7 +40,7 @@ void main() {
     });
 
     testWidgets('does not display brand when null', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -51,7 +52,7 @@ void main() {
     });
 
     testWidgets('does not display brand when empty', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -64,7 +65,7 @@ void main() {
     });
 
     testWidgets('displays weight when provided', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -77,7 +78,7 @@ void main() {
     });
 
     testWidgets('does not display weight when null', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -89,7 +90,7 @@ void main() {
     });
 
     testWidgets('does not display weight when empty', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -104,7 +105,7 @@ void main() {
     testWidgets('applies out of stock styling when isOutOfStock is true', (
       tester,
     ) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,
@@ -121,7 +122,7 @@ void main() {
     testWidgets(
       'does not apply out of stock styling when isOutOfStock is false',
       (tester) async {
-        final item = FridgeItem.create(
+        final item = createTestFridgeItem(
           name: 'Test Item',
           storeName: 'Store',
           quantity: 1,
@@ -136,7 +137,7 @@ void main() {
     );
 
     testWidgets('displays all fields together', (tester) async {
-      final item = FridgeItem.create(
+      final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
         quantity: 1,

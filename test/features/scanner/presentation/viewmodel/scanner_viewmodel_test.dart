@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:mealtrack/features/scanner/data/receipt_repository.dart';
 import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../../shared/test_helpers.dart';
 
 class MockImagePicker extends Mock implements ImagePicker {}
 
@@ -58,7 +59,7 @@ void main() {
 
       final file = XFile('path/to/image.jpg');
       final expectedItems = [
-        FridgeItem.create(
+        createTestFridgeItem(
           name: 'Apple',
           storeName: 'Store',
           quantity: 1,
@@ -236,7 +237,7 @@ void main() {
 
       final file = XFile('path/to/image.jpg');
       final expectedItems = [
-        FridgeItem.create(
+        createTestFridgeItem(
           name: 'Apple',
           storeName: 'Store',
           quantity: 1,
@@ -349,7 +350,7 @@ void main() {
       final result = FilePickerResult([file]);
 
       final expectedItems = [
-        FridgeItem.create(
+        createTestFridgeItem(
           name: 'Apple',
           storeName: 'Store',
           quantity: 1,

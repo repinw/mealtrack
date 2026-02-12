@@ -5,6 +5,7 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
+import 'package:mealtrack/features/shoppinglist/data/category_stats_repository.dart';
 
 part 'inventory_providers.g.dart';
 
@@ -33,20 +34,27 @@ class FridgeItems extends _$FridgeItems {
   }
 
   Future<void> updateQuantity(FridgeItem item, int delta) async {
+    if (delta == 0) return;
+
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
     final updatedItem = item.adjustQuantity(delta);
-
-    final updatedList = [
-      for (final i in previousList)
-        if (i.id == item.id) updatedItem else i,
-    ];
-    state = AsyncValue.data(updatedList);
+    state = AsyncValue.data(_replaceItemById(previousList, updatedItem));
 
     try {
       final repository = ref.read(fridgeRepositoryProvider);
       await repository.updateQuantity(item, delta);
+
+      if (item.category != null) {
+        final categoryStatsRepo = ref.read(categoryStatsRepositoryProvider);
+        await categoryStatsRepo.increment(
+          item.category,
+          -delta,
+          unitPrice: item.unitPrice,
+          productName: item.name,
+        );
+      }
     } catch (e) {
       state = AsyncValue.data(previousList);
       rethrow;
@@ -89,24 +97,24 @@ class FridgeItems extends _$FridgeItems {
     final isExpanded = !collapsedGroups.contains(receiptId);
 
     // Optimistic update - update UI immediately
-    final updatedList = [
-      for (final item in previousList)
-        if (item.receiptId == receiptId)
-          item.copyWith(isArchived: true)
-        else
-          item,
-    ];
-    state = AsyncValue.data(updatedList);
+    state = AsyncValue.data(
+      _setArchivedForReceipt(
+        previousList,
+        receiptId: receiptId,
+        isArchived: true,
+      ),
+    );
 
     if (isExpanded) {
       ref.read(collapsedReceiptGroupsProvider.notifier).collapse(receiptId);
     }
 
     final repository = ref.read(fridgeRepositoryProvider);
-    final archivedItems = previousList
-        .where((i) => i.receiptId == receiptId)
-        .map((item) => item.copyWith(isArchived: true))
-        .toList();
+    final archivedItems = _updatedItemsForReceipt(
+      previousList,
+      receiptId: receiptId,
+      isArchived: true,
+    );
 
     repository.updateItemsBatch(archivedItems).catchError((e) {
       state = AsyncValue.data(previousList);
@@ -121,27 +129,59 @@ class FridgeItems extends _$FridgeItems {
     final previousList = state.asData?.value;
     if (previousList == null) return;
 
-    final updatedList = [
-      for (final item in previousList)
-        if (item.receiptId == receiptId)
-          item.copyWith(isArchived: false)
-        else
-          item,
-    ];
-    state = AsyncValue.data(updatedList);
+    state = AsyncValue.data(
+      _setArchivedForReceipt(
+        previousList,
+        receiptId: receiptId,
+        isArchived: false,
+      ),
+    );
 
     ref.read(collapsedReceiptGroupsProvider.notifier).expand(receiptId);
 
     final repository = ref.read(fridgeRepositoryProvider);
-    final unarchivedItems = previousList
-        .where((i) => i.receiptId == receiptId)
-        .map((item) => item.copyWith(isArchived: false))
-        .toList();
+    final unarchivedItems = _updatedItemsForReceipt(
+      previousList,
+      receiptId: receiptId,
+      isArchived: false,
+    );
 
     repository.updateItemsBatch(unarchivedItems).catchError((e) {
       state = AsyncValue.data(previousList);
       return null;
     });
+  }
+
+  List<FridgeItem> _replaceItemById(
+    List<FridgeItem> items,
+    FridgeItem updatedItem,
+  ) {
+    return [
+      for (final current in items)
+        if (current.id == updatedItem.id) updatedItem else current,
+    ];
+  }
+
+  List<FridgeItem> _setArchivedForReceipt(
+    List<FridgeItem> items, {
+    required String receiptId,
+    required bool isArchived,
+  }) {
+    return [
+      for (final item in items)
+        if (item.receiptId == receiptId) item.copyWith(isArchived: isArchived) else item,
+    ];
+  }
+
+  List<FridgeItem> _updatedItemsForReceipt(
+    List<FridgeItem> items, {
+    required String receiptId,
+    required bool isArchived,
+  }) {
+    return items
+        .where((item) => item.receiptId == receiptId)
+        .map((item) => item.copyWith(isArchived: isArchived))
+        .toList();
   }
 }
 

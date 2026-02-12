@@ -19,6 +19,7 @@ class MockShoppingListRepository implements ShoppingListRepository {
   Future<void> addOrMergeItem({
     required String name,
     required String? brand,
+    String? category,
     required int quantity,
     required double? unitPrice,
   }) async {
@@ -111,5 +112,29 @@ void main() {
 
     // Dialog should be gone
     expect(find.text('Artikel hinzufügen'), findsNothing);
+  });
+
+  testWidgets('submits via keyboard action', (tester) async {
+    final mockRepository = MockShoppingListRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          shoppingListRepositoryProvider.overrideWith((ref) => mockRepository),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('de'),
+          home: Scaffold(body: AddShoppingItemDialog()),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'Keyboard Item');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(mockRepository.addedItems, contains('Keyboard Item'));
   });
 }

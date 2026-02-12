@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'f38fe6e54e62faf62754896515e33581321e035b';
+String _$fridgeItemsHash() => r'fb6877660c33e4ab3d3c790d2e1e083e5c09d913';
 
 abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
   Stream<List<FridgeItem>> build();
