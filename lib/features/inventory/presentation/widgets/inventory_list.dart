@@ -43,7 +43,6 @@ class InventoryList extends ConsumerWidget {
               }
 
               return ListView.builder(
-                primary: true,
                 padding: EdgeInsets.only(
                   bottom: ScrollSpacing.homeContentBottomPadding(context),
                 ),
