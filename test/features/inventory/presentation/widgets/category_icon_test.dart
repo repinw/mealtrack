@@ -28,11 +28,13 @@ void main() {
     expect(avatarFinder, findsOneWidget);
 
     final CircleAvatar avatar = tester.widget(avatarFinder);
+    final context = tester.element(avatarFinder);
+    final colorScheme = Theme.of(context).colorScheme;
     expect(avatar.radius, 24);
-    expect(avatar.backgroundColor, theme.colorScheme.secondaryContainer);
+    expect(avatar.backgroundColor, colorScheme.surfaceContainerHighest);
 
     final Icon icon = tester.widget(iconFinder);
-    expect(icon.color, theme.colorScheme.onSecondaryContainer);
+    expect(icon.color, colorScheme.onSurfaceVariant);
     expect(icon.size, 22);
   });
 }
