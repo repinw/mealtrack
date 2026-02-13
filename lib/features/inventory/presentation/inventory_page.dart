@@ -4,16 +4,41 @@ import 'package:mealtrack/features/inventory/presentation/widgets/inventory_sliv
 
 class InventoryPage extends StatelessWidget {
   final String title;
+  final WidgetBuilder? sharingPageBuilder;
+  final WidgetBuilder? settingsPageBuilder;
 
-  const InventoryPage({super.key, required this.title});
+  const InventoryPage({
+    super.key,
+    required this.title,
+    this.sharingPageBuilder,
+    this.settingsPageBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [InventorySliverAppBar(title: title)];
+          return [
+            InventorySliverAppBar(
+              title: title,
+              onOpenSharing: () {
+                final pageBuilder = sharingPageBuilder;
+                if (pageBuilder == null) return;
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: pageBuilder));
+              },
+              onOpenSettings: () {
+                final pageBuilder = settingsPageBuilder;
+                if (pageBuilder == null) return;
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: pageBuilder));
+              },
+            ),
+          ];
         },
         body: const InventoryList(),
       ),

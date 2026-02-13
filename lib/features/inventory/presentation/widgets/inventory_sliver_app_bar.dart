@@ -1,18 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 import 'package:mealtrack/core/theme/app_theme.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/collapsed_summary.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/settings/presentation/settings_page.dart';
-import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class InventorySliverAppBar extends ConsumerWidget {
-  const InventorySliverAppBar({super.key, required this.title});
+  const InventorySliverAppBar({
+    super.key,
+    required this.title,
+    required this.onOpenSharing,
+    required this.onOpenSettings,
+  });
 
   final String title;
+  final VoidCallback onOpenSharing;
+  final VoidCallback onOpenSettings;
 
   static const double _expandedHeight = 160.0;
   static const double _summaryMinHeight = 72.0;
@@ -21,7 +26,37 @@ class InventorySliverAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
+    final errorColor = Theme.of(context).colorScheme.error;
+    final secondaryInfoColor = AppTheme.summaryLabelStyle.color ?? Colors.grey;
     const highlightColor = AppTheme.accentColor;
+    final expandedSummary = RepaintBoundary(
+      child: SummaryHeader(
+        label: l10n.stockValue,
+        totalValue: stats.totalValue,
+        articleCount: stats.articleCount,
+        secondaryInfo: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              color: secondaryInfoColor,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              l10n.purchases(stats.scanCount),
+              style: TextStyle(color: secondaryInfoColor, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+    final collapsedSummary = RepaintBoundary(
+      child: CollapsedSummary(
+        totalValue: stats.totalValue,
+        articleCount: stats.articleCount,
+      ),
+    );
 
     return SliverAppBar(
       pinned: true,
@@ -34,7 +69,7 @@ class InventorySliverAppBar extends ConsumerWidget {
       actions: [
         if (kDebugMode)
           IconButton(
-            icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+            icon: Icon(Icons.delete_forever, color: errorColor),
             tooltip: l10n.debugHiveReset,
             onPressed: () async {
               await ref.read(fridgeItemsProvider.notifier).deleteAll();
@@ -46,21 +81,13 @@ class InventorySliverAppBar extends ConsumerWidget {
             },
           ),
         IconButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SharingPage()),
-            );
-          },
+          onPressed: onOpenSharing,
           icon: const Icon(Icons.people_outline),
         ),
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.blue),
+          icon: const Icon(Icons.settings),
           tooltip: l10n.settings,
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SettingsPage()),
-            );
-          },
+          onPressed: onOpenSettings,
         ),
       ],
       flexibleSpace: LayoutBuilder(
@@ -112,29 +139,7 @@ class InventorySliverAppBar extends ConsumerWidget {
                           alignment: Alignment.bottomCenter,
                           child: ClipRect(
                             child: showExpandedSummary
-                                ? SummaryHeader(
-                                    label: l10n.stockValue,
-                                    totalValue: stats.totalValue,
-                                    articleCount: stats.articleCount,
-                                    secondaryInfo: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.receipt_long_outlined,
-                                          color: Colors.grey,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          l10n.purchases(stats.scanCount),
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
+                                ? expandedSummary
                                 : const SizedBox.shrink(),
                           ),
                         ),
@@ -155,10 +160,7 @@ class InventorySliverAppBar extends ConsumerWidget {
                         ),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: _CollapsedSummary(
-                            totalValue: stats.totalValue,
-                            articleCount: stats.articleCount,
-                          ),
+                          child: collapsedSummary,
                         ),
                       ),
                     ),
@@ -168,36 +170,6 @@ class InventorySliverAppBar extends ConsumerWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _CollapsedSummary extends StatelessWidget {
-  const _CollapsedSummary({
-    required this.totalValue,
-    required this.articleCount,
-  });
-
-  final double totalValue;
-  final int articleCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final currency = NumberFormat.simpleCurrency(
-      locale: Localizations.localeOf(context).toString(),
-      name: 'EUR',
-    ).format(totalValue);
-
-    return Text(
-      '$currency • ${l10n.items(articleCount)}',
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppTheme.accentColor,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
       ),
     );
   }

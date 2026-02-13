@@ -56,3 +56,5 @@ linux/flutter/generated_plugin_registrant.h
 # Firebase configuration files (contain API keys)
 **/google-services.json
 **/GoogleService-Info.plist
+
+AGENTS.md
