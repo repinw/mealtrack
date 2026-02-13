@@ -3,7 +3,13 @@ import 'package:mealtrack/features/home/domain/home_tab.dart';
 import 'package:mealtrack/features/home/presentation/widgets/home_fab.dart';
 import 'package:mealtrack/features/home/presentation/widgets/home_navigation_bar.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
+import 'package:mealtrack/features/settings/presentation/settings_page.dart';
+import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
+
+Widget _buildSharingPage(BuildContext context) => const SharingPage();
+
+Widget _buildSettingsPage(BuildContext context) => const SettingsPage();
 
 class HomeMenu extends StatefulWidget {
   const HomeMenu({super.key});
@@ -14,7 +20,11 @@ class HomeMenu extends StatefulWidget {
 
 class _HomeMenuState extends State<HomeMenu> {
   static const List<Widget> _pages = [
-    InventoryPage(title: 'MealTrack'),
+    InventoryPage(
+      title: 'MealTrack',
+      sharingPageBuilder: _buildSharingPage,
+      settingsPageBuilder: _buildSettingsPage,
+    ),
     ShoppingListPage(),
     SizedBox.shrink(), // Placeholder for Calories
     SizedBox.shrink(), // Placeholder for Statistics

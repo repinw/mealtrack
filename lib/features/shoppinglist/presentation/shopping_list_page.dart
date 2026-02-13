@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mealtrack/core/presentation/layout/scroll_spacing.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
 import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/category_products_dialog.dart';
@@ -10,7 +11,6 @@ import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ShoppingListPage extends ConsumerWidget {
   const ShoppingListPage({super.key});
-  static const double _scrollBottomSpacing = 144;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,6 +21,7 @@ class ShoppingListPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final stats = ref.watch(shoppingListStatsProvider);
+    final bottomScrollSpacing = ScrollSpacing.homeContentBottomPadding(context);
 
     const double bottomHeight = 80.0;
 
@@ -98,9 +99,7 @@ class ShoppingListPage extends ConsumerWidget {
                   itemBuilder: (context, index) =>
                       DismissibleShoppingItem(item: items[index]),
                 ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: _scrollBottomSpacing),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: bottomScrollSpacing)),
             ],
           );
         },

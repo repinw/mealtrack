@@ -50,7 +50,7 @@ class InventoryGroupHeader extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             if (header.isArchived)
-              _HeaderActionButton(
+              InventoryHeaderActionButton(
                 onTap: () => ref
                     .read(fridgeItemsProvider.notifier)
                     .unarchiveReceipt(header.receiptId),
@@ -59,7 +59,7 @@ class InventoryGroupHeader extends ConsumerWidget {
                 baseColor: Colors.green,
               )
             else if (header.isFullyConsumed)
-              _HeaderActionButton(
+              InventoryHeaderActionButton(
                 onTap: () => ref
                     .read(fridgeItemsProvider.notifier)
                     .archiveReceipt(header.receiptId),
@@ -67,7 +67,7 @@ class InventoryGroupHeader extends ConsumerWidget {
                 label: l10n.archive,
                 baseColor: Colors.orange,
               ),
-            _ItemCountBadge(itemCount: header.itemCount, l10n: l10n),
+            InventoryItemCountBadge(itemCount: header.itemCount, l10n: l10n),
           ],
         ),
       ),
@@ -75,8 +75,9 @@ class InventoryGroupHeader extends ConsumerWidget {
   }
 }
 
-class _HeaderActionButton extends StatelessWidget {
-  const _HeaderActionButton({
+class InventoryHeaderActionButton extends StatelessWidget {
+  const InventoryHeaderActionButton({
+    super.key,
     required this.onTap,
     required this.icon,
     required this.label,
@@ -122,8 +123,12 @@ class _HeaderActionButton extends StatelessWidget {
   }
 }
 
-class _ItemCountBadge extends StatelessWidget {
-  const _ItemCountBadge({required this.itemCount, required this.l10n});
+class InventoryItemCountBadge extends StatelessWidget {
+  const InventoryItemCountBadge({
+    super.key,
+    required this.itemCount,
+    required this.l10n,
+  });
 
   final int itemCount;
   final AppLocalizations l10n;
