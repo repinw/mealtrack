@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class SummaryHeader extends StatelessWidget {
@@ -19,9 +18,22 @@ class SummaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
     final currencyFormat = NumberFormat.simpleCurrency(
       locale: Localizations.localeOf(context).toString(),
       name: 'EUR',
+    );
+    final summaryLabelStyle = textTheme.labelSmall?.copyWith(
+      letterSpacing: 0.5,
+      height: 1.0,
+    );
+    final summaryValueStyle = textTheme.headlineMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+      height: 1.0,
+    );
+    final summaryItemCountStyle = textTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.bold,
     );
 
     return Padding(
@@ -34,11 +46,18 @@ class SummaryHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: AppTheme.summaryLabelStyle),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: summaryLabelStyle,
+              ),
               const SizedBox(height: 4),
               Text(
                 currencyFormat.format(totalValue),
-                style: AppTheme.summaryValueStyle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: summaryValueStyle,
               ),
             ],
           ),
@@ -57,13 +76,11 @@ class SummaryHeader extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.items(articleCount),
-                  style: AppTheme.summaryItemCountStyle,
+                  style: summaryItemCountStyle,
                 ),
               ),
             ],

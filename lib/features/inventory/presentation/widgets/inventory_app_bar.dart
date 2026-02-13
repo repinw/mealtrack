@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/settings/presentation/settings_page.dart';
 import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
@@ -23,27 +22,22 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
-
-    const highlightColor = AppTheme.accentColor;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return AppBar(
       toolbarHeight: kToolbarHeight,
-      backgroundColor: AppTheme.primaryColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: false,
       title: Text(
         title.toUpperCase(),
-        style: const TextStyle(
-          color: highlightColor,
-          fontSize: 14,
-          letterSpacing: 1.2,
-        ),
+        style: textTheme.titleSmall?.copyWith(fontSize: 14, letterSpacing: 1.2),
       ),
       actions: [
         if (kDebugMode)
           IconButton(
-            icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+            icon: Icon(Icons.delete_forever, color: colorScheme.error),
             tooltip: l10n.debugHiveReset,
             onPressed: () async {
               await ref.read(fridgeItemsProvider.notifier).deleteAll();
@@ -63,7 +57,7 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.people_outline),
         ),
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.blue),
+          icon: const Icon(Icons.settings),
           tooltip: l10n.settings,
           onPressed: () {
             Navigator.of(context).push(
@@ -81,15 +75,18 @@ class InventoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           secondaryInfo: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.receipt_long_outlined,
-                color: Colors.grey,
+                color: colorScheme.onSurfaceVariant,
                 size: 16,
               ),
               const SizedBox(width: 4),
               Text(
                 l10n.purchases(stats.scanCount),
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),

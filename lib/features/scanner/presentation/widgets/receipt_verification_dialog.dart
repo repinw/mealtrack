@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_header.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -11,19 +10,7 @@ class ReceiptVerificationDialog extends StatelessWidget {
   final VoidCallback onDateTap;
   final ValueChanged<String> onMerchantChanged;
 
-  static final _confirmButtonStyle = ElevatedButton.styleFrom(
-    backgroundColor: AppTheme.primaryColor,
-    minimumSize: const Size.fromHeight(56),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  );
-
-  static final _cancelButtonStyle = TextButton.styleFrom(
-    minimumSize: const Size.fromHeight(48),
-    foregroundColor: Colors.white70,
-  );
-
   static const _confirmTextStyle = TextStyle(
-    color: Colors.white,
     fontWeight: FontWeight.bold,
     fontSize: 16,
   );
@@ -46,9 +33,17 @@ class ReceiptVerificationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final confirmButtonStyle = ElevatedButton.styleFrom(
+      minimumSize: const Size.fromHeight(56),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+    final cancelButtonStyle = TextButton.styleFrom(
+      minimumSize: const Size.fromHeight(48),
+      foregroundColor: colorScheme.onSurfaceVariant,
+    );
 
     return Dialog(
-      backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -65,13 +60,13 @@ class ReceiptVerificationDialog extends StatelessWidget {
             child: Column(
               children: [
                 ElevatedButton(
-                  style: _confirmButtonStyle,
+                  style: confirmButtonStyle,
                   onPressed: onConfirm,
                   child: Text(l10n.confirm, style: _confirmTextStyle),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  style: _cancelButtonStyle,
+                  style: cancelButtonStyle,
                   onPressed: onCancel,
                   child: Text(l10n.cancel, style: _cancelTextStyle),
                 ),

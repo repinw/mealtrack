@@ -73,7 +73,7 @@ class InviteSection extends ConsumerWidget {
                     Text(
                       l10n.codeValidDuration,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.hintColor,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

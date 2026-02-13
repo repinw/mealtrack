@@ -8,10 +8,11 @@ class CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const iconData = Icons.kitchen;
+    final colorScheme = Theme.of(context).colorScheme;
     return CircleAvatar(
       radius: 24,
-      backgroundColor: Colors.grey.shade100,
-      child: Icon(iconData, color: Colors.grey.shade700, size: 22),
+      backgroundColor: colorScheme.surfaceContainerHighest,
+      child: Icon(iconData, color: colorScheme.onSurfaceVariant, size: 22),
     );
   }
 }

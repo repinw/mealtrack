@@ -10,15 +10,17 @@ class InventoryGroupHeader extends ConsumerWidget {
 
   final InventoryHeaderItem header;
 
-  Color get _headerColor =>
-      header.isArchived ? Colors.grey.shade100 : Colors.blueGrey.shade50;
-
-  Color get _headerTextColor =>
-      header.isArchived ? Colors.grey.shade500 : Colors.blueGrey.shade700;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final headerColor = header.isArchived
+        ? colorScheme.surfaceContainerLow
+        : colorScheme.surfaceContainer;
+    final headerTextColor = header.isArchived
+        ? colorScheme.onSurfaceVariant
+        : colorScheme.onSurface;
 
     return InkWell(
       onTap: () {
@@ -28,7 +30,7 @@ class InventoryGroupHeader extends ConsumerWidget {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        color: _headerColor,
+        color: headerColor,
         child: Row(
           children: [
             Icon(
@@ -36,14 +38,14 @@ class InventoryGroupHeader extends ConsumerWidget {
                   ? Icons.keyboard_arrow_right
                   : Icons.keyboard_arrow_down,
               size: 20,
-              color: Colors.blueGrey,
+              color: colorScheme.onSurfaceVariant,
             ),
             Expanded(
               child: Text(
                 '${standardDateFormat.format(header.entryDate)} • ${header.storeName}',
-                style: TextStyle(
+                style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: _headerTextColor,
+                  color: headerTextColor,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -56,7 +58,9 @@ class InventoryGroupHeader extends ConsumerWidget {
                     .unarchiveReceipt(header.receiptId),
                 icon: Icons.unarchive_outlined,
                 label: l10n.unarchive,
-                baseColor: Colors.green,
+                backgroundColor: colorScheme.primaryContainer,
+                borderColor: colorScheme.outlineVariant,
+                foregroundColor: colorScheme.onPrimaryContainer,
               )
             else if (header.isFullyConsumed)
               InventoryHeaderActionButton(
@@ -65,7 +69,9 @@ class InventoryGroupHeader extends ConsumerWidget {
                     .archiveReceipt(header.receiptId),
                 icon: Icons.archive_outlined,
                 label: l10n.archive,
-                baseColor: Colors.orange,
+                backgroundColor: colorScheme.secondaryContainer,
+                borderColor: colorScheme.outlineVariant,
+                foregroundColor: colorScheme.onSecondaryContainer,
               ),
             InventoryItemCountBadge(itemCount: header.itemCount, l10n: l10n),
           ],
@@ -81,13 +87,17 @@ class InventoryHeaderActionButton extends StatelessWidget {
     required this.onTap,
     required this.icon,
     required this.label,
-    required this.baseColor,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.foregroundColor,
   });
 
   final VoidCallback onTap;
   final IconData icon;
   final String label;
-  final MaterialColor baseColor;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color foregroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -98,21 +108,21 @@ class InventoryHeaderActionButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: baseColor.shade100,
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: baseColor.shade300),
+            border: Border.all(color: borderColor),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 14, color: baseColor.shade800),
+              Icon(icon, size: 14, color: foregroundColor),
               const SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: baseColor.shade800,
+                  color: foregroundColor,
                 ),
               ),
             ],
@@ -135,15 +145,16 @@ class InventoryItemCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         l10n.entries(itemCount),
-        style: const TextStyle(fontSize: 10, color: Colors.black54),
+        style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
       ),
     );
   }

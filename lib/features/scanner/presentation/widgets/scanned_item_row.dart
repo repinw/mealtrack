@@ -133,30 +133,33 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.includedDiscounts),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: widget.item.discounts.entries.map((entry) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(entry.key),
-                Text(
-                  "-${_currencyFormat.format(entry.value)}",
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.ok),
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: Text(l10n.includedDiscounts),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.item.discounts.entries.map((entry) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(entry.key),
+                  Text(
+                    "-${_currencyFormat.format(entry.value)}",
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ],
+              );
+            }).toList(),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.ok),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -190,17 +193,18 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6.0),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.transparent),
+          border: Border.all(color: colorScheme.outlineVariant),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .03),
+              color: colorScheme.shadow.withValues(alpha: 0.08),
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
@@ -219,7 +223,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
-                  color: widget.item.isDeposit ? Colors.grey : Colors.indigo,
+                  color: widget.item.isDeposit
+                      ? colorScheme.onSurfaceVariant
+                      : colorScheme.primary,
                 ),
                 decoration: const InputDecoration(
                   isDense: true,
@@ -237,9 +243,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                   TextField(
                     key: const Key('brandField'),
                     controller: _brandController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey,
+                      color: colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
@@ -257,7 +263,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      color: widget.item.isDeposit ? Colors.grey : Colors.black,
+                      color: widget.item.isDeposit
+                          ? colorScheme.onSurfaceVariant
+                          : colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
                       isDense: true,
@@ -282,7 +290,9 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: widget.item.isDeposit ? Colors.grey : Colors.black,
+                  color: widget.item.isDeposit
+                      ? colorScheme.onSurfaceVariant
+                      : colorScheme.onSurface,
                 ),
                 decoration: const InputDecoration(
                   isDense: true,
@@ -304,10 +314,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                       padding: const EdgeInsets.only(right: 4.0),
                       child: GestureDetector(
                         onTap: _showDiscounts,
-                        child: const Icon(
+                        child: Icon(
                           Icons.local_offer,
                           size: 16,
-                          color: Colors.red,
+                          color: colorScheme.error,
                         ),
                       ),
                     ),
@@ -324,8 +334,8 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                         color: widget.item.isDeposit
-                            ? Colors.grey
-                            : Colors.black,
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
                       ),
                       decoration: const InputDecoration(
                         isDense: true,
@@ -338,7 +348,10 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                   ),
                   Text(
                     " ${_currencyFormat.currencySymbol}",
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
 
                   const SizedBox(width: 4),
@@ -347,7 +360,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
                     child: Icon(
                       Icons.delete_outline,
                       size: 20,
-                      color: Colors.grey[400],
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

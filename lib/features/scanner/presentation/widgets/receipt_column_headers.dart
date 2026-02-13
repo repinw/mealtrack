@@ -5,15 +5,14 @@ import 'package:mealtrack/l10n/app_localizations.dart';
 class ReceiptColumnHeaders extends StatelessWidget {
   const ReceiptColumnHeaders({super.key});
 
-  static const _headerStyle = TextStyle(
-    fontSize: 9,
-    color: Colors.grey,
-    fontWeight: FontWeight.bold,
-  );
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final headerStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+      fontSize: 9,
+      fontWeight: FontWeight.bold,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(
@@ -23,17 +22,17 @@ class ReceiptColumnHeaders extends StatelessWidget {
             child: Text(
               l10n.amountAbbr,
               textAlign: TextAlign.center,
-              style: _headerStyle,
+              style: headerStyle,
             ),
           ),
-          Expanded(child: Text(l10n.brandDescription, style: _headerStyle)),
+          Expanded(child: Text(l10n.brandDescription, style: headerStyle)),
           const SizedBox(width: 12),
           SizedBox(
             width: ScannedItemRow.colWeightWidth,
             child: Text(
               l10n.weight,
               textAlign: TextAlign.right,
-              style: _headerStyle,
+              style: headerStyle,
             ),
           ),
           const SizedBox(width: 2),
@@ -44,7 +43,7 @@ class ReceiptColumnHeaders extends StatelessWidget {
               child: Text(
                 l10n.price,
                 textAlign: TextAlign.right,
-                style: _headerStyle,
+                style: headerStyle,
               ),
             ),
           ),
