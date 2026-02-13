@@ -36,15 +36,15 @@ class CaloriesTheme extends ThemeExtension<CaloriesTheme> {
     blockSpacing: 16,
     inlineSpacing: 8,
     cardRadius: BorderRadius.all(Radius.circular(14)),
-    summaryKcalColor: AppTheme.primaryColor,
+    summaryKcalColor: AppTheme.defaultSeedColor,
     subduedTextColor: Color(0xFF757575),
     summaryKcalTextStyle: TextStyle(
       fontWeight: FontWeight.w700,
-      color: AppTheme.primaryColor,
+      color: AppTheme.defaultSeedColor,
     ),
     sectionTitleTextStyle: TextStyle(
       fontWeight: FontWeight.w700,
-      color: AppTheme.primaryColor,
+      color: AppTheme.defaultSeedColor,
     ),
   );
 

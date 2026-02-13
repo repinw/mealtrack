@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/home/domain/home_tab.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -22,15 +21,8 @@ class HomeNavigationBar extends StatelessWidget {
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: AppTheme.navBarBackground,
             borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.shadowLight,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+            boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 5))],
           ),
           child: Row(
             children: HomeTab.values

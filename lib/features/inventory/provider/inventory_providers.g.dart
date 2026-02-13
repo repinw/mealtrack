@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'ba5d8160fd51f51b6b248a96f6da427e18c5649e';
+String _$fridgeItemsHash() => r'2b866a23b8f082a4951940e461ff8e641928acbd';
 
 abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
   Stream<List<FridgeItem>> build();
@@ -189,7 +189,7 @@ final class InventoryFilterProvider
   }
 }
 
-String _$inventoryFilterHash() => r'90a568eeb7bfad6f5d78679887e7c6ba6003b0bc';
+String _$inventoryFilterHash() => r'9250ee6b3f84c1f57c5fbfae50296447bbbf92b2';
 
 abstract class _$InventoryFilter extends $Notifier<InventoryFilterType> {
   InventoryFilterType build();

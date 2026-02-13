@@ -17,8 +17,27 @@ class InventoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: InventoryAppBar(title: title),
-      body: const Column(children: [Expanded(child: InventoryList())]),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            InventorySliverAppBar(
+              title: title,
+              onOpenSharing: sharingPageBuilder == null
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: sharingPageBuilder!)),
+              onOpenSettings: settingsPageBuilder == null
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: settingsPageBuilder!)),
+            ),
+          ];
+        },
+        body: const InventoryList(),
+      ),
     );
   }
 }
