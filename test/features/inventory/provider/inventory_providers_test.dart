@@ -172,10 +172,10 @@ void main() {
   });
 
   group('InventoryFilter', () {
-    test('initial state is all', () {
+    test('initial state is available', () {
       final container = makeContainer();
       final filter = container.read(inventoryFilterProvider);
-      expect(filter, InventoryFilterType.all);
+      expect(filter, InventoryFilterType.available);
     });
 
     test('toggle switches state', () {

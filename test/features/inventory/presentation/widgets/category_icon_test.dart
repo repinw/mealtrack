@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/category_icon.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/category_icon.dart';
 
 void main() {
   testWidgets('CategoryIcon renders specific icon and styling', (
@@ -21,13 +21,11 @@ void main() {
     expect(avatarFinder, findsOneWidget);
 
     final CircleAvatar avatar = tester.widget(avatarFinder);
-    final context = tester.element(avatarFinder);
-    final colorScheme = Theme.of(context).colorScheme;
     expect(avatar.radius, 24);
-    expect(avatar.backgroundColor, colorScheme.surfaceContainerHighest);
+    expect(avatar.backgroundColor, Colors.grey.shade100);
 
     final Icon icon = tester.widget(iconFinder);
-    expect(icon.color, colorScheme.onSurfaceVariant);
+    expect(icon.color, Colors.grey.shade700);
     expect(icon.size, 22);
   });
 }

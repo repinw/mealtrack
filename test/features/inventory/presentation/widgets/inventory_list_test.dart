@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart';
 
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';

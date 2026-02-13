@@ -297,7 +297,7 @@ class CollapsedReceiptGroups extends _$CollapsedReceiptGroups {
 @riverpod
 class InventoryFilter extends _$InventoryFilter {
   @override
-  InventoryFilterType build() => InventoryFilterType.all;
+  InventoryFilterType build() => InventoryFilterType.available;
 
   void setFilter(InventoryFilterType type) => state = type;
 }
