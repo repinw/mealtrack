@@ -19,10 +19,27 @@ class CounterPill extends StatelessWidget {
     this.onUpdate,
   });
 
+  Color _getBadgeColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return isOutOfStock
+        ? colorScheme.surfaceContainerHighest
+        : colorScheme.secondaryContainer;
+  }
+
+  Color _getBadgeTextColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return isOutOfStock
+        ? colorScheme.onSurfaceVariant
+        : colorScheme.onSecondaryContainer;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: _getBadgeColor(context),
+        borderRadius: BorderRadius.circular(24),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -57,7 +74,11 @@ class CounterPill extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: _getBadgeTextColor(context),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

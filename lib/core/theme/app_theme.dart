@@ -22,7 +22,6 @@ class AppTheme {
     required Color seedColor,
   }) {
     return ThemeData(
-      useMaterial3: true,
       brightness: brightness,
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor,
