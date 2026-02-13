@@ -15,6 +15,7 @@ class InventorySliverAppBar extends ConsumerWidget {
   final String title;
 
   static const double _expandedHeight = 160.0;
+  static const double _summaryMinHeight = 72.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,6 +73,13 @@ class InventorySliverAppBar extends ConsumerWidget {
             0.0,
             1.0,
           );
+          final summaryHeight =
+              (constraints.maxHeight - topPadding - kToolbarHeight)
+                  .clamp(0.0, double.infinity)
+                  .toDouble();
+          final showExpandedSummary = summaryHeight >= _summaryMinHeight;
+          final expandedOpacity = showExpandedSummary ? t : 0.0;
+          final collapsedOpacity = showExpandedSummary ? 1 - t : 1.0;
 
           return SafeArea(
             bottom: false,
@@ -79,7 +87,7 @@ class InventorySliverAppBar extends ConsumerWidget {
               fit: StackFit.expand,
               children: [
                 Opacity(
-                  opacity: t,
+                  opacity: expandedOpacity,
                   child: Column(
                     children: [
                       SizedBox(
@@ -102,28 +110,32 @@ class InventorySliverAppBar extends ConsumerWidget {
                       Expanded(
                         child: Align(
                           alignment: Alignment.bottomCenter,
-                          child: SummaryHeader(
-                            label: l10n.stockValue,
-                            totalValue: stats.totalValue,
-                            articleCount: stats.articleCount,
-                            secondaryInfo: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.receipt_long_outlined,
-                                  color: Colors.grey,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.purchases(stats.scanCount),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          child: ClipRect(
+                            child: showExpandedSummary
+                                ? SummaryHeader(
+                                    label: l10n.stockValue,
+                                    totalValue: stats.totalValue,
+                                    articleCount: stats.articleCount,
+                                    secondaryInfo: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.receipt_long_outlined,
+                                          color: Colors.grey,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          l10n.purchases(stats.scanCount),
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
                           ),
                         ),
                       ),
@@ -133,7 +145,7 @@ class InventorySliverAppBar extends ConsumerWidget {
                 IgnorePointer(
                   ignoring: t > 0.1,
                   child: Opacity(
-                    opacity: 1 - t,
+                    opacity: collapsedOpacity,
                     child: SizedBox(
                       height: kToolbarHeight,
                       child: Padding(
