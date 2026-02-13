@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealtrack/features/calories/presentation/calories_page.dart';
 import 'package:mealtrack/features/home/domain/home_tab.dart';
 import 'package:mealtrack/features/home/presentation/widgets/home_fab.dart';
 import 'package:mealtrack/features/home/presentation/widgets/home_navigation_bar.dart';
@@ -26,7 +27,7 @@ class _HomeMenuState extends State<HomeMenu> {
       settingsPageBuilder: _buildSettingsPage,
     ),
     ShoppingListPage(),
-    SizedBox.shrink(), // Placeholder for Calories
+    CaloriesPage(),
     SizedBox.shrink(), // Placeholder for Statistics
   ];
 

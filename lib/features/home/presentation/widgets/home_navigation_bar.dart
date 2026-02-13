@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/home/domain/home_tab.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -14,7 +15,6 @@ class HomeNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return SafeArea(
       maintainBottomViewPadding: true,
       child: Padding(
@@ -22,20 +22,19 @@ class HomeNavigationBar extends StatelessWidget {
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
+            color: AppTheme.navBarBackground,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.12),
+                color: AppTheme.shadowLight,
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: HomeTab.values
-                .map((tab) => _buildNavItem(context, tab))
+                .map((tab) => Expanded(child: _buildNavItem(context, tab)))
                 .toList(),
           ),
         ),
@@ -44,7 +43,6 @@ class HomeNavigationBar extends StatelessWidget {
   }
 
   Widget _buildNavItem(BuildContext context, HomeTab tab) {
-    final colorScheme = Theme.of(context).colorScheme;
     if (!tab.isFeatureAvailable) {
       return InkWell(
         onTap: () {
@@ -56,19 +54,23 @@ class HomeNavigationBar extends StatelessWidget {
             ),
           );
         },
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(22),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           child: Opacity(
             opacity: 0.4,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(tab.getIcon(false), color: colorScheme.onSurfaceVariant),
+                Icon(tab.getIcon(false), color: Colors.grey),
                 Text(
                   tab.getLabel(context),
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.grey,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),
@@ -81,26 +83,27 @@ class HomeNavigationBar extends StatelessWidget {
     }
 
     final isSelected = currentTab == tab;
+    final primaryColor = Theme.of(context).primaryColor;
     return InkWell(
       onTap: () => onDestinationSelected(tab),
-      customBorder: const CircleBorder(),
+      borderRadius: BorderRadius.circular(22),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               tab.getIcon(isSelected),
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
+              color: isSelected ? primaryColor : Colors.grey,
             ),
             Text(
               tab.getLabel(context),
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
+                color: isSelected ? primaryColor : Colors.grey,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

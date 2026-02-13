@@ -40,8 +40,8 @@ enum HomeTab {
     switch (this) {
       case HomeTab.inventory:
       case HomeTab.shoppingList:
-        return true;
       case HomeTab.calories:
+        return true;
       case HomeTab.statistics:
         return false;
     }

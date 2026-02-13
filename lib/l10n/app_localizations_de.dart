@@ -474,4 +474,99 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get suggestions => 'Vorschläge';
+
+  @override
+  String get caloriesToday => 'Heute';
+
+  @override
+  String get caloriesMealBreakfast => 'Frühstück';
+
+  @override
+  String get caloriesMealLunch => 'Mittagessen';
+
+  @override
+  String get caloriesMealDinner => 'Abendessen';
+
+  @override
+  String get caloriesMealSnack => 'Snack';
+
+  @override
+  String get caloriesNoEntriesYet => 'Keine Einträge';
+
+  @override
+  String get caloriesManualEntry => 'Manuell eintragen';
+
+  @override
+  String get caloriesBarcodeScan => 'Barcode scannen';
+
+  @override
+  String get caloriesEditEntryTitle => 'Kalorien-Eintrag bearbeiten';
+
+  @override
+  String get caloriesProductNameLabel => 'Produktname';
+
+  @override
+  String get caloriesProductNameRequired => 'Bitte Produktname eingeben';
+
+  @override
+  String get caloriesMealLabel => 'Mahlzeit';
+
+  @override
+  String get caloriesAmountLabel => 'Menge';
+
+  @override
+  String get caloriesUnitLabel => 'Einheit';
+
+  @override
+  String get caloriesAmountPositiveValidation => 'Muss > 0 sein';
+
+  @override
+  String caloriesNutritionPer100(String unit) {
+    return 'Nährwerte pro 100$unit';
+  }
+
+  @override
+  String get caloriesProtein => 'Eiweiß';
+
+  @override
+  String get caloriesEnergy => 'Brennwert (kcal)';
+
+  @override
+  String get caloriesCarbs => 'Kohlenhydrate';
+
+  @override
+  String get caloriesFat => 'Fett';
+
+  @override
+  String get caloriesSalt => 'Salz';
+
+  @override
+  String get caloriesSaturatedFat => 'Gesättigte Fettsäuren';
+
+  @override
+  String get caloriesPolyunsaturatedFat => 'Mehrfach ungesättigte Fettsäuren';
+
+  @override
+  String get caloriesFiber => 'Ballaststoffe';
+
+  @override
+  String get caloriesSugar => 'Zucker';
+
+  @override
+  String get caloriesScanNutritionFacts => 'Nährwerte scannen';
+
+  @override
+  String get caloriesRequiredField => 'Pflichtfeld';
+
+  @override
+  String get caloriesInvalidValue => 'Ungültiger Wert';
+
+  @override
+  String get caloriesDateTimeLabel => 'Datum & Uhrzeit';
+
+  @override
+  String get caloriesDateButton => 'Datum';
+
+  @override
+  String get caloriesTimeButton => 'Zeit';
 }

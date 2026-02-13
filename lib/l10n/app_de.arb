@@ -615,5 +615,134 @@
   "suggestions": "Vorschläge",
   "@suggestions": {
     "description": "Label for the suggestions area in shopping list"
+  },
+  "caloriesToday": "Heute",
+  "@caloriesToday": {
+    "description": "Label used for the selected day when it is the current date"
+  },
+  "caloriesMealBreakfast": "Frühstück",
+  "@caloriesMealBreakfast": {
+    "description": "Meal section label for breakfast"
+  },
+  "caloriesMealLunch": "Mittagessen",
+  "@caloriesMealLunch": {
+    "description": "Meal section label for lunch"
+  },
+  "caloriesMealDinner": "Abendessen",
+  "@caloriesMealDinner": {
+    "description": "Meal section label for dinner"
+  },
+  "caloriesMealSnack": "Snack",
+  "@caloriesMealSnack": {
+    "description": "Meal section label for snack"
+  },
+  "caloriesNoEntriesYet": "Keine Einträge",
+  "@caloriesNoEntriesYet": {
+    "description": "Empty state label for meal sections in calories page"
+  },
+  "caloriesManualEntry": "Manuell eintragen",
+  "@caloriesManualEntry": {
+    "description": "Action label to add calories manually"
+  },
+  "caloriesBarcodeScan": "Barcode scannen",
+  "@caloriesBarcodeScan": {
+    "description": "Action label to start barcode scan in calories feature"
+  },
+  "caloriesEditEntryTitle": "Kalorien-Eintrag bearbeiten",
+  "@caloriesEditEntryTitle": {
+    "description": "Title for editing an existing calorie entry"
+  },
+  "caloriesProductNameLabel": "Produktname",
+  "@caloriesProductNameLabel": {
+    "description": "Label for product name field in calorie entry form"
+  },
+  "caloriesProductNameRequired": "Bitte Produktname eingeben",
+  "@caloriesProductNameRequired": {
+    "description": "Validation message when product name is empty"
+  },
+  "caloriesMealLabel": "Mahlzeit",
+  "@caloriesMealLabel": {
+    "description": "Label for meal selector in calorie entry form"
+  },
+  "caloriesAmountLabel": "Menge",
+  "@caloriesAmountLabel": {
+    "description": "Label for consumed amount in calorie entry form"
+  },
+  "caloriesUnitLabel": "Einheit",
+  "@caloriesUnitLabel": {
+    "description": "Label for consumed unit selector in calorie entry form"
+  },
+  "caloriesAmountPositiveValidation": "Muss > 0 sein",
+  "@caloriesAmountPositiveValidation": {
+    "description": "Validation message when consumed amount is invalid"
+  },
+  "caloriesNutritionPer100": "Nährwerte pro 100{unit}",
+  "@caloriesNutritionPer100": {
+    "description": "Section title for nutrition values normalized per 100g/ml",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesProtein": "Eiweiß",
+  "@caloriesProtein": {
+    "description": "Protein label used in calories feature"
+  },
+  "caloriesEnergy": "Brennwert (kcal)",
+  "@caloriesEnergy": {
+    "description": "Energy label used in calories feature"
+  },
+  "caloriesCarbs": "Kohlenhydrate",
+  "@caloriesCarbs": {
+    "description": "Carbohydrates label used in calories feature"
+  },
+  "caloriesFat": "Fett",
+  "@caloriesFat": {
+    "description": "Fat label used in calories feature"
+  },
+  "caloriesSalt": "Salz",
+  "@caloriesSalt": {
+    "description": "Salt label used in calories feature"
+  },
+  "caloriesSaturatedFat": "Gesättigte Fettsäuren",
+  "@caloriesSaturatedFat": {
+    "description": "Saturated fat label used in calories feature"
+  },
+  "caloriesPolyunsaturatedFat": "Mehrfach ungesättigte Fettsäuren",
+  "@caloriesPolyunsaturatedFat": {
+    "description": "Polyunsaturated fat label used in calories feature"
+  },
+  "caloriesFiber": "Ballaststoffe",
+  "@caloriesFiber": {
+    "description": "Fiber label used in calories feature"
+  },
+  "caloriesSugar": "Zucker",
+  "@caloriesSugar": {
+    "description": "Sugar label used in calories feature"
+  },
+  "caloriesScanNutritionFacts": "Nährwerte scannen",
+  "@caloriesScanNutritionFacts": {
+    "description": "Action label to scan nutrition facts from camera in calorie entry form"
+  },
+  "caloriesRequiredField": "Pflichtfeld",
+  "@caloriesRequiredField": {
+    "description": "Validation message for required calorie nutrient fields"
+  },
+  "caloriesInvalidValue": "Ungültiger Wert",
+  "@caloriesInvalidValue": {
+    "description": "Validation message for invalid nutrient values"
+  },
+  "caloriesDateTimeLabel": "Datum & Uhrzeit",
+  "@caloriesDateTimeLabel": {
+    "description": "Label for date and time row in calorie entry form"
+  },
+  "caloriesDateButton": "Datum",
+  "@caloriesDateButton": {
+    "description": "Button label to open date picker in calorie entry form"
+  },
+  "caloriesTimeButton": "Zeit",
+  "@caloriesTimeButton": {
+    "description": "Button label to open time picker in calorie entry form"
   }
 }
