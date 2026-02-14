@@ -189,7 +189,7 @@ final class InventoryFilterProvider
   }
 }
 
-String _$inventoryFilterHash() => r'90a568eeb7bfad6f5d78679887e7c6ba6003b0bc';
+String _$inventoryFilterHash() => r'9250ee6b3f84c1f57c5fbfae50296447bbbf92b2';
 
 abstract class _$InventoryFilter extends $Notifier<InventoryFilterType> {
   InventoryFilterType build();

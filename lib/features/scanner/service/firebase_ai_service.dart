@@ -7,7 +7,11 @@ import 'package:mealtrack/core/errors/exceptions.dart';
 import 'package:mealtrack/features/scanner/service/image_compressor.dart';
 
 class FirebaseAiService {
-  static const String _fallbackTemplateId = 'receiptocr';
+  static const String _receiptTemplateKey = 'template_id';
+  static const String _nutritionTemplateKey = 'nutrition-template-id';
+  static const String _legacyNutritionTemplateKey = 'nutrition_template_id';
+  static const String _fallbackReceiptTemplateId = 'receiptocr';
+  static const String _fallbackNutritionTemplateId = 'nutrition-template-id';
 
   final FirebaseRemoteConfig remoteConfig;
   final ImageCompressor imageCompressor;
@@ -32,7 +36,11 @@ class FirebaseAiService {
             : const Duration(seconds: 3600),
       ),
     );
-    await remoteConfig.setDefaults(const {"template_id": _fallbackTemplateId});
+    await remoteConfig.setDefaults(const {
+      _receiptTemplateKey: _fallbackReceiptTemplateId,
+      _nutritionTemplateKey: _fallbackNutritionTemplateId,
+      _legacyNutritionTemplateKey: _fallbackNutritionTemplateId,
+    });
     await remoteConfig.fetchAndActivate();
 
     remoteConfig.onConfigUpdated.listen((event) async {
@@ -65,7 +73,46 @@ class FirebaseAiService {
     );
 
     final base64Data = base64Encode(compressedBytes);
-    return _analyzeContent(base64Data, 'image/jpeg');
+    return _analyzeContent(
+      base64Data,
+      'image/jpeg',
+      templateKey: _receiptTemplateKey,
+      fallbackTemplateId: _fallbackReceiptTemplateId,
+    );
+  }
+
+  Future<String> analyzeNutritionLabelImageWithGemini(XFile imageFile) async {
+    debugPrint('Nutrition label uploading and analyzing...');
+    debugPrint("Starting compression...");
+
+    final Uint8List? compressedBytes = await imageCompressor.compressWithFile(
+      imageFile.path,
+      minWidth: 1024,
+      minHeight: 1024,
+      quality: 80,
+      format: CompressFormat.jpeg,
+    );
+
+    if (compressedBytes == null) {
+      throw ReceiptAnalysisException(
+        "Image compression failed",
+        code: 'COMPRESSION_ERROR',
+      );
+    }
+
+    debugPrint("Original: ${await imageFile.length()} Bytes");
+    debugPrint(
+      "Optimized: ${compressedBytes.length} Bytes (Sending as image/jpeg)",
+    );
+
+    final base64Data = base64Encode(compressedBytes);
+    return _analyzeContent(
+      base64Data,
+      'image/jpeg',
+      templateKey: _nutritionTemplateKey,
+      secondaryTemplateKey: _legacyNutritionTemplateKey,
+      fallbackTemplateId: _fallbackNutritionTemplateId,
+    );
   }
 
   Future<String> analyzePdfWithGemini(XFile pdfFile) async {
@@ -74,16 +121,30 @@ class FirebaseAiService {
     debugPrint("PDF Size: ${bytes.length} Bytes");
 
     final base64Data = base64Encode(bytes);
-    return _analyzeContent(base64Data, 'application/pdf');
+    return _analyzeContent(
+      base64Data,
+      'application/pdf',
+      templateKey: _receiptTemplateKey,
+      fallbackTemplateId: _fallbackReceiptTemplateId,
+    );
   }
 
-  Future<String> _analyzeContent(String base64Data, String mimeType) async {
-    String templateID = remoteConfig.getString("template_id");
+  Future<String> _analyzeContent(
+    String base64Data,
+    String mimeType, {
+    required String templateKey,
+    String? secondaryTemplateKey,
+    required String fallbackTemplateId,
+  }) async {
+    String templateID = remoteConfig.getString(templateKey);
+    if (templateID.isEmpty && secondaryTemplateKey != null) {
+      templateID = remoteConfig.getString(secondaryTemplateKey);
+    }
     if (templateID.isEmpty) {
       debugPrint(
-        "Remote Config 'template_id' is empty. Using fallback: $_fallbackTemplateId",
+        "Remote Config '$templateKey' is empty. Using fallback: $fallbackTemplateId",
       );
-      templateID = _fallbackTemplateId;
+      templateID = fallbackTemplateId;
     }
     try {
       // coverage:ignore-start

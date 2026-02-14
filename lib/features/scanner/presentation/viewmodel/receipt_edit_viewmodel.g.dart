@@ -44,7 +44,7 @@ final class ReceiptEditViewModelProvider
 }
 
 String _$receiptEditViewModelHash() =>
-    r'952e8ef15f990d2cac136bc25b63c4ffbffcb068';
+    r'3792f2618d231eb0f668a5f5d1428b4aadff1755';
 
 abstract class _$ReceiptEditViewModel extends $Notifier<ReceiptEditState> {
   ReceiptEditState build();

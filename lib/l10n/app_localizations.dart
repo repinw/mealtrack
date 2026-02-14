@@ -957,6 +957,192 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Vorschläge'**
   String get suggestions;
+
+  /// Label used for the selected day when it is the current date
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get caloriesToday;
+
+  /// Meal section label for breakfast
+  ///
+  /// In de, this message translates to:
+  /// **'Frühstück'**
+  String get caloriesMealBreakfast;
+
+  /// Meal section label for lunch
+  ///
+  /// In de, this message translates to:
+  /// **'Mittagessen'**
+  String get caloriesMealLunch;
+
+  /// Meal section label for dinner
+  ///
+  /// In de, this message translates to:
+  /// **'Abendessen'**
+  String get caloriesMealDinner;
+
+  /// Meal section label for snack
+  ///
+  /// In de, this message translates to:
+  /// **'Snack'**
+  String get caloriesMealSnack;
+
+  /// Empty state label for meal sections in calories page
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Einträge'**
+  String get caloriesNoEntriesYet;
+
+  /// Action label to add calories manually
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell eintragen'**
+  String get caloriesManualEntry;
+
+  /// Action label to start barcode scan in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Barcode scannen'**
+  String get caloriesBarcodeScan;
+
+  /// Title for editing an existing calorie entry
+  ///
+  /// In de, this message translates to:
+  /// **'Kalorien-Eintrag bearbeiten'**
+  String get caloriesEditEntryTitle;
+
+  /// Label for product name field in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Produktname'**
+  String get caloriesProductNameLabel;
+
+  /// Validation message when product name is empty
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte Produktname eingeben'**
+  String get caloriesProductNameRequired;
+
+  /// Label for meal selector in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Mahlzeit'**
+  String get caloriesMealLabel;
+
+  /// Label for consumed amount in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Menge'**
+  String get caloriesAmountLabel;
+
+  /// Label for consumed unit selector in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Einheit'**
+  String get caloriesUnitLabel;
+
+  /// Validation message when consumed amount is invalid
+  ///
+  /// In de, this message translates to:
+  /// **'Muss > 0 sein'**
+  String get caloriesAmountPositiveValidation;
+
+  /// Section title for nutrition values normalized per 100g/ml
+  ///
+  /// In de, this message translates to:
+  /// **'Nährwerte pro 100{unit}'**
+  String caloriesNutritionPer100(String unit);
+
+  /// Protein label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Eiweiß'**
+  String get caloriesProtein;
+
+  /// Energy label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Brennwert (kcal)'**
+  String get caloriesEnergy;
+
+  /// Carbohydrates label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Kohlenhydrate'**
+  String get caloriesCarbs;
+
+  /// Fat label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Fett'**
+  String get caloriesFat;
+
+  /// Salt label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Salz'**
+  String get caloriesSalt;
+
+  /// Saturated fat label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Gesättigte Fettsäuren'**
+  String get caloriesSaturatedFat;
+
+  /// Polyunsaturated fat label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrfach ungesättigte Fettsäuren'**
+  String get caloriesPolyunsaturatedFat;
+
+  /// Fiber label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Ballaststoffe'**
+  String get caloriesFiber;
+
+  /// Sugar label used in calories feature
+  ///
+  /// In de, this message translates to:
+  /// **'Zucker'**
+  String get caloriesSugar;
+
+  /// Action label to scan nutrition facts from camera in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Nährwerte scannen'**
+  String get caloriesScanNutritionFacts;
+
+  /// Validation message for required calorie nutrient fields
+  ///
+  /// In de, this message translates to:
+  /// **'Pflichtfeld'**
+  String get caloriesRequiredField;
+
+  /// Validation message for invalid nutrient values
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger Wert'**
+  String get caloriesInvalidValue;
+
+  /// Label for date and time row in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Datum & Uhrzeit'**
+  String get caloriesDateTimeLabel;
+
+  /// Button label to open date picker in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Datum'**
+  String get caloriesDateButton;
+
+  /// Button label to open time picker in calorie entry form
+  ///
+  /// In de, this message translates to:
+  /// **'Zeit'**
+  String get caloriesTimeButton;
 }
 
 class _AppLocalizationsDelegate

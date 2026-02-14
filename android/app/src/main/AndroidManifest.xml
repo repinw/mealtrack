@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for barcode scanning and nutrition label OCR -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <!-- Required by receive_sharing_intent for accessing shared files -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
