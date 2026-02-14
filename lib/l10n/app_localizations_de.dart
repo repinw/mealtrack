@@ -23,9 +23,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get purchasesLabel => 'Einkäufe';
+
+  @override
   String items(int count) {
     return '$count Teile';
   }
+
+  @override
+  String get itemsLabel => 'Teile';
 
   @override
   String get archive => 'Archivieren';

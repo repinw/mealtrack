@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:mealtrack/core/formatting/currency_formatter_cache.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class SummaryHeader extends StatelessWidget {
@@ -14,6 +14,10 @@ class SummaryHeader extends StatelessWidget {
   final double totalValue;
   final int articleCount;
   final Widget? secondaryInfo;
+  final Color? foregroundColor;
+  final Color? secondaryForegroundColor;
+  final Color? badgeBackgroundColor;
+  final Color? badgeBorderColor;
 
   const SummaryHeader({
     super.key,
@@ -21,26 +25,34 @@ class SummaryHeader extends StatelessWidget {
     required this.totalValue,
     required this.articleCount,
     this.secondaryInfo,
+    this.foregroundColor,
+    this.secondaryForegroundColor,
+    this.badgeBackgroundColor,
+    this.badgeBorderColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final currencyFormat = NumberFormat.simpleCurrency(
-      locale: Localizations.localeOf(context).toString(),
-      name: 'EUR',
-    );
+    final resolvedForegroundColor =
+        foregroundColor ?? textTheme.bodyLarge?.color ?? colorScheme.onSurface;
+    final resolvedSecondaryForegroundColor =
+        secondaryForegroundColor ?? colorScheme.onSurfaceVariant;
     final summaryLabelStyle = textTheme.labelSmall?.copyWith(
       letterSpacing: 0.5,
       height: 1.0,
+      color: resolvedSecondaryForegroundColor,
     );
     final summaryValueStyle = textTheme.headlineMedium?.copyWith(
       fontWeight: FontWeight.bold,
       height: 1.0,
+      color: resolvedForegroundColor,
     );
     final summaryItemCountStyle = textTheme.labelMedium?.copyWith(
       fontWeight: FontWeight.bold,
+      color: resolvedForegroundColor,
     );
 
     return LayoutBuilder(
@@ -81,7 +93,7 @@ class SummaryHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    currencyFormat.format(totalValue),
+                    CurrencyFormatterCache.formatEur(context, totalValue),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: summaryValueStyle,
@@ -103,7 +115,11 @@ class SummaryHeader extends StatelessWidget {
                       vertical: itemVerticalPadding,
                     ),
                     decoration: BoxDecoration(
+                      color: badgeBackgroundColor,
                       borderRadius: BorderRadius.circular(8),
+                      border: badgeBorderColor == null
+                          ? null
+                          : Border.all(color: badgeBorderColor!),
                     ),
                     child: Text(
                       AppLocalizations.of(context)!.items(articleCount),

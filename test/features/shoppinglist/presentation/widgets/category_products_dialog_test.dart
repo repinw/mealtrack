@@ -83,7 +83,7 @@ class _DialogLauncher extends ConsumerWidget {
 }
 
 void main() {
-  Widget _app({
+  Widget app({
     required CategoryStatsRepository categoryRepo,
     required ShoppingListRepository shoppingRepo,
     required ValueChanged<int> onResult,
@@ -102,13 +102,15 @@ void main() {
     );
   }
 
-  testWidgets('shows loading, adds selected products, and returns count', (tester) async {
+  testWidgets('shows loading, adds selected products, and returns count', (
+    tester,
+  ) async {
     final categoryRepo = _FakeCategoryStatsRepository();
     final shoppingRepo = _FakeShoppingListRepository(const []);
     var dialogResult = -1;
 
     await tester.pumpWidget(
-      _app(
+      app(
         categoryRepo: categoryRepo,
         shoppingRepo: shoppingRepo,
         onResult: (v) => dialogResult = v,
@@ -119,12 +121,10 @@ void main() {
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    categoryRepo.emit(
-      const [
-        ProductSuggestion(name: 'Milk', averagePrice: 1.5, count: 3),
-        ProductSuggestion(name: 'Yogurt', averagePrice: 0, count: 1),
-      ],
-    );
+    categoryRepo.emit(const [
+      ProductSuggestion(name: 'Milk', averagePrice: 1.5, count: 3),
+      ProductSuggestion(name: 'Yogurt', averagePrice: 0, count: 1),
+    ]);
     await tester.pumpAndSettle();
 
     expect(find.text('Dairy'), findsOneWidget);
@@ -147,13 +147,13 @@ void main() {
 
   testWidgets('shows empty message and cancel returns 0', (tester) async {
     final categoryRepo = _FakeCategoryStatsRepository();
-    final shoppingRepo = _FakeShoppingListRepository(
-      const [ShoppingListItem(id: '1', name: 'Milk')],
-    );
+    final shoppingRepo = _FakeShoppingListRepository(const [
+      ShoppingListItem(id: '1', name: 'Milk'),
+    ]);
     var dialogResult = -1;
 
     await tester.pumpWidget(
-      _app(
+      app(
         categoryRepo: categoryRepo,
         shoppingRepo: shoppingRepo,
         onResult: (v) => dialogResult = v,
@@ -162,7 +162,9 @@ void main() {
 
     await tester.tap(find.text('Open'));
     await tester.pump();
-    categoryRepo.emit(const [ProductSuggestion(name: 'Milk', averagePrice: 1, count: 2)]);
+    categoryRepo.emit(const [
+      ProductSuggestion(name: 'Milk', averagePrice: 1, count: 2),
+    ]);
     await tester.pumpAndSettle();
 
     expect(find.text('Keine Produkte gefunden'), findsOneWidget);

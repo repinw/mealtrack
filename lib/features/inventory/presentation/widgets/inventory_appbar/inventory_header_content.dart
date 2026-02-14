@@ -1,78 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/collapsed_summary.dart';
+import 'package:mealtrack/core/formatting/currency_formatter_cache.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_app_bar_actions.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_collapsed_stats_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_expanded_summary.dart';
 
 class InventoryHeaderContent extends StatelessWidget {
   const InventoryHeaderContent({
     super.key,
     required this.title,
     required this.collapseProgress,
-    required this.trailingActionsSpace,
     required this.stockValueLabel,
+    required this.purchasesStatLabel,
+    required this.itemsStatLabel,
     required this.purchasesLabel,
+    required this.itemsLabel,
+    required this.purchaseCount,
     required this.totalValue,
     required this.articleCount,
+    this.onOpenSharing,
+    this.onOpenSettings,
   });
 
   final String title;
   final double collapseProgress;
-  final double trailingActionsSpace;
   final String stockValueLabel;
+  final String purchasesStatLabel;
+  final String itemsStatLabel;
   final String purchasesLabel;
+  final String itemsLabel;
+  final int purchaseCount;
   final double totalValue;
   final int articleCount;
-  static const double _minimumSummaryHeight = 72.0;
+  final VoidCallback? onOpenSharing;
+  final VoidCallback? onOpenSettings;
+  static const double _minimumSummaryHeight = 64.0;
+  static const double _expandedTitleFadeFactor = 1.55;
+  static const double _expandedSummaryFadeFactor = 1.45;
+  static const double _collapsedStatsStart = 0.18;
+  static const double _collapsedStatsSpan = 0.82;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final expandedTitleOpacity = (1 - collapseProgress).clamp(0.0, 1.0);
-    final expandedHeaderOpacity = (1 - (collapseProgress * 1.6)).clamp(
-      0.0,
-      1.0,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final normalizedProgress = collapseProgress.clamp(0.0, 1.0).toDouble();
+    final expandedTitleOpacity = _expandedTitleOpacity(normalizedProgress);
+    final expandedHeaderOpacity = _expandedHeaderOpacity(normalizedProgress);
+    final collapsedMetricsOpacity = _collapsedMetricsOpacity(
+      normalizedProgress,
     );
-    final collapsedSummaryOpacity = ((collapseProgress - 0.25) / 0.75).clamp(
-      0.0,
-      1.0,
+    final collapsedBottomPadding = _collapsedBottomPadding(
+      collapsedMetricsOpacity,
+    );
+    final formattedTotalValue = CurrencyFormatterCache.formatEur(
+      context,
+      totalValue,
+    );
+    final titleStyle = theme.textTheme.headlineSmall?.copyWith(
+      color: colorScheme.primary,
+      fontWeight: FontWeight.w900,
+      letterSpacing: 0.4,
     );
 
     return SafeArea(
       bottom: false,
       child: Column(
         children: [
-          SizedBox(
-            height: kToolbarHeight,
-            child: Padding(
-              padding: EdgeInsetsDirectional.only(
-                start: 16,
-                end: trailingActionsSpace,
-              ),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Stack(
-                  alignment: AlignmentDirectional.centerStart,
-                  children: [
-                    Opacity(
-                      opacity: expandedTitleOpacity,
-                      child: Text(
-                        title.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colorScheme.primary,
-                          fontSize: 14,
-                          letterSpacing: 1.2,
+          ClipRect(
+            child: Align(
+              alignment: Alignment.topCenter,
+              heightFactor: expandedTitleOpacity,
+              child: SizedBox(
+                height: kToolbarHeight,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Opacity(
+                          opacity: expandedTitleOpacity,
+                          child: Text(
+                            title.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: titleStyle,
+                          ),
                         ),
                       ),
-                    ),
-                    Opacity(
-                      opacity: collapsedSummaryOpacity,
-                      child: CollapsedSummary(
-                        totalValue: totalValue,
-                        articleCount: articleCount,
+                      InventoryAppBarActions(
+                        collapseProgress: collapseProgress,
+                        onOpenSharing: onOpenSharing,
+                        onOpenSettings: onOpenSettings,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -80,42 +101,51 @@ class InventoryHeaderContent extends StatelessWidget {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final hasRoomForSummary =
+                final hasRoomForExpandedSummary =
                     constraints.maxHeight >= _minimumSummaryHeight;
-
-                if (!hasRoomForSummary || expandedHeaderOpacity <= 0) {
-                  return const SizedBox.shrink();
-                }
-
+                final useCompactSummary = constraints.maxHeight < 104;
+                final hideMetaLine = constraints.maxHeight < 84;
+                final expandedBottomPadding = (constraints.maxHeight * 0.06)
+                    .clamp(0.0, 6.0)
+                    .toDouble();
                 return IgnorePointer(
-                  child: Opacity(
-                    opacity: expandedHeaderOpacity,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: SummaryHeader(
-                        label: stockValueLabel,
-                        totalValue: totalValue,
-                        articleCount: articleCount,
-                        secondaryInfo: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              color: colorScheme.onSurfaceVariant,
-                              size: 16,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (hasRoomForExpandedSummary)
+                        Opacity(
+                          opacity: expandedHeaderOpacity,
+                          child: Align(
+                            alignment: Alignment.bottomLeft,
+                            child: InventoryExpandedSummary(
+                              key: const ValueKey('inventory-expanded-summary'),
+                              stockValueLabel: stockValueLabel,
+                              totalValue: formattedTotalValue,
+                              purchasesLabel: purchasesLabel,
+                              itemsLabel: itemsLabel,
+                              compact: useCompactSummary,
+                              hideMetaLine: hideMetaLine,
+                              bottomPadding: expandedBottomPadding,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              purchasesLabel,
-                              style: TextStyle(
-                                color: colorScheme.onSurfaceVariant,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                          ),
+                        ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Opacity(
+                          opacity: collapsedMetricsOpacity,
+                          child: InventoryCollapsedStatsRow(
+                            key: const ValueKey('inventory-collapsed-stats'),
+                            stockValueLabel: stockValueLabel,
+                            stockValue: formattedTotalValue,
+                            purchasesStatLabel: purchasesStatLabel,
+                            purchaseCount: purchaseCount,
+                            itemsStatLabel: itemsStatLabel,
+                            articleCount: articleCount,
+                            bottomPadding: collapsedBottomPadding,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 );
               },
@@ -124,5 +154,24 @@ class InventoryHeaderContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  double _expandedTitleOpacity(double progress) {
+    return (1 - (progress * _expandedTitleFadeFactor)).clamp(0.0, 1.0);
+  }
+
+  double _expandedHeaderOpacity(double progress) {
+    return (1 - (progress * _expandedSummaryFadeFactor)).clamp(0.0, 1.0);
+  }
+
+  double _collapsedMetricsOpacity(double progress) {
+    return ((progress - _collapsedStatsStart) / _collapsedStatsSpan).clamp(
+      0.0,
+      1.0,
+    );
+  }
+
+  double _collapsedBottomPadding(double collapsedMetricsOpacity) {
+    return 2 + (collapsedMetricsOpacity * 3);
   }
 }

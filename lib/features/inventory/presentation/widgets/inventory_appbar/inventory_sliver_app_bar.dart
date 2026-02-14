@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_app_bar_actions.dart';
+import 'package:mealtrack/core/presentation/widgets/feature_sliver_app_bar.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_header_content.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -18,49 +18,61 @@ class InventorySliverAppBar extends ConsumerWidget {
   final VoidCallback? onOpenSettings;
 
   static const double _expandedHeight = 160.0;
+  static const double _collapsedHeight = 56.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final stats = ref.watch(inventoryStatsProvider);
-    final topPadding = MediaQuery.paddingOf(context).top;
-    final minHeight = kToolbarHeight + topPadding;
-    final maxHeight = _expandedHeight + topPadding;
-    final collapseRange = (maxHeight - minHeight).clamp(1.0, double.infinity);
+    final headerTitle = l10n.inventory.isNotEmpty ? l10n.inventory : title;
 
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        final collapseProgress = (constraints.scrollOffset / collapseRange)
-            .clamp(0.0, 1.0);
-
-        return SliverAppBar(
-          pinned: true,
-          expandedHeight: _expandedHeight,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          centerTitle: false,
-          actions: [
-            InventoryAppBarActions(
-              collapseProgress: collapseProgress,
-              onOpenSharing: onOpenSharing,
-              onOpenSettings: onOpenSettings,
-            ),
-          ],
-          flexibleSpace: InventoryHeaderContent(
-            title: title,
-            collapseProgress: collapseProgress,
-            trailingActionsSpace: InventoryAppBarActions.trailingActionsSpace(
-              collapseProgress,
-              hasSharingAction: onOpenSharing != null,
-              hasSettingsAction: onOpenSettings != null,
-            ),
-            stockValueLabel: l10n.stockValue,
-            purchasesLabel: l10n.purchases(stats.scanCount),
-            totalValue: stats.totalValue,
-            articleCount: stats.articleCount,
+    return FeatureSliverAppBar(
+      expandedHeight: _expandedHeight,
+      collapsedHeight: _collapsedHeight,
+      toolbarHeight: 0,
+      pinned: true,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      backgroundAlignment: const Alignment(0.84, 0.48),
+      backgroundRotationRadians: 0,
+      backgroundMaxOpacity: 0.22,
+      backgroundBuilder: (context, state) => Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(
+            context,
+          ).colorScheme.onPrimaryContainer.withValues(alpha: 0.08),
+          border: Border.all(
+            color: Theme.of(
+              context,
+            ).colorScheme.onPrimaryContainer.withValues(alpha: 0.10),
           ),
-        );
-      },
+        ),
+        child: Icon(
+          Icons.receipt_long_outlined,
+          size: 24,
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.58),
+        ),
+      ),
+      flexibleSpaceBuilder: (context, state) => InventoryHeaderContent(
+        title: headerTitle,
+        collapseProgress: state.collapseProgress,
+        stockValueLabel: l10n.stockValue,
+        purchasesStatLabel: l10n.purchasesLabel,
+        itemsStatLabel: l10n.itemsLabel,
+        purchasesLabel: l10n.purchases(stats.scanCount),
+        itemsLabel: l10n.items(stats.articleCount),
+        purchaseCount: stats.scanCount,
+        totalValue: stats.totalValue,
+        articleCount: stats.articleCount,
+        onOpenSharing: onOpenSharing,
+        onOpenSettings: onOpenSettings,
+      ),
     );
   }
 }

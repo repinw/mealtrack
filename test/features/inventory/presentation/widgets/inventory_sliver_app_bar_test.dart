@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/collapsed_summary.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_sliver_app_bar.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -62,16 +60,16 @@ Widget _buildTestWidget({
 }
 
 Finder _expandedOpacityFinder() {
-  return find.byWidgetPredicate(
-    (widget) => widget is Opacity && widget.child is Align,
-    description: 'expanded summary opacity',
+  return find.ancestor(
+    of: find.byKey(const ValueKey('inventory-expanded-summary')),
+    matching: find.byType(Opacity),
   );
 }
 
 Finder _collapsedOpacityFinder() {
-  return find.byWidgetPredicate(
-    (widget) => widget is Opacity && widget.child is CollapsedSummary,
-    description: 'collapsed summary opacity',
+  return find.ancestor(
+    of: find.byKey(const ValueKey('inventory-collapsed-stats')),
+    matching: find.byType(Opacity),
   );
 }
 
@@ -93,10 +91,11 @@ void main() {
       await tester.pumpWidget(_buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('TEST TITLE'), findsOneWidget);
+      expect(find.text('VORRAT'), findsOneWidget);
       expect(find.byIcon(Icons.people_outline), findsOneWidget);
       expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.delete_forever), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+      expect(find.byIcon(Icons.search), findsNothing);
     });
 
     testWidgets('calls sharing and settings callbacks on tap', (tester) async {
@@ -157,7 +156,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.delete_forever));
+      await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pumpAndSettle();
 
       expect(notifier.deleteAllCalled, isTrue);
@@ -179,7 +178,7 @@ void main() {
         await tester.pumpWidget(_buildTestWidget(items: items));
         await tester.pumpAndSettle();
 
-        expect(find.byType(SummaryHeader), findsOneWidget);
+        expect(find.text('VORRATSWERT'), findsWidgets);
 
         final expandedAtTop = _opacityOrFallback(
           tester,
@@ -209,13 +208,9 @@ void main() {
         );
         expect(expandedAfterScroll, lessThan(0.1));
         expect(collapsedAfterScroll, greaterThan(0.9));
-        expect(find.byType(SummaryHeader), findsNothing);
-        expect(
-          find.byWidgetPredicate(
-            (widget) => widget is Text && (widget.data?.contains('•') ?? false),
-          ),
-          findsOneWidget,
-        );
+        expect(find.text('VORRATSWERT'), findsOneWidget);
+        expect(find.text('EINKÄUFE'), findsOneWidget);
+        expect(find.text('TEILE'), findsOneWidget);
       },
     );
   });

@@ -20,6 +20,10 @@
       }
     }
   },
+  "purchasesLabel": "Einkäufe",
+  "@purchasesLabel": {
+    "description": "Short purchases label without numeric placeholder."
+  },
   "items": "{count} Teile",
   "@items": {
     "placeholders": {
@@ -27,6 +31,10 @@
         "type": "int"
       }
     }
+  },
+  "itemsLabel": "Teile",
+  "@itemsLabel": {
+    "description": "Short items label without numeric placeholder."
   },
   "archive": "Archivieren",
   "@archive": {

@@ -474,14 +474,9 @@ void main() {
       'Fix: didUpdateWidget does not overwrite user input if parsed value matches (ignoring string format)',
       (tester) async {
         final item = createItem(unitPrice: 10.0);
-        FridgeItem? updatedItem;
 
         await tester.pumpWidget(
-          createTestWidget(
-            item,
-            onChanged: (val) => updatedItem = val,
-            locale: const Locale('de'),
-          ),
+          createTestWidget(item, locale: const Locale('de')),
         );
 
         final priceFinder = find.byKey(const Key('priceField'));
@@ -492,11 +487,7 @@ void main() {
 
         // Trigger dependency/widget update with SAME item
         await tester.pumpWidget(
-          createTestWidget(
-            item,
-            onChanged: (val) => updatedItem = val,
-            locale: const Locale('de'),
-          ),
+          createTestWidget(item, locale: const Locale('de')),
         );
         await tester.pump();
 
@@ -511,17 +502,12 @@ void main() {
       tester,
     ) async {
       final item = createItem(unitPrice: 10.0);
-      FridgeItem? updatedItem;
 
       // Use a custom builder to force rebuilds
       await tester.pumpWidget(
         StatefulBuilder(
           builder: (context, setState) {
-            return createTestWidget(
-              item,
-              onChanged: (val) => updatedItem = val,
-              locale: const Locale('de'),
-            );
+            return createTestWidget(item, locale: const Locale('de'));
           },
         ),
       );
@@ -534,11 +520,7 @@ void main() {
 
       // Force a rebuild from parent
       await tester.pumpWidget(
-        createTestWidget(
-          item,
-          onChanged: (val) => updatedItem = val,
-          locale: const Locale('de'),
-        ),
+        createTestWidget(item, locale: const Locale('de')),
       );
       await tester.pump();
 
