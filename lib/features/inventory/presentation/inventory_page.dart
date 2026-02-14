@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_sliver_app_bar.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_sliver_app_bar.dart';
 
 class InventoryPage extends StatelessWidget {
   final String title;
@@ -23,20 +23,16 @@ class InventoryPage extends StatelessWidget {
           return [
             InventorySliverAppBar(
               title: title,
-              onOpenSharing: () {
-                final pageBuilder = sharingPageBuilder;
-                if (pageBuilder == null) return;
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: pageBuilder));
-              },
-              onOpenSettings: () {
-                final pageBuilder = settingsPageBuilder;
-                if (pageBuilder == null) return;
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: pageBuilder));
-              },
+              onOpenSharing: sharingPageBuilder == null
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: sharingPageBuilder!)),
+              onOpenSettings: settingsPageBuilder == null
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: settingsPageBuilder!)),
             ),
           ];
         },

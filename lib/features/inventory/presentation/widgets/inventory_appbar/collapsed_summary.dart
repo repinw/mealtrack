@@ -15,6 +15,7 @@ class CollapsedSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final currency = NumberFormat.simpleCurrency(
       locale: Localizations.localeOf(context).toString(),
       name: 'EUR',
@@ -24,7 +25,11 @@ class CollapsedSummary extends StatelessWidget {
       '$currency • ${l10n.items(articleCount)}',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        color: colorScheme.primary,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 }

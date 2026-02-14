@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
@@ -72,6 +71,7 @@ void main() {
     quantity: 3,
     storeName: 'Test Store',
     entryDate: DateTime.now(),
+    weight: '200 g',
     initialQuantity: 5,
     initialAmountBase: 1000,
     remainingAmountBase: 600,
@@ -111,21 +111,43 @@ void main() {
     );
   }
 
-  group('InventoryItemRow Tests', () {
-    testWidgets('renders item name, price, amount summary and controls', (
+  ButtonStyleButton findActionButton(WidgetTester tester, String label) {
+    final buttonFinder = find.ancestor(
+      of: find.text(label).last,
+      matching: find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
+    );
+    return tester.widget<ButtonStyleButton>(buttonFinder.first);
+  }
+
+  group('InventoryItemRow', () {
+    testWidgets('renders item name and progress summary', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text('Test Apple'), findsOneWidget);
-      expect(find.textContaining('0.00€'), findsOneWidget);
-      expect(find.text('600 / 1000 g'), findsOneWidget);
-      expect(find.text('Essen'), findsOneWidget);
-      expect(find.text('Wegwerfen'), findsOneWidget);
-      expect(find.byType(CounterPill), findsOneWidget);
+      expect(find.text('600 g / 1000 g'), findsOneWidget);
+      expect(find.text('60%'), findsOneWidget);
     });
 
-    testWidgets('renders empty widget when item is loading placeholder', (
+    testWidgets('uses quantity and piece unit when weight is missing', (
+      WidgetTester tester,
+    ) async {
+      final noWeightItem = testItem.copyWith(weight: null);
+
+      await tester.pumpWidget(createWidgetUnderTest(item: noWeightItem));
+
+      expect(find.text('3 / 5'), findsOneWidget);
+
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Essen').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Verbleibend: 600 Stück'), findsOneWidget);
+    });
+
+    testWidgets('renders empty row when item is loading placeholder', (
       WidgetTester tester,
     ) async {
       final loadingItem = FridgeItem(
@@ -154,12 +176,29 @@ void main() {
       expect(find.text('Loading...'), findsNothing);
     });
 
+    testWidgets('tap toggles action panel visibility', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
+
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
+      expect(find.text('Essen'), findsOneWidget);
+      expect(find.text('Wegwerfen'), findsOneWidget);
+    });
+
     testWidgets('Essen opens amount picker dialog', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Essen').last);
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -172,7 +211,9 @@ void main() {
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Essen').last);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '120');
       await tester.tap(find.text('Speichern'));
@@ -184,6 +225,7 @@ void main() {
         mockNotifier.updateAmountCalls.first.$3,
         FridgeItemRemovalType.eaten,
       );
+      expect(mockNotifier.updateAmountCalls.first.$4, isFalse);
       expect(find.text('120 g entfernt (Essen)'), findsOneWidget);
     });
 
@@ -192,7 +234,9 @@ void main() {
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Wegwerfen'));
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Wegwerfen').last);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '80');
       await tester.tap(find.text('Speichern'));
@@ -204,17 +248,20 @@ void main() {
         mockNotifier.updateAmountCalls.first.$3,
         FridgeItemRemovalType.thrownAway,
       );
+      expect(mockNotifier.updateAmountCalls.first.$4, isFalse);
       expect(find.text('80 g entfernt (Wegwerfen)'), findsOneWidget);
     });
 
-    testWidgets('shows SnackBar when amount update fails', (
+    testWidgets('shows localized snackbar when amount update fails', (
       WidgetTester tester,
     ) async {
       mockNotifier.shouldThrowOnUpdateAmount = true;
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Essen').last);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '100');
       await tester.tap(find.text('Speichern'));
@@ -229,26 +276,6 @@ void main() {
       );
     });
 
-    testWidgets('CounterPill is read-only and buttons disabled when archived', (
-      WidgetTester tester,
-    ) async {
-      final archivedItem = testItem.copyWith(isArchived: true);
-
-      await tester.pumpWidget(createWidgetUnderTest(item: archivedItem));
-
-      final counterPill = tester.widget<CounterPill>(find.byType(CounterPill));
-      expect(counterPill.onUpdate, isNull);
-
-      final eatButton = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Essen'),
-      );
-      final throwButton = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Wegwerfen'),
-      );
-      expect(eatButton.onPressed, isNull);
-      expect(throwButton.onPressed, isNull);
-    });
-
     testWidgets('out of stock item disables amount actions', (
       WidgetTester tester,
     ) async {
@@ -259,17 +286,29 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest(item: outOfStockItem));
 
-      final eatButton = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Essen'),
-      );
-      final throwButton = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Wegwerfen'),
-      );
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+
+      final eatButton = findActionButton(tester, 'Essen');
+      final throwButton = findActionButton(tester, 'Wegwerfen');
       expect(eatButton.onPressed, isNull);
       expect(throwButton.onPressed, isNull);
+    });
 
-      final itemText = tester.widget<Text>(find.text('Test Apple'));
-      expect(itemText.style?.decoration, TextDecoration.lineThrough);
+    testWidgets('archived item disables amount actions', (
+      WidgetTester tester,
+    ) async {
+      final archivedItem = testItem.copyWith(isArchived: true);
+
+      await tester.pumpWidget(createWidgetUnderTest(item: archivedItem));
+
+      await tester.tap(find.text('Test Apple'));
+      await tester.pumpAndSettle();
+
+      final eatButton = findActionButton(tester, 'Essen');
+      final throwButton = findActionButton(tester, 'Wegwerfen');
+      expect(eatButton.onPressed, isNull);
+      expect(throwButton.onPressed, isNull);
     });
 
     testWidgets('swiping right adds item to shopping list', (
@@ -282,6 +321,7 @@ void main() {
           brand: null,
           quantity: 1,
           unitPrice: 0.0,
+          category: null,
         ),
       ).thenAnswer((_) async {});
 
@@ -289,7 +329,10 @@ void main() {
         createWidgetUnderTest(shoppingListRepository: mockShoppingListRepo),
       );
 
-      await tester.drag(find.byType(InventoryItemRow), const Offset(500, 0));
+      await tester.drag(
+        find.byKey(const Key('inventory_row_1')),
+        const Offset(500, 0),
+      );
       await tester.pumpAndSettle();
 
       verify(
@@ -298,8 +341,13 @@ void main() {
           brand: null,
           quantity: 1,
           unitPrice: 0.0,
+          category: null,
         ),
       ).called(1);
+      expect(
+        find.text('Test Apple zur Einkaufsliste hinzugefügt'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('long press adds item to shopping list', (
@@ -312,6 +360,7 @@ void main() {
           brand: null,
           quantity: 1,
           unitPrice: 0.0,
+          category: null,
         ),
       ).thenAnswer((_) async {});
 
@@ -319,7 +368,7 @@ void main() {
         createWidgetUnderTest(shoppingListRepository: mockShoppingListRepo),
       );
 
-      await tester.longPress(find.byType(InventoryItemRow));
+      await tester.longPress(find.text('Test Apple'));
       await tester.pumpAndSettle();
 
       verify(
@@ -328,8 +377,13 @@ void main() {
           brand: null,
           quantity: 1,
           unitPrice: 0.0,
+          category: null,
         ),
       ).called(1);
+      expect(
+        find.text('Test Apple zur Einkaufsliste hinzugefügt'),
+        findsOneWidget,
+      );
     });
   });
 }

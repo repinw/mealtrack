@@ -109,5 +109,39 @@ void main() {
       // No overflow should occur. tester.pumpWidget would throw if it did in some cases,
       // but we can also check for the presence of the widgets.
     });
+
+    testWidgets('adapts to tight height with secondary info', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        createTestWidget(
+          const SizedBox(
+            height: 73.2,
+            child: SummaryHeader(
+              label: 'LABEL',
+              totalValue: 12.0,
+              articleCount: 12,
+              secondaryInfo: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.receipt_long_outlined, size: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    '1 Einkäufe',
+                    style: TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('1 Einkäufe'), findsOneWidget);
+      expect(find.byType(SummaryHeader), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

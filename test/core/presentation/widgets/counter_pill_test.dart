@@ -22,9 +22,7 @@ void main() {
       expect(find.text('42 / 100'), findsOneWidget);
     });
 
-    testWidgets('displays theme-based text color when in stock', (
-      tester,
-    ) async {
+    testWidgets('uses inherited text color when in stock', (tester) async {
       final theme = ThemeData.light().copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue).copyWith(
           onSecondaryContainer: Colors.red, // Distinct color for verify
@@ -47,7 +45,7 @@ void main() {
       );
 
       final text = tester.widget<Text>(find.text('5 / 10'));
-      expect(text.style?.color, theme.colorScheme.onSecondaryContainer);
+      expect(text.style?.color, isNull);
 
       final container = tester.widget<Container>(
         find.ancestor(
@@ -56,12 +54,10 @@ void main() {
         ),
       );
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, theme.colorScheme.secondaryContainer);
+      expect(decoration.color, isNull);
     });
 
-    testWidgets('displays theme-based text color when out of stock', (
-      tester,
-    ) async {
+    testWidgets('uses inherited text color when out of stock', (tester) async {
       final theme = ThemeData.light().copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue).copyWith(
           onSurfaceVariant: Colors.purple, // Distinct color for verify
@@ -84,7 +80,7 @@ void main() {
       );
 
       final text = tester.widget<Text>(find.text('0 / 10'));
-      expect(text.style?.color, theme.colorScheme.onSurfaceVariant);
+      expect(text.style?.color, isNull);
 
       final container = tester.widget<Container>(
         find.ancestor(
@@ -93,7 +89,7 @@ void main() {
         ),
       );
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, theme.colorScheme.surfaceContainerHighest);
+      expect(decoration.color, isNull);
     });
 
     testWidgets('plus button is disabled when canIncrease is false', (

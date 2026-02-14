@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
-
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_group_header.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_group_header.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';

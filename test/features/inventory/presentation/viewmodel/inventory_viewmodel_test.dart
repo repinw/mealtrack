@@ -2,10 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
-import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
+import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../../../shared/test_helpers.dart';
 
@@ -47,87 +46,6 @@ void main() {
     return container;
   }
 
-  group('InventoryViewModel', () {
-    test('initial state is AsyncData(null)', () {
-      final container = makeContainer();
-      final state = container.read(inventoryViewModelProvider);
-      expect(state, const AsyncData<void>(null));
-    });
-
-    test('deleteAllItems calls repository and invalidates providers', () async {
-      final initialItem = createTestFridgeItem(
-        name: 'Test Item',
-        storeName: 'Test Store',
-        quantity: 1,
-        now: () => DateTime.now(),
-      );
-
-      when(
-        () => mockRepository.watchItems(),
-      ).thenAnswer((_) => Stream.value([initialItem]));
-
-      final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, _) {});
-      container.listen(archivedItemsExpandedProvider, (_, _) {});
-
-      await container.read(fridgeItemsProvider.future);
-
-      when(() => mockRepository.deleteAllItems()).thenAnswer((_) async {});
-      when(
-        () => mockRepository.watchItems(),
-      ).thenAnswer((_) => Stream.value([]));
-
-      await container
-          .read(inventoryViewModelProvider.notifier)
-          .deleteAllItems();
-
-      verify(() => mockRepository.deleteAllItems()).called(1);
-
-      final newItems = await container.read(fridgeItemsProvider.future);
-      expect(newItems, isEmpty);
-    });
-
-    test('deleteItem calls repository and updates state correctly', () async {
-      final item1 = createTestFridgeItem(
-        name: 'Item 1',
-        storeName: 'Store',
-        quantity: 2,
-        unitPrice: 10.0,
-      );
-      final item2 = createTestFridgeItem(
-        name: 'Item 2',
-        storeName: 'Store',
-        quantity: 3,
-        unitPrice: 5.0,
-      );
-
-      when(
-        () => mockRepository.watchItems(),
-      ).thenAnswer((_) => Stream.value([item1, item2]));
-
-      final container = makeContainer();
-      container.listen(fridgeItemsProvider, (_, _) {});
-      container.listen(archivedItemsExpandedProvider, (_, _) {});
-
-      await container.read(fridgeItemsProvider.future);
-
-      when(() => mockRepository.deleteItem(item1.id)).thenAnswer((_) async {});
-      when(
-        () => mockRepository.watchItems(),
-      ).thenAnswer((_) => Stream.value([item2]));
-
-      await container
-          .read(inventoryViewModelProvider.notifier)
-          .deleteItem(item1.id);
-
-      verify(() => mockRepository.deleteItem(item1.id)).called(1);
-
-      final currentItems = await container.read(fridgeItemsProvider.future);
-      expect(currentItems, hasLength(1));
-      expect(currentItems.first.id, item2.id);
-    });
-  });
-
   group('inventoryDisplayListProvider', () {
     final fixedDate = DateTime(2023, 1, 1, 12, 0, 0);
     final sharedReceiptId = 'receipt-123';
@@ -160,6 +78,9 @@ void main() {
         final container = makeContainer();
         container.listen(fridgeItemsProvider, (_, _) {});
         container.listen(archivedItemsExpandedProvider, (_, _) {});
+        container
+            .read(inventoryFilterProvider.notifier)
+            .setFilter(InventoryFilterType.all);
 
         await container.read(fridgeItemsProvider.future);
 
@@ -514,6 +435,10 @@ void main() {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(archivedItemsExpandedProvider, (_, _) {});
+      container.listen(inventoryFilterProvider, (_, _) {});
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.all);
       await container.read(fridgeItemsProvider.future);
 
       var displayList = container.read(inventoryDisplayListProvider).value!;
@@ -545,6 +470,10 @@ void main() {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(archivedItemsExpandedProvider, (_, _) {});
+      container.listen(inventoryFilterProvider, (_, _) {});
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.all);
       await container.read(fridgeItemsProvider.future);
       await container.read(collapsedReceiptGroupsProvider.future);
 
@@ -656,6 +585,9 @@ void main() {
       final container = makeContainer();
       container.listen(fridgeItemsProvider, (_, _) {});
       container.listen(archivedItemsExpandedProvider, (_, _) {});
+      container
+          .read(inventoryFilterProvider.notifier)
+          .setFilter(InventoryFilterType.all);
 
       await container.read(fridgeItemsProvider.future);
 

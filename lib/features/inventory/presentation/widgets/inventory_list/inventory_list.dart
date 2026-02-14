@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/presentation/layout/scroll_spacing.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/archived_section_header.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_group_header.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_group_header.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_tabs.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 
 class InventoryList extends ConsumerWidget {

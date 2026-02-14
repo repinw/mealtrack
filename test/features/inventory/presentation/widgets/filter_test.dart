@@ -7,7 +7,9 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class MockInventoryFilterNotifier extends InventoryFilter {
-  InventoryFilterType _filter = InventoryFilterType.all;
+  MockInventoryFilterNotifier(this._filter);
+
+  InventoryFilterType _filter;
   InventoryFilterType? lastSetFilter;
 
   @override
@@ -26,9 +28,9 @@ void main() {
     late MockInventoryFilterNotifier mockFilterNotifier;
 
     Widget buildTestWidget({
-      InventoryFilterType initialFilter = InventoryFilterType.all,
+      InventoryFilterType initialFilter = InventoryFilterType.available,
     }) {
-      mockFilterNotifier = MockInventoryFilterNotifier();
+      mockFilterNotifier = MockInventoryFilterNotifier(initialFilter);
       return ProviderScope(
         overrides: [
           inventoryFilterProvider.overrideWith(() => mockFilterNotifier),
@@ -42,7 +44,7 @@ void main() {
       );
     }
 
-    testWidgets('renders all three filter tabs', (tester) async {
+    testWidgets('renders all tabs', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
       expect(find.text('Alle'), findsOneWidget);
@@ -50,10 +52,12 @@ void main() {
       expect(find.text('Verbraucht'), findsOneWidget);
     });
 
-    testWidgets('tapping Available tab calls setFilter with available', (
+    testWidgets('selecting available keeps filter on available', (
       tester,
     ) async {
-      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpWidget(
+        buildTestWidget(initialFilter: InventoryFilterType.all),
+      );
 
       await tester.tap(find.text('Vorrat'));
       await tester.pumpAndSettle();
@@ -61,7 +65,9 @@ void main() {
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.available);
     });
 
-    testWidgets('tapping Empty tab calls setFilter with empty', (tester) async {
+    testWidgets('selecting consumed calls setFilter with consumed', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
       await tester.tap(find.text('Verbraucht'));
@@ -70,32 +76,23 @@ void main() {
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.consumed);
     });
 
-    testWidgets('tapping All tab calls setFilter with all', (tester) async {
+    testWidgets('selecting all calls setFilter with all', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.tap(find.text('Vorrat'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Alle'));
       await tester.pumpAndSettle();
 
       expect(mockFilterNotifier.lastSetFilter, InventoryFilterType.all);
     });
 
-    testWidgets('selected tab has bold text', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
+    testWidgets('opening menu does not break with consumed as initial', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestWidget(initialFilter: InventoryFilterType.consumed),
+      );
 
-      final allesText = tester.widget<Text>(find.text('Alle'));
-      expect(allesText.style?.fontWeight, FontWeight.bold);
-    });
-
-    testWidgets('unselected tabs have normal weight text', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-
-      final availableText = tester.widget<Text>(find.text('Vorrat'));
-      expect(availableText.style?.fontWeight, FontWeight.normal);
-
-      final emptyText = tester.widget<Text>(find.text('Verbraucht'));
-      expect(emptyText.style?.fontWeight, FontWeight.normal);
+      expect(find.text('Verbraucht'), findsOneWidget);
     });
   });
 }

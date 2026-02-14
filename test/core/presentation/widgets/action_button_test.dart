@@ -38,7 +38,7 @@ void main() {
       expect(wasTapped, isTrue);
     });
 
-    testWidgets('has correct color in active state', (
+    testWidgets('icon color is inherited in active state', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -50,10 +50,10 @@ void main() {
       );
 
       final iconWidget = tester.widget<Icon>(find.byType(Icon));
-      expect(iconWidget.color, Colors.black87);
+      expect(iconWidget.color, isNull);
     });
 
-    testWidgets('has correct color in disabled state (onTap is null)', (
+    testWidgets('icon color is inherited in disabled state (onTap is null)', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -63,7 +63,10 @@ void main() {
       );
 
       final iconWidget = tester.widget<Icon>(find.byType(Icon));
-      expect(iconWidget.color, Colors.grey.shade300);
+      expect(iconWidget.color, isNull);
+
+      final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+      expect(inkWell.onTap, isNull);
     });
   });
 }

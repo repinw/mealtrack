@@ -57,6 +57,9 @@ class InventoryAmountPickerDialogState
   }
 
   double get maxAmount => widget.item.resolvedRemainingAmountBase;
+  bool get hasWeight => parseNormalizedWeightAmount(widget.item.weight) != null;
+  String get displayUnit =>
+      hasWeight ? widget.item.resolvedAmountUnit.symbol : 'Stück';
 
   void applyPreset(double amount) {
     amountController.text = formatInventoryAmount(amount);
@@ -80,7 +83,7 @@ class InventoryAmountPickerDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final unit = widget.item.resolvedAmountUnit.symbol;
+    final unit = displayUnit;
     final pieceAmount = widget.item.amountPerPieceBase;
     final presets = <double>{
       if (pieceAmount > fridgeItemAmountEpsilon) pieceAmount,

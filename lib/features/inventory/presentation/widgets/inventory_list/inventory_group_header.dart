@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
