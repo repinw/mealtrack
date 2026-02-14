@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
 
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_display_item.dart';
-
-import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

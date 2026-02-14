@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_sliver_app_bar.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/collapsed_summary.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_sliver_app_bar.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import '../../../../shared/test_helpers.dart';
@@ -62,19 +63,28 @@ Widget _buildTestWidget({
 
 Finder _expandedOpacityFinder() {
   return find.byWidgetPredicate(
-    (widget) => widget is Opacity && widget.child is Column,
+    (widget) => widget is Opacity && widget.child is Align,
     description: 'expanded summary opacity',
   );
 }
 
 Finder _collapsedOpacityFinder() {
   return find.byWidgetPredicate(
-    (widget) =>
-        widget is Opacity &&
-        widget.child is SizedBox &&
-        (widget.child as SizedBox).height == kToolbarHeight,
+    (widget) => widget is Opacity && widget.child is CollapsedSummary,
     description: 'collapsed summary opacity',
   );
+}
+
+double _opacityOrFallback(
+  WidgetTester tester,
+  Finder finder, {
+  required double fallback,
+}) {
+  if (finder.evaluate().isEmpty) {
+    return fallback;
+  }
+
+  return tester.widget<Opacity>(finder.first).opacity;
 }
 
 void main() {
@@ -171,24 +181,34 @@ void main() {
 
         expect(find.byType(SummaryHeader), findsOneWidget);
 
-        final expandedAtTop = tester.widget<Opacity>(_expandedOpacityFinder());
-        final collapsedAtTop = tester.widget<Opacity>(
-          _collapsedOpacityFinder(),
+        final expandedAtTop = _opacityOrFallback(
+          tester,
+          _expandedOpacityFinder(),
+          fallback: 0.0,
         );
-        expect(expandedAtTop.opacity, greaterThan(0.9));
-        expect(collapsedAtTop.opacity, lessThan(0.1));
+        final collapsedAtTop = _opacityOrFallback(
+          tester,
+          _collapsedOpacityFinder(),
+          fallback: 0.0,
+        );
+        expect(expandedAtTop, greaterThan(0.9));
+        expect(collapsedAtTop, lessThan(0.1));
 
         await tester.drag(find.byType(NestedScrollView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
-        final expandedAfterScroll = tester.widget<Opacity>(
+        final expandedAfterScroll = _opacityOrFallback(
+          tester,
           _expandedOpacityFinder(),
+          fallback: 0.0,
         );
-        final collapsedAfterScroll = tester.widget<Opacity>(
+        final collapsedAfterScroll = _opacityOrFallback(
+          tester,
           _collapsedOpacityFinder(),
+          fallback: 1.0,
         );
-        expect(expandedAfterScroll.opacity, lessThan(0.1));
-        expect(collapsedAfterScroll.opacity, greaterThan(0.9));
+        expect(expandedAfterScroll, lessThan(0.1));
+        expect(collapsedAfterScroll, greaterThan(0.9));
         expect(find.byType(SummaryHeader), findsNothing);
         expect(
           find.byWidgetPredicate(

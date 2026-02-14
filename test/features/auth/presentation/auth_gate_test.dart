@@ -11,7 +11,6 @@ import 'package:mealtrack/features/auth/provider/auth_service.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_stats.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
-import 'package:mealtrack/features/inventory/presentation/viewmodel/inventory_viewmodel.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.dart';
@@ -179,12 +178,8 @@ void main() {
             ),
           ),
           shoppingListProvider.overrideWith(() => MockShoppingList()),
-          suggestionsProvider.overrideWith(
-            (ref) => <CategorySuggestion>[],
-          ),
-          quickProductSuggestionsProvider.overrideWith(
-            (ref) => const [],
-          ),
+          suggestionsProvider.overrideWith((ref) => <CategorySuggestion>[]),
+          quickProductSuggestionsProvider.overrideWith((ref) => const []),
         ],
       );
       addTearDown(container.dispose);

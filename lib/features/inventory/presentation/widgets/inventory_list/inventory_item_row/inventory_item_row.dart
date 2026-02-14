@@ -131,6 +131,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     messenger.showSnackBar(
       SnackBar(
         content: Text('$removedLabel entfernt ($actionLabel)'),
+        duration: const Duration(seconds: 2),
         action: SnackBarAction(
           label: 'Rückgängig',
           onPressed: () {

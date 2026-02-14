@@ -6,9 +6,16 @@ import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class InventorySliverAppBar extends ConsumerWidget {
-  const InventorySliverAppBar({super.key, required this.title});
+  const InventorySliverAppBar({
+    super.key,
+    required this.title,
+    this.onOpenSharing,
+    this.onOpenSettings,
+  });
 
   final String title;
+  final VoidCallback? onOpenSharing;
+  final VoidCallback? onOpenSettings;
 
   static const double _expandedHeight = 160.0;
 
@@ -32,12 +39,20 @@ class InventorySliverAppBar extends ConsumerWidget {
           elevation: 0,
           automaticallyImplyLeading: false,
           centerTitle: false,
-          actions: [InventoryAppBarActions(collapseProgress: collapseProgress)],
+          actions: [
+            InventoryAppBarActions(
+              collapseProgress: collapseProgress,
+              onOpenSharing: onOpenSharing,
+              onOpenSettings: onOpenSettings,
+            ),
+          ],
           flexibleSpace: InventoryHeaderContent(
             title: title,
             collapseProgress: collapseProgress,
             trailingActionsSpace: InventoryAppBarActions.trailingActionsSpace(
               collapseProgress,
+              hasSharingAction: onOpenSharing != null,
+              hasSettingsAction: onOpenSettings != null,
             ),
             stockValueLabel: l10n.stockValue,
             purchasesLabel: l10n.purchases(stats.scanCount),

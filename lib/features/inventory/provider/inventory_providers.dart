@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/shared_preferences_provider.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
+import 'package:mealtrack/features/inventory/domain/inventory_display_item.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/shoppinglist/data/category_stats_repository.dart';
 
@@ -300,6 +301,138 @@ class InventoryFilter extends _$InventoryFilter {
   InventoryFilterType build() => InventoryFilterType.available;
 
   void setFilter(InventoryFilterType type) => state = type;
+}
+
+final inventoryDisplayListProvider =
+    Provider.autoDispose<AsyncValue<List<InventoryDisplayItem>>>((ref) {
+      final filterType = ref.watch(inventoryFilterProvider);
+      final fridgeState = ref.watch(fridgeItemsProvider);
+      final isArchivedExpanded = ref.watch(archivedItemsExpandedProvider);
+      final collapsedGroups = ref.watch(collapsedReceiptGroupsProvider);
+
+      return fridgeState.whenData((items) {
+        if (items.isEmpty && filterType == InventoryFilterType.all) {
+          return [];
+        }
+
+        final nonArchivedItems = <FridgeItem>[];
+        final archivedItems = <FridgeItem>[];
+
+        for (final item in items) {
+          if (item.isArchived) {
+            archivedItems.add(item);
+          } else {
+            nonArchivedItems.add(item);
+          }
+        }
+
+        final collapsedGroupIds = collapsedGroups.asData?.value ?? <String>{};
+        final displayList = <InventoryDisplayItem>[
+          ..._buildInventoryGroupList(
+            items: nonArchivedItems,
+            areArchived: false,
+            collapsedGroups: collapsedGroupIds,
+            filterType: filterType,
+          ),
+        ];
+
+        if (filterType == InventoryFilterType.all && archivedItems.isNotEmpty) {
+          final archivedReceiptIds = archivedItems
+              .map((item) => item.receiptId ?? '')
+              .toSet();
+
+          displayList.add(
+            InventoryArchivedSectionItem(
+              archivedReceiptCount: archivedReceiptIds.length,
+              isExpanded: isArchivedExpanded,
+            ),
+          );
+
+          if (isArchivedExpanded) {
+            displayList.addAll(
+              _buildInventoryGroupList(
+                items: archivedItems,
+                areArchived: true,
+                collapsedGroups: collapsedGroupIds,
+                filterType: filterType,
+              ),
+            );
+          }
+        }
+
+        return displayList;
+      });
+    });
+
+List<InventoryDisplayItem> _buildInventoryGroupList({
+  required List<FridgeItem> items,
+  required bool areArchived,
+  required Set<String> collapsedGroups,
+  required InventoryFilterType filterType,
+}) {
+  final displayList = <InventoryDisplayItem>[];
+  final groups = <String, List<FridgeItem>>{};
+
+  final sortedItems = List<FridgeItem>.from(items)
+    ..sort((a, b) {
+      final dateA = a.receiptDate ?? a.entryDate;
+      final dateB = b.receiptDate ?? b.entryDate;
+      return dateB.compareTo(dateA);
+    });
+
+  for (final item in sortedItems) {
+    final key = item.receiptId ?? '';
+    groups.putIfAbsent(key, () => []).add(item);
+  }
+
+  for (final key in groups.keys) {
+    final group = groups[key]!;
+    final first = group.first;
+    final isCollapsed = collapsedGroups.contains(key);
+
+    final filteredItems = group.where((item) {
+      if (areArchived) {
+        return true;
+      }
+
+      switch (filterType) {
+        case InventoryFilterType.all:
+          return true;
+        case InventoryFilterType.available:
+          return item.quantity > 0;
+        case InventoryFilterType.consumed:
+          return item.quantity < item.initialQuantity;
+      }
+    }).toList();
+
+    if (filteredItems.isEmpty && !areArchived) {
+      continue;
+    }
+
+    final isFullyConsumed = group.every((item) => item.quantity == 0);
+
+    displayList.add(
+      InventoryHeaderItem(
+        storeName: first.storeName,
+        entryDate: first.receiptDate ?? first.entryDate,
+        itemCount: group.length,
+        receiptId: key,
+        isFullyConsumed: isFullyConsumed,
+        isArchived: areArchived,
+        isCollapsed: isCollapsed,
+      ),
+    );
+
+    if (!isCollapsed) {
+      displayList.addAll(
+        filteredItems.map((item) => InventoryProductItem(item.id)),
+      );
+    }
+
+    displayList.add(const InventorySpacerItem());
+  }
+
+  return displayList;
 }
 
 @riverpod

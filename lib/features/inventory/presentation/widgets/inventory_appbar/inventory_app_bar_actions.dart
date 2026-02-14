@@ -1,18 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/filter.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/settings/presentation/settings_page.dart';
-import 'package:mealtrack/features/sharing/presentation/sharing_page.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class InventoryAppBarActions extends ConsumerWidget {
-  const InventoryAppBarActions({super.key, required this.collapseProgress});
+  const InventoryAppBarActions({
+    super.key,
+    required this.collapseProgress,
+    this.onOpenSharing,
+    this.onOpenSettings,
+  });
 
   static const double _hideShareSettingsStart = 0.60;
   static const double _hideShareSettingsEnd = 0.85;
   final double collapseProgress;
+  final VoidCallback? onOpenSharing;
+  final VoidCallback? onOpenSettings;
 
   static double shareSettingsVisibility(double collapseProgress) {
     if (collapseProgress <= _hideShareSettingsStart) {
@@ -27,9 +31,16 @@ class InventoryAppBarActions extends ConsumerWidget {
         (_hideShareSettingsEnd - _hideShareSettingsStart);
   }
 
-  static double trailingActionsSpace(double collapseProgress) {
+  static double trailingActionsSpace(
+    double collapseProgress, {
+    required bool hasSharingAction,
+    required bool hasSettingsAction,
+  }) {
     final fixedSlots = 1 + (kDebugMode ? 1 : 0);
-    final optionalSlots = 2 * shareSettingsVisibility(collapseProgress);
+    final optionalActionCount =
+        (hasSharingAction ? 1 : 0) + (hasSettingsAction ? 1 : 0);
+    final optionalSlots =
+        optionalActionCount * shareSettingsVisibility(collapseProgress);
     return ((fixedSlots + optionalSlots) * kToolbarHeight) + 8;
   }
 
@@ -37,6 +48,9 @@ class InventoryAppBarActions extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final visibility = shareSettingsVisibility(collapseProgress);
+    final hasSharingAction = onOpenSharing != null;
+    final hasSettingsAction = onOpenSettings != null;
+    final hasOptionalActions = hasSharingAction || hasSettingsAction;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -54,48 +68,38 @@ class InventoryAppBarActions extends ConsumerWidget {
               }
             },
           ),
-        const FilterWidget(),
-        ClipRect(
-          child: Align(
-            alignment: Alignment.centerRight,
-            widthFactor: visibility,
-            child: IgnorePointer(
-              ignoring: visibility < 0.2,
-              child: Opacity(
-                opacity: visibility,
-                child: Transform.translate(
-                  offset: Offset((1 - visibility) * 12, 0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SharingPage(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.people_outline),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings),
-                        tooltip: l10n.settings,
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SettingsPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+        if (hasOptionalActions)
+          ClipRect(
+            child: Align(
+              alignment: Alignment.centerRight,
+              widthFactor: visibility,
+              child: IgnorePointer(
+                ignoring: visibility < 0.2,
+                child: Opacity(
+                  opacity: visibility,
+                  child: Transform.translate(
+                    offset: Offset((1 - visibility) * 12, 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (hasSharingAction)
+                          IconButton(
+                            onPressed: onOpenSharing,
+                            icon: const Icon(Icons.people_outline),
+                          ),
+                        if (hasSettingsAction)
+                          IconButton(
+                            icon: const Icon(Icons.settings),
+                            tooltip: l10n.settings,
+                            onPressed: onOpenSettings,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
