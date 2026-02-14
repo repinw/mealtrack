@@ -1,8 +1,9 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_amount_picker_dialog.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/category_icon.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/remaining_progress_bar.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_list/inventory_item_row/status_line.dart';
@@ -21,64 +22,7 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 
 class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   bool _isActionPanelVisible = false;
-  static const Set<String> _weightUnits = {
-    'mg',
-    'g',
-    'kg',
-    'ml',
-    'cl',
-    'l',
-    'oz',
-    'lb',
-    'lbs',
-  };
-
-  double _remainingRatio(int quantity, int initialQuantity) {
-    if (initialQuantity <= 0) return 0;
-    return (quantity / initialQuantity).clamp(0.0, 1.0);
-  }
-
-  String _remainingLabel(
-    int quantity,
-    int initialQuantity,
-    _ParsedWeight? parsedWeight,
-  ) {
-    if (parsedWeight == null) {
-      return '$quantity / $initialQuantity';
-    }
-
-    final remainingWeight = parsedWeight.amount * quantity;
-    final totalWeight = parsedWeight.amount * initialQuantity;
-    final unit = parsedWeight.unit;
-
-    return '${_formatWeightAmount(remainingWeight)} $unit / ${_formatWeightAmount(totalWeight)} $unit';
-  }
-
-  _ParsedWeight? _parseWeight(String? rawWeight) {
-    if (rawWeight == null) return null;
-    final normalized = rawWeight.trim();
-    if (normalized.isEmpty) return null;
-
-    final match = RegExp(
-      r'([0-9]+(?:[.,][0-9]+)?)\s*([a-zA-Z]+)',
-    ).firstMatch(normalized);
-
-    if (match == null) return null;
-
-    final amount = double.tryParse(match.group(1)!.replaceAll(',', '.'));
-    final unit = match.group(2)?.toLowerCase();
-    if (amount == null || unit == null || unit.isEmpty) return null;
-    if (!_weightUnits.contains(unit)) return null;
-
-    return _ParsedWeight(amount: amount, unit: unit);
-  }
-
-  String _formatWeightAmount(double amount) {
-    if ((amount - amount.roundToDouble()).abs() < 0.001) {
-      return amount.toInt().toString();
-    }
-    return amount.toStringAsFixed(1);
-  }
+  Timer? _snackBarCloseTimer;
 
   void _addItemToShoppingList(
     BuildContext context,
@@ -96,50 +40,82 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     }
   }
 
-  String _removedAmountLabel(int removedUnits, _ParsedWeight? parsedWeight) {
-    if (parsedWeight == null) {
-      return '$removedUnits Stück';
-    }
-
-    final removedWeight = parsedWeight.amount * removedUnits;
-    return '${_formatWeightAmount(removedWeight)} ${parsedWeight.unit}';
-  }
-
-  Future<void> _mockRemoveRandomAmount(
+  Future<void> _applyAmountAction(
     BuildContext context,
     WidgetRef ref,
     FridgeItem item, {
-    required _ParsedWeight? parsedWeight,
+    required FridgeItemRemovalType removalType,
     required String actionLabel,
   }) async {
-    if (item.quantity <= 0) return;
+    if (item.isArchived || item.isConsumed) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
+
+    final selectedAmount = await InventoryAmountPickerDialog.show(
+      context,
+      item: item,
+      actionLabel: actionLabel,
+    );
+    if (selectedAmount == null || selectedAmount <= fridgeItemAmountEpsilon) {
+      return;
+    }
+
     final fridgeItemsNotifier = ref.read(fridgeItemsProvider.notifier);
-    final removedUnits = Random().nextInt(item.quantity) + 1;
     try {
-      await fridgeItemsNotifier.updateQuantity(item, -removedUnits);
+      await fridgeItemsNotifier.updateAmount(
+        item,
+        selectedAmount,
+        removalType: removalType,
+      );
     } catch (_) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Aktion fehlgeschlagen')),
+        SnackBar(content: Text(l10n.quantityUpdateFailed)),
       );
       return;
     }
 
-    final removedLabel = _removedAmountLabel(removedUnits, parsedWeight);
-    messenger.showSnackBar(
+    final hasWeight = parseNormalizedWeightAmount(item.weight) != null;
+    final removedLabel = hasWeight
+        ? '${formatInventoryAmount(selectedAmount)} ${item.resolvedAmountUnit.symbol}'
+        : '${formatInventoryAmount(selectedAmount)} Stück';
+    final snackBarController = messenger.showSnackBar(
       SnackBar(
         content: Text('$removedLabel entfernt ($actionLabel)'),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(milliseconds: 1200),
         action: SnackBarAction(
           label: 'Rückgängig',
           onPressed: () {
-            fridgeItemsNotifier.updateQuantity(item, removedUnits);
+            fridgeItemsNotifier
+                .updateAmount(
+                  item,
+                  selectedAmount,
+                  removalType: removalType,
+                  isUndo: true,
+                )
+                .catchError((_) {
+                  if (!mounted) return;
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(l10n.quantityUpdateFailed)),
+                  );
+                });
           },
         ),
       ),
     );
+
+    _snackBarCloseTimer?.cancel();
+    _snackBarCloseTimer = Timer(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+      snackBarController.close();
+    });
+  }
+
+  @override
+  void dispose() {
+    _snackBarCloseTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -152,7 +128,7 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       return const SizedBox.shrink();
     }
 
-    final isOutOfStock = item.quantity == 0;
+    final isOutOfStock = item.isConsumed;
     final isArchived = item.isArchived;
     final brand = item.brand?.trim() ?? '';
     final hasBrand = brand.isNotEmpty;
@@ -171,14 +147,15 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       fontWeight: FontWeight.w500,
       color: colorScheme.onSurface.withValues(alpha: 0.58),
     );
-    final parsedWeight = _parseWeight(item.weight);
-    final hasWeight = parsedWeight != null;
-    final remainingRatio = _remainingRatio(item.quantity, item.initialQuantity);
-    final remainingLabel = _remainingLabel(
-      item.quantity,
-      item.initialQuantity,
-      parsedWeight,
-    );
+    final hasWeight = parseNormalizedWeightAmount(item.weight) != null;
+    final remainingInitial = item.resolvedInitialAmountBase;
+    final remainingRatio = remainingInitial <= fridgeItemAmountEpsilon
+        ? 0.0
+        : (item.resolvedRemainingAmountBase / remainingInitial).clamp(0.0, 1.0);
+    final remainingLabel = hasWeight
+        ? '${formatInventoryAmount(item.resolvedRemainingAmountBase)} ${item.resolvedAmountUnit.symbol} / '
+              '${formatInventoryAmount(item.resolvedInitialAmountBase)} ${item.resolvedAmountUnit.symbol}'
+        : '${item.quantity} / ${item.initialQuantity}';
 
     return Dismissible(
       key: Key('inventory_row_${item.id}'),
@@ -282,11 +259,12 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
                               TextButton.icon(
                                 onPressed: (isArchived || isOutOfStock)
                                     ? null
-                                    : () => _mockRemoveRandomAmount(
+                                    : () => _applyAmountAction(
                                         context,
                                         ref,
                                         item,
-                                        parsedWeight: parsedWeight,
+                                        removalType:
+                                            FridgeItemRemovalType.thrownAway,
                                         actionLabel: 'Wegwerfen',
                                       ),
                                 icon: const Icon(
@@ -308,11 +286,12 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
                               FilledButton.icon(
                                 onPressed: (isArchived || isOutOfStock)
                                     ? null
-                                    : () => _mockRemoveRandomAmount(
+                                    : () => _applyAmountAction(
                                         context,
                                         ref,
                                         item,
-                                        parsedWeight: parsedWeight,
+                                        removalType:
+                                            FridgeItemRemovalType.eaten,
                                         actionLabel: 'Essen',
                                       ),
                                 icon: const Icon(
@@ -348,11 +327,4 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       ),
     );
   }
-}
-
-class _ParsedWeight {
-  const _ParsedWeight({required this.amount, required this.unit});
-
-  final double amount;
-  final String unit;
 }
