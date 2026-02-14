@@ -121,6 +121,11 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
       final category = (map['c']) as String?;
 
       final isFood = (map['if']) as bool? ?? true;
+      final normalizedAmounts = normalizeItemAmounts(
+        quantity: quantity,
+        initialQuantity: quantity,
+        weight: weight,
+      );
 
       return FridgeItem(
         id: const Uuid().v4(),
@@ -131,6 +136,9 @@ List<FridgeItem> parseScannedItemsFromJson(String jsonString) {
         initialQuantity: quantity,
         unitPrice: unitPrice,
         weight: weight,
+        amountUnit: normalizedAmounts.unit,
+        initialAmountBase: normalizedAmounts.initialAmountBase,
+        remainingAmountBase: normalizedAmounts.remainingAmountBase,
         brand: brand,
         category: category,
         discounts: discounts,

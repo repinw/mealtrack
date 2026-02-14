@@ -17,6 +17,14 @@ _FridgeItem _$FridgeItemFromJson(Map<String, dynamic> json) => _FridgeItem(
   initialQuantity: (json['initialQuantity'] as num?)?.toInt() ?? 1,
   unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
   weight: json['weight'] as String?,
+  amountUnit:
+      $enumDecodeNullable(_$FridgeItemAmountUnitEnumMap, json['amountUnit']) ??
+      FridgeItemAmountUnit.gram,
+  initialAmountBase: (json['initialAmountBase'] as num?)?.toDouble() ?? 0.0,
+  remainingAmountBase: (json['remainingAmountBase'] as num?)?.toDouble() ?? 0.0,
+  eatenAmountBase: (json['eatenAmountBase'] as num?)?.toDouble() ?? 0.0,
+  thrownAwayAmountBase:
+      (json['thrownAwayAmountBase'] as num?)?.toDouble() ?? 0.0,
   consumptionEvents:
       (json['consumptionEvents'] as List<dynamic>?)
           ?.map((e) => DateTime.parse(e as String))
@@ -47,6 +55,11 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'initialQuantity': instance.initialQuantity,
       'unitPrice': instance.unitPrice,
       'weight': instance.weight,
+      'amountUnit': _$FridgeItemAmountUnitEnumMap[instance.amountUnit]!,
+      'initialAmountBase': instance.initialAmountBase,
+      'remainingAmountBase': instance.remainingAmountBase,
+      'eatenAmountBase': instance.eatenAmountBase,
+      'thrownAwayAmountBase': instance.thrownAwayAmountBase,
       'consumptionEvents': instance.consumptionEvents
           .map((e) => e.toIso8601String())
           .toList(),
@@ -60,3 +73,8 @@ Map<String, dynamic> _$FridgeItemToJson(_FridgeItem instance) =>
       'isDiscount': instance.isDiscount,
       'isArchived': instance.isArchived,
     };
+
+const _$FridgeItemAmountUnitEnumMap = {
+  FridgeItemAmountUnit.gram: 'gram',
+  FridgeItemAmountUnit.milliliter: 'milliliter',
+};

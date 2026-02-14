@@ -114,7 +114,7 @@ void main() {
         name: 'Banana',
         storeName: 'Store',
         quantity: 1,
-      ).copyWith(quantity: 0);
+      ).adjustQuantity(-1);
       await repository.addItems([item1, item2]);
 
       final result = await repository.getAvailableItems();

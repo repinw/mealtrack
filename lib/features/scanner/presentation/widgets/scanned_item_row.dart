@@ -166,6 +166,7 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
   void _updateItem() {
     final weightText = _weightController.text;
     final brandText = _brandController.text;
+    final normalizedWeightText = weightText.isNotEmpty ? weightText : null;
 
     var quantity = int.tryParse(_qtyController.text) ?? widget.item.quantity;
     if (quantity < 1) quantity = 1;
@@ -178,13 +179,25 @@ class _ScannedItemRowState extends State<ScannedItemRow> {
     }
 
     final unitPrice = quantity > 0 ? totalPrice / quantity : 0.0;
+    final normalizedAmounts = normalizeItemAmounts(
+      quantity: quantity,
+      initialQuantity: quantity,
+      weight: normalizedWeightText,
+      defaultUnit: widget.item.amountUnit,
+    );
 
     final newItem = widget.item.copyWith(
       name: _nameController.text,
-      weight: weightText.isNotEmpty ? weightText : null,
+      weight: normalizedWeightText,
       brand: brandText.isNotEmpty ? brandText : null,
       unitPrice: unitPrice,
       quantity: quantity,
+      initialQuantity: quantity,
+      amountUnit: normalizedAmounts.unit,
+      initialAmountBase: normalizedAmounts.initialAmountBase,
+      remainingAmountBase: normalizedAmounts.remainingAmountBase,
+      eatenAmountBase: 0.0,
+      thrownAwayAmountBase: 0.0,
     );
 
     widget.onChanged(newItem);

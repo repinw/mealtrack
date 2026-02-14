@@ -20,6 +20,12 @@ FridgeItem createTestFridgeItem({
   bool isArchived = false,
   DateTime? entryDate,
 }) {
+  final normalizedAmounts = normalizeItemAmounts(
+    quantity: quantity,
+    initialQuantity: quantity,
+    weight: weight,
+  );
+
   return FridgeItem(
     id: id ?? const Uuid().v4(),
     name: name,
@@ -28,6 +34,9 @@ FridgeItem createTestFridgeItem({
     initialQuantity: quantity,
     unitPrice: unitPrice,
     weight: weight,
+    amountUnit: normalizedAmounts.unit,
+    initialAmountBase: normalizedAmounts.initialAmountBase,
+    remainingAmountBase: normalizedAmounts.remainingAmountBase,
     entryDate: entryDate ?? (now ?? DateTime.now)(),
     receiptId: receiptId,
     receiptDate: receiptDate,

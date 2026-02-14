@@ -123,15 +123,16 @@ List<InventoryDisplayItem> _buildGroupList({
         case InventoryFilterType.all:
           return true;
         case InventoryFilterType.available:
-          return item.quantity > 0;
+          return !item.isConsumed;
         case InventoryFilterType.consumed:
-          return item.quantity < item.initialQuantity;
+          return item.resolvedRemainingAmountBase <
+              item.resolvedInitialAmountBase;
       }
     }).toList();
 
     if (displayItems.isEmpty && !areArchived) continue;
 
-    final isFullyConsumed = group.every((item) => item.quantity == 0);
+    final isFullyConsumed = group.every((item) => item.isConsumed);
 
     displayList.add(
       InventoryHeaderItem(

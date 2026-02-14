@@ -61,10 +61,13 @@ void main() {
       );
 
       await tester.pumpWidget(buildTestWidget(item));
-      expect(find.byType(Text), findsOneWidget);
+      expect(find.text('Test Item'), findsOneWidget);
+      expect(find.text('Test Brand'), findsNothing);
     });
 
-    testWidgets('displays weight when provided', (tester) async {
+    testWidgets('displays normalized amount when weight is provided', (
+      tester,
+    ) async {
       final item = createTestFridgeItem(
         name: 'Test Item',
         storeName: 'Store',
@@ -74,33 +77,39 @@ void main() {
       );
 
       await tester.pumpWidget(buildTestWidget(item));
-      expect(find.text('500g'), findsOneWidget);
+      expect(find.text('500 / 500 g'), findsOneWidget);
     });
 
-    testWidgets('does not display weight when null', (tester) async {
-      final item = createTestFridgeItem(
-        name: 'Test Item',
-        storeName: 'Store',
-        quantity: 1,
-        unitPrice: 1.0,
-      );
+    testWidgets(
+      'falls back to piece-based amount display when weight is null',
+      (tester) async {
+        final item = createTestFridgeItem(
+          name: 'Test Item',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.0,
+        );
 
-      await tester.pumpWidget(buildTestWidget(item));
-      expect(find.text('500g'), findsNothing);
-    });
+        await tester.pumpWidget(buildTestWidget(item));
+        expect(find.text('1 / 1 g'), findsOneWidget);
+      },
+    );
 
-    testWidgets('does not display weight when empty', (tester) async {
-      final item = createTestFridgeItem(
-        name: 'Test Item',
-        storeName: 'Store',
-        quantity: 1,
-        unitPrice: 1.0,
-        weight: '',
-      );
+    testWidgets(
+      'falls back to piece-based amount display when weight is empty',
+      (tester) async {
+        final item = createTestFridgeItem(
+          name: 'Test Item',
+          storeName: 'Store',
+          quantity: 1,
+          unitPrice: 1.0,
+          weight: '',
+        );
 
-      await tester.pumpWidget(buildTestWidget(item));
-      expect(find.byType(Text), findsOneWidget);
-    });
+        await tester.pumpWidget(buildTestWidget(item));
+        expect(find.text('1 / 1 g'), findsOneWidget);
+      },
+    );
 
     testWidgets('applies out of stock styling when isOutOfStock is true', (
       tester,
@@ -151,7 +160,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(item));
       expect(find.text('Premium Brand'), findsOneWidget);
       expect(find.text('Test Item'), findsOneWidget);
-      expect(find.text('1kg'), findsOneWidget);
+      expect(find.text('1000 / 1000 g'), findsOneWidget);
     });
   });
 }
