@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class CollapsedSummary extends StatelessWidget {
@@ -25,11 +24,7 @@ class CollapsedSummary extends StatelessWidget {
       '$currency • ${l10n.items(articleCount)}',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppTheme.accentColor,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
     );
   }
 }

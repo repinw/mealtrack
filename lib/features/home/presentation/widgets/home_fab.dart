@@ -18,7 +18,6 @@ class HomeFab extends ConsumerWidget {
       height: 48,
       child: FloatingActionButton(
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
         shape: const CircleBorder(),
         onPressed: () => _onPressed(context),
         child: _buildIcon(context, ref),
@@ -54,7 +53,7 @@ class HomeFab extends ConsumerWidget {
       return const SizedBox(
         height: 24,
         width: 24,
-        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+        child: CircularProgressIndicator(strokeWidth: 2),
       );
     }
 
@@ -62,6 +61,6 @@ class HomeFab extends ConsumerWidget {
         ? Icons.center_focus_weak
         : Icons.add;
 
-    return Icon(icon, color: Colors.white);
+    return Icon(icon);
   }
 }

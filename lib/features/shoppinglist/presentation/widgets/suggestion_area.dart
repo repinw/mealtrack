@@ -32,12 +32,13 @@ class _SuggestionAreaState extends State<SuggestionArea> {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final title = widget.title ?? l10n.suggestions;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        color: colorScheme.surfaceContainerLow,
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,14 +52,18 @@ class _SuggestionAreaState extends State<SuggestionArea> {
               ),
               child: Row(
                 children: [
-                  Icon(widget.icon, size: 16, color: Colors.grey.shade600),
+                  Icon(
+                    widget.icon,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     title,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
+                      color: colorScheme.onSurfaceVariant,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -69,7 +74,7 @@ class _SuggestionAreaState extends State<SuggestionArea> {
                     child: Icon(
                       Icons.expand_more,
                       size: 20,
-                      color: Colors.grey.shade600,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

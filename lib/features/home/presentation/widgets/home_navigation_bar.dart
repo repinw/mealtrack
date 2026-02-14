@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/features/home/domain/home_tab.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
@@ -15,6 +14,7 @@ class HomeNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SafeArea(
       maintainBottomViewPadding: true,
       child: Padding(
@@ -22,11 +22,11 @@ class HomeNavigationBar extends StatelessWidget {
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: AppTheme.navBarBackground,
+            color: colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.shadowLight,
+                color: colorScheme.shadow.withValues(alpha: 0.12),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -44,6 +44,7 @@ class HomeNavigationBar extends StatelessWidget {
   }
 
   Widget _buildNavItem(BuildContext context, HomeTab tab) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (!tab.isFeatureAvailable) {
       return InkWell(
         onTap: () {
@@ -63,11 +64,11 @@ class HomeNavigationBar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(tab.getIcon(false), color: Colors.grey),
+                Icon(tab.getIcon(false), color: colorScheme.onSurfaceVariant),
                 Text(
                   tab.getLabel(context),
-                  style: const TextStyle(
-                    color: Colors.grey,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),
@@ -80,7 +81,6 @@ class HomeNavigationBar extends StatelessWidget {
     }
 
     final isSelected = currentTab == tab;
-    final primaryColor = Theme.of(context).primaryColor;
     return InkWell(
       onTap: () => onDestinationSelected(tab),
       customBorder: const CircleBorder(),
@@ -91,12 +91,16 @@ class HomeNavigationBar extends StatelessWidget {
           children: [
             Icon(
               tab.getIcon(isSelected),
-              color: isSelected ? primaryColor : Colors.grey,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
             ),
             Text(
               tab.getLabel(context),
               style: TextStyle(
-                color: isSelected ? primaryColor : Colors.grey,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

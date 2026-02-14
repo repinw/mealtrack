@@ -143,10 +143,7 @@ class MySignInScreen extends ConsumerWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text(
-                l10n.tosDisclaimer(actionText),
-                style: const TextStyle(color: Colors.grey),
-              ),
+              child: Text(l10n.tosDisclaimer(actionText)),
             ),
           );
         },

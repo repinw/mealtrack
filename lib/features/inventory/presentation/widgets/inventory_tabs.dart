@@ -11,9 +11,10 @@ class InventoryTabs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentFilter = ref.watch(inventoryFilterProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      color: Colors.white,
+      color: colorScheme.surface,
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -51,6 +52,7 @@ class InventoryTabs extends ConsumerWidget {
     String label,
     bool isSelected,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -59,7 +61,10 @@ class InventoryTabs extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           decoration: BoxDecoration(
-            border: isSelected ? Border.all(color: Colors.grey.shade300) : null,
+            color: isSelected ? colorScheme.surfaceContainerLow : null,
+            border: isSelected
+                ? Border.all(color: colorScheme.outlineVariant)
+                : null,
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Text(
@@ -67,7 +72,9 @@ class InventoryTabs extends ConsumerWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? Colors.black87 : Colors.grey,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),

@@ -16,6 +16,7 @@ class UserAccountCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final profileAsync = ref.watch(userProfileProvider);
 
     return Card(
@@ -39,7 +40,7 @@ class UserAccountCard extends ConsumerWidget {
                 ),
               ),
               error: (err, stack) => ListTile(
-                leading: const Icon(Icons.error, color: Colors.red),
+                leading: Icon(Icons.error, color: colorScheme.error),
                 title: Text(l10n.errorLabel),
                 subtitle: Text(err.toString()),
               ),
@@ -77,7 +78,7 @@ class UserAccountCard extends ConsumerWidget {
                             onPressed: () =>
                                 Navigator.of(dialogContext).pop(true),
                             style: FilledButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: colorScheme.error,
                             ),
                             child: Text(l10n.delete),
                           ),
@@ -88,7 +89,9 @@ class UserAccountCard extends ConsumerWidget {
                       await _deleteAccount(context, user, l10n);
                     }
                   },
-                  style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: colorScheme.error,
+                  ),
                   icon: const Icon(Icons.delete_forever),
                   label: Text(l10n.deleteAccount),
                 ),

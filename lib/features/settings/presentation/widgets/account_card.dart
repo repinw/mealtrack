@@ -104,7 +104,9 @@ class AccountCard extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
             child: Text(l10n.proceed),
           ),
         ],

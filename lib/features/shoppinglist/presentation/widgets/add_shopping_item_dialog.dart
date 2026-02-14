@@ -38,7 +38,6 @@ class _AddShoppingItemDialogState extends ConsumerState<AddShoppingItemDialog> {
               content: Text(
                 l10n.quantityUpdateFailed,
               ), // Use generic error or add new string
-              backgroundColor: Colors.red,
             ),
           );
         }

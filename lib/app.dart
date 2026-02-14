@@ -17,7 +17,9 @@ class MealTrackApp extends ConsumerWidget {
     return MaterialApp(
       navigatorKey: ref.watch(navigatorKeyProvider),
       title: 'MealTrack',
-      theme: AppTheme.theme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         FirebaseUILocalizations.delegate,

@@ -18,14 +18,15 @@ class ReceiptHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -37,12 +38,12 @@ class ReceiptHeader extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.indigo.withValues(alpha: 0.1),
+              color: colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.store_rounded,
-              color: Colors.indigo,
+              color: colorScheme.onPrimaryContainer,
               size: 24,
             ),
           ),
@@ -53,20 +54,20 @@ class ReceiptHeader extends StatelessWidget {
               children: [
                 Text(
                   l10n.merchantLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5,
                   ),
                 ),
                 TextField(
                   controller: merchantController,
                   onChanged: onMerchantChanged,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
                     isDense: true,
@@ -81,7 +82,7 @@ class ReceiptHeader extends StatelessWidget {
           Container(
             width: 1,
             height: 32,
-            color: Colors.grey.withValues(alpha: 0.3),
+            color: colorScheme.outlineVariant,
             margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
           SizedBox(
@@ -91,10 +92,10 @@ class ReceiptHeader extends StatelessWidget {
               children: [
                 Text(
                   l10n.dateLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -102,10 +103,10 @@ class ReceiptHeader extends StatelessWidget {
                   controller: dateController,
                   readOnly: true,
                   onTap: onDateTap,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
                     isDense: true,

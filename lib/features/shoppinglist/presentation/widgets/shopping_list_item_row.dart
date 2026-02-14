@@ -11,11 +11,15 @@ class ShoppingListItemRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFF5F5F5))),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: colorScheme.surfaceContainerHighest),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +44,7 @@ class ShoppingListItemRow extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     letterSpacing: 1,
-                    color: Colors.grey.shade600,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -54,8 +58,10 @@ class ShoppingListItemRow extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                           overflow: TextOverflow.ellipsis,
                           color: item.isChecked
-                              ? Colors.grey.shade400
-                              : const Color(0xFF2D3142),
+                              ? colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.65,
+                                )
+                              : colorScheme.onSurface,
                           decoration: item.isChecked
                               ? TextDecoration.lineThrough
                               : null,
@@ -79,8 +85,7 @@ class ShoppingListItemRow extends ConsumerWidget {
   Widget _buildCounterPill(BuildContext context, WidgetRef ref) {
     return CounterPill(
       quantity: item.quantity,
-      isOutOfStock:
-          false,
+      isOutOfStock: false,
       canDecrease: item.quantity > 1,
       onUpdate: (delta) {
         ref.read(shoppingListProvider.notifier).updateQuantity(item.id, delta);

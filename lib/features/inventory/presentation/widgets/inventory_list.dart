@@ -19,11 +19,12 @@ class InventoryList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final listAsync = ref.watch(inventoryDisplayListProvider);
     final filter = ref.watch(inventoryFilterProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [
         const InventoryTabs(),
-        const Divider(height: 1, color: Color(0xFFEEEEEE)),
+        Divider(height: 1, color: colorScheme.surfaceContainerHighest),
 
         Expanded(
           child: listAsync.when(
@@ -37,7 +38,7 @@ class InventoryList extends ConsumerWidget {
                 return Center(
                   child: Text(
                     message,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 );
               }

@@ -32,7 +32,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           ListTile(
-            leading: const Icon(Icons.camera_alt, color: Colors.blueGrey),
+            leading: const Icon(Icons.camera_alt),
             title: Text(l10n.imageFromCamera),
             onTap: () => _handleAction(
               context,
@@ -43,7 +43,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library, color: Colors.blueGrey),
+            leading: const Icon(Icons.photo_library),
             title: Text(l10n.imageFromGallery),
             onTap: () => _handleAction(
               context,
@@ -54,10 +54,7 @@ class ScanOptionsBottomSheet extends ConsumerWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(
-              Icons.picture_as_pdf_rounded,
-              color: Colors.blueGrey,
-            ),
+            leading: const Icon(Icons.picture_as_pdf_rounded),
             title: Text(l10n.imageFromPdf),
             onTap: () => _handleAction(
               context,

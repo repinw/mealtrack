@@ -13,6 +13,7 @@ class ItemDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -22,7 +23,7 @@ class ItemDetails extends StatelessWidget {
             item.brand!,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -32,7 +33,9 @@ class ItemDetails extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: isOutOfStock ? Colors.grey : Colors.black87,
+            color: isOutOfStock
+                ? colorScheme.onSurfaceVariant
+                : colorScheme.onSurface,
             decoration: isOutOfStock ? TextDecoration.lineThrough : null,
           ),
         ),
@@ -42,7 +45,7 @@ class ItemDetails extends StatelessWidget {
             item.weight!,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),

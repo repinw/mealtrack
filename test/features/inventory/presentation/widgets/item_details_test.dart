@@ -115,8 +115,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget(item, isOutOfStock: true));
 
       final nameText = tester.widget<Text>(find.text('Test Item'));
+      final context = tester.element(find.text('Test Item'));
+      final colorScheme = Theme.of(context).colorScheme;
       expect(nameText.style?.decoration, TextDecoration.lineThrough);
-      expect(nameText.style?.color, Colors.grey);
+      expect(nameText.style?.color, colorScheme.onSurfaceVariant);
     });
 
     testWidgets(

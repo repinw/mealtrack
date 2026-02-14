@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/config/app_config.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
-import 'package:mealtrack/core/theme/app_theme.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/features/scanner/presentation/widgets/receipt_footer.dart';
@@ -124,6 +123,7 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     ref.listen<ReceiptEditState>(receiptEditViewModelProvider, (
       previous,
@@ -141,20 +141,16 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
     final total = viewModel.total;
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBackgroundColor,
+      backgroundColor: colorScheme.surface,
       appBar: _isVerified
           ? AppBar(
-              backgroundColor: AppTheme.primaryColor,
               elevation: 0,
               centerTitle: false,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: AppTheme.white),
+                icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              title: Text(
-                l10n.verifyScan,
-                style: Theme.of(context).appBarTheme.titleTextStyle,
-              ),
+              title: Text(l10n.verifyScan),
             )
           : null,
       body: Column(
@@ -185,15 +181,15 @@ class _ReceiptEditPageState extends ConsumerState<ReceiptEditPage> {
                           children: [
                             Text(
                               l10n.positions,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                             Text(
                               l10n.articles(viewModel.totalQuantity),
-                              style: const TextStyle(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                             ),

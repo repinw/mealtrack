@@ -45,6 +45,7 @@ class _CategoryProductsDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
     final repository = ref.watch(categoryStatsRepositoryProvider);
     final shoppingListAsync = ref.watch(shoppingListProvider);
     final shoppingNames = (shoppingListAsync.asData?.value ?? [])
@@ -73,7 +74,7 @@ class _CategoryProductsDialogState
               child: Center(
                 child: Text(
                   'Keine Produkte gefunden',
-                  style: TextStyle(color: Colors.grey.shade600),
+                  style: textTheme.bodyMedium,
                 ),
               ),
             );

@@ -11,14 +11,15 @@ class ReceiptFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -34,10 +35,10 @@ class ReceiptFooter extends StatelessWidget {
               children: [
                 Text(
                   l10n.total,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -46,10 +47,10 @@ class ReceiptFooter extends StatelessWidget {
                     locale: Localizations.localeOf(context).toString(),
                     name: 'EUR',
                   ).format(total),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ],

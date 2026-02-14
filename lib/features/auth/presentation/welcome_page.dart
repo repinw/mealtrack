@@ -19,7 +19,7 @@ class WelcomePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              const Icon(Icons.kitchen_outlined, size: 80, color: Colors.green),
+              const Icon(Icons.kitchen_outlined, size: 80),
               const SizedBox(height: 24),
               Text(
                 l10n.welcomeTitle,
@@ -31,9 +31,7 @@ class WelcomePage extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 l10n.welcomeSubtitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
                 textAlign: TextAlign.center,
               ),
               const Spacer(),

@@ -51,6 +51,7 @@ class InventoryItemRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final item = ref.watch(fridgeItemProvider(itemId));
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (item.id == 'loading') {
       return const SizedBox.shrink();
@@ -63,10 +64,10 @@ class InventoryItemRow extends ConsumerWidget {
       key: Key('inventory_row_${item.id}'),
       direction: DismissDirection.startToEnd,
       background: Container(
-        color: Colors.green,
+        color: colorScheme.primary,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20.0),
-        child: const Icon(Icons.shopping_cart, color: Colors.white),
+        child: Icon(Icons.shopping_cart, color: colorScheme.onPrimary),
       ),
       confirmDismiss: (direction) async {
         _addItemToShoppingList(context, ref, item);
@@ -76,9 +77,11 @@ class InventoryItemRow extends ConsumerWidget {
         onLongPress: () => _addItemToShoppingList(context, ref, item),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(bottom: BorderSide(color: Color(0xFFF5F5F5))),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            border: Border(
+              bottom: BorderSide(color: colorScheme.surfaceContainerHighest),
+            ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +96,7 @@ class InventoryItemRow extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 11,
                         letterSpacing: 1,
-                        color: Colors.grey.shade600,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
 
@@ -107,8 +110,10 @@ class InventoryItemRow extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
                             color: isOutOfStock || isArchived
-                                ? Colors.grey.shade400
-                                : const Color(0xFF2D3142),
+                                ? colorScheme.onSurfaceVariant.withValues(
+                                    alpha: 0.65,
+                                  )
+                                : colorScheme.onSurface,
                             decoration: isOutOfStock
                                 ? TextDecoration.lineThrough
                                 : null,
@@ -122,7 +127,7 @@ class InventoryItemRow extends ConsumerWidget {
                           ),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade400,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
