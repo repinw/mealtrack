@@ -118,11 +118,23 @@ abstract class AppLocalizations {
   /// **'{count} Einkäufe'**
   String purchases(int count);
 
+  /// Short purchases label without numeric placeholder.
+  ///
+  /// In de, this message translates to:
+  /// **'Einkäufe'**
+  String get purchasesLabel;
+
   /// No description provided for @items.
   ///
   /// In de, this message translates to:
   /// **'{count} Teile'**
   String items(int count);
+
+  /// Short items label without numeric placeholder.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile'**
+  String get itemsLabel;
 
   /// Translation for archive
   ///

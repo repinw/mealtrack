@@ -19,56 +19,89 @@ class InventoryList extends ConsumerWidget {
     final listAsync = ref.watch(inventoryDisplayListProvider);
     final filter = ref.watch(inventoryFilterProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final listBottomPadding = ScrollSpacing.homeContentBottomPadding(context);
 
-    return Column(
-      children: [
-        const InventoryTabs(),
-        Divider(height: 1, color: colorScheme.surfaceContainerHighest),
-
-        Expanded(
-          child: listAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => Center(child: Text('Error: $error')),
-            data: (items) {
-              if (items.isEmpty) {
-                final message = filter == InventoryFilterType.available
-                    ? l10n.noAvailableItems
-                    : l10n.noItemsFound;
-                return Center(
-                  child: Text(
-                    message,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
-                  ),
-                );
-              }
-
-              return ListView.builder(
-                padding: EdgeInsets.only(
-                  bottom: ScrollSpacing.homeContentBottomPadding(context),
-                ),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-
-                  if (item is InventoryHeaderItem) {
-                    return InventoryGroupHeader(header: item);
-                  } else if (item is InventoryProductItem) {
-                    return InventoryItemRow(
-                      key: ValueKey(item.itemId),
-                      itemId: item.itemId,
-                    );
-                  } else if (item is InventoryArchivedSectionItem) {
-                    return ArchivedSectionHeader(section: item);
-                  } else if (item is InventorySpacerItem) {
-                    return const SizedBox.shrink();
-                  }
-                  return const SizedBox.shrink();
-                },
-              );
-            },
+    return listAsync.when(
+      loading: () => ListView(
+        padding: EdgeInsets.only(bottom: listBottomPadding),
+        children: const [
+          InventoryTabs(),
+          InventoryTabsDivider(),
+          SizedBox(height: 24),
+          Center(child: CircularProgressIndicator()),
+        ],
+      ),
+      error: (error, stack) => ListView(
+        padding: EdgeInsets.only(bottom: listBottomPadding),
+        children: [
+          const InventoryTabs(),
+          const InventoryTabsDivider(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text('Error: $error'),
           ),
-        ),
-      ],
+        ],
+      ),
+      data: (items) {
+        final message = filter == InventoryFilterType.available
+            ? l10n.noAvailableItems
+            : l10n.noItemsFound;
+        final contentItemCount = items.isEmpty ? 1 : items.length;
+
+        return ListView.builder(
+          padding: EdgeInsets.only(bottom: listBottomPadding),
+          itemCount: contentItemCount + 2,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return const InventoryTabs();
+            }
+            if (index == 1) {
+              return const InventoryTabsDivider();
+            }
+
+            if (items.isEmpty && index == 2) {
+              return Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  message,
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                ),
+              );
+            }
+
+            if (items.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            final item = items[index - 2];
+            return _buildDisplayItem(item);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDisplayItem(InventoryDisplayItem item) {
+    return switch (item) {
+      InventoryHeaderItem() => InventoryGroupHeader(header: item),
+      InventoryProductItem() => InventoryItemRow(
+        key: ValueKey(item.itemId),
+        itemId: item.itemId,
+      ),
+      InventoryArchivedSectionItem() => ArchivedSectionHeader(section: item),
+      InventorySpacerItem() => const SizedBox.shrink(),
+    };
+  }
+}
+
+class InventoryTabsDivider extends StatelessWidget {
+  const InventoryTabsDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
     );
   }
 }

@@ -19,7 +19,7 @@ class MealTrackApp extends ConsumerWidget {
       title: 'MealTrack',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.system,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         FirebaseUILocalizations.delegate,
