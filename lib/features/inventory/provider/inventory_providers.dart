@@ -61,6 +61,56 @@ class FridgeItems extends _$FridgeItems {
     }
   }
 
+  Future<void> updateAmount(
+    FridgeItem item,
+    double amountBase, {
+    required FridgeItemRemovalType removalType,
+    bool isUndo = false,
+  }) async {
+    if (amountBase <= fridgeItemAmountEpsilon) return;
+
+    final previousList = state.asData?.value;
+    if (previousList == null) return;
+
+    FridgeItem currentItem = item;
+    for (final candidate in previousList) {
+      if (candidate.id == item.id) {
+        currentItem = candidate;
+        break;
+      }
+    }
+
+    final signedDelta = isUndo ? amountBase : -amountBase;
+    final updatedItem = currentItem.adjustAmount(
+      amountDeltaBase: signedDelta,
+      removalType: removalType,
+    );
+    state = AsyncValue.data(_replaceItemById(previousList, updatedItem));
+
+    try {
+      final repository = ref.read(fridgeRepositoryProvider);
+      await repository.updateAmount(
+        currentItem,
+        amountDeltaBase: signedDelta,
+        removalType: removalType,
+      );
+
+      final pieceDelta = updatedItem.quantity - currentItem.quantity;
+      if (currentItem.category != null && pieceDelta != 0) {
+        final categoryStatsRepo = ref.read(categoryStatsRepositoryProvider);
+        await categoryStatsRepo.increment(
+          currentItem.category,
+          -pieceDelta,
+          unitPrice: currentItem.unitPrice,
+          productName: currentItem.name,
+        );
+      }
+    } catch (e) {
+      state = AsyncValue.data(previousList);
+      rethrow;
+    }
+  }
+
   Future<void> deleteAll() async {
     final repository = ref.read(fridgeRepositoryProvider);
     await repository.deleteAllItems();
@@ -169,7 +219,10 @@ class FridgeItems extends _$FridgeItems {
   }) {
     return [
       for (final item in items)
-        if (item.receiptId == receiptId) item.copyWith(isArchived: isArchived) else item,
+        if (item.receiptId == receiptId)
+          item.copyWith(isArchived: isArchived)
+        else
+          item,
     ];
   }
 
@@ -252,7 +305,7 @@ class InventoryFilter extends _$InventoryFilter {
 @riverpod
 Future<List<FridgeItem>> availableFridgeItems(Ref ref) async {
   final items = await ref.watch(fridgeItemsProvider.future);
-  return items.where((item) => item.quantity > 0).toList();
+  return items.where((item) => !item.isConsumed).toList();
 }
 
 @riverpod
@@ -313,7 +366,7 @@ InventoryStats inventoryStats(Ref ref) {
   }
 
   final items = itemsAsync.value!;
-  final activeItems = items.where((i) => i.quantity > 0).toList();
+  final activeItems = items.where((i) => !i.isConsumed).toList();
 
   final totalValue = activeItems.fold(0.0, (sum, i) => sum + i.totalPrice);
 

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:mealtrack/l10n/app_localizations.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/presentation/widgets/counter_pill.dart';
-import 'package:mealtrack/core/presentation/widgets/action_button.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_item_row.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
-import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
+import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockFridgeItems extends FridgeItems with Mock {
   final List<(FridgeItem, int)> updateQuantityCalls = [];
-  bool shouldThrowOnUpdate = false;
+  final List<(FridgeItem, double, FridgeItemRemovalType, bool)>
+  updateAmountCalls = [];
+  bool shouldThrowOnUpdateQuantity = false;
+  bool shouldThrowOnUpdateAmount = false;
 
   @override
   Stream<List<FridgeItem>> build() => Stream.value([]);
@@ -21,7 +23,20 @@ class MockFridgeItems extends FridgeItems with Mock {
   @override
   Future<void> updateQuantity(FridgeItem item, int delta) async {
     updateQuantityCalls.add((item, delta));
-    if (shouldThrowOnUpdate) {
+    if (shouldThrowOnUpdateQuantity) {
+      throw Exception('Network error');
+    }
+  }
+
+  @override
+  Future<void> updateAmount(
+    FridgeItem item,
+    double amountBase, {
+    required FridgeItemRemovalType removalType,
+    bool isUndo = false,
+  }) async {
+    updateAmountCalls.add((item, amountBase, removalType, isUndo));
+    if (shouldThrowOnUpdateAmount) {
       throw Exception('Network error');
     }
   }
@@ -42,8 +57,6 @@ class MockFridgeItems extends FridgeItems with Mock {
   Future<void> updateItem(FridgeItem item) async {}
 }
 
-class FakeFridgeItem extends Fake implements FridgeItem {}
-
 class MockShoppingListRepository extends Mock
     implements ShoppingListRepository {
   @override
@@ -53,11 +66,6 @@ class MockShoppingListRepository extends Mock
 void main() {
   late MockFridgeItems mockNotifier;
 
-  setUpAll(() {
-    registerFallbackValue(FakeFridgeItem());
-    registerFallbackValue(const ShoppingListItem(id: '1', name: 'dummy'));
-  });
-
   final testItem = FridgeItem(
     id: '1',
     name: 'Test Apple',
@@ -65,45 +73,56 @@ void main() {
     storeName: 'Test Store',
     entryDate: DateTime.now(),
     initialQuantity: 5,
+    initialAmountBase: 1000,
+    remainingAmountBase: 600,
+    amountUnit: FridgeItemAmountUnit.gram,
   );
 
   setUp(() {
     mockNotifier = MockFridgeItems();
   });
 
-  Widget createWidgetUnderTest() {
+  Widget createWidgetUnderTest({
+    FridgeItem? item,
+    ShoppingListRepository? shoppingListRepository,
+  }) {
+    final rowItem = item ?? testItem;
+    final overrides = [
+      fridgeItemProvider(rowItem.id).overrideWithValue(rowItem),
+      fridgeItemsProvider.overrideWith(() => mockNotifier),
+    ];
+
+    if (shoppingListRepository != null) {
+      overrides.add(
+        shoppingListRepositoryProvider.overrideWithValue(
+          shoppingListRepository,
+        ),
+      );
+    }
+
     return ProviderScope(
-      overrides: [
-        fridgeItemProvider(testItem.id).overrideWithValue(testItem),
-        fridgeItemsProvider.overrideWith(() => mockNotifier),
-      ],
+      overrides: overrides,
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('de'),
-        home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
+        home: Scaffold(body: InventoryItemRow(itemId: rowItem.id)),
       ),
     );
   }
 
   group('InventoryItemRow Tests', () {
-    testWidgets('renders item name and price correctly', (
+    testWidgets('renders item name, price, amount summary and controls', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text('Test Apple'), findsOneWidget);
       expect(find.textContaining('0.00€'), findsOneWidget);
-      expect(find.textContaining('pro Stück'), findsNothing);
+      expect(find.text('600 / 1000 g'), findsOneWidget);
+      expect(find.text('Essen'), findsOneWidget);
+      expect(find.text('Wegwerfen'), findsOneWidget);
       expect(find.byType(CounterPill), findsOneWidget);
-    });
-
-    testWidgets('renders quantity badge correctly', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-
-      expect(find.textContaining('5'), findsWidgets);
     });
 
     testWidgets('renders empty widget when item is loading placeholder', (
@@ -131,30 +150,74 @@ void main() {
         ),
       );
 
-      expect(find.byType(SizedBox), findsOneWidget);
+      expect(find.byType(Dismissible), findsNothing);
       expect(find.text('Loading...'), findsNothing);
     });
 
-    testWidgets('calls updateQuantity on notifier when pill updates', (
+    testWidgets('Essen opens amount picker dialog', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      final CounterPill counterPill = tester.widget(find.byType(CounterPill));
-      counterPill.onUpdate!(1);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.pumpAndSettle();
 
-      expect(mockNotifier.updateQuantityCalls.length, 1);
-      expect(mockNotifier.updateQuantityCalls.first.$2, 1);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Essen - Menge'), findsOneWidget);
+      expect(find.text('Verbleibend: 600 g'), findsOneWidget);
     });
 
-    testWidgets('shows SnackBar when updateQuantity fails', (
+    testWidgets('Essen applies selected amount and shows undo snackbar', (
       WidgetTester tester,
     ) async {
-      mockNotifier.shouldThrowOnUpdate = true;
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '120');
+      await tester.tap(find.text('Speichern'));
+      await tester.pump();
+
+      expect(mockNotifier.updateAmountCalls.length, 1);
+      expect(mockNotifier.updateAmountCalls.first.$2, 120);
+      expect(
+        mockNotifier.updateAmountCalls.first.$3,
+        FridgeItemRemovalType.eaten,
+      );
+      expect(find.text('120 g entfernt (Essen)'), findsOneWidget);
+    });
+
+    testWidgets('Wegwerfen applies selected amount with thrownAway type', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Wegwerfen'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '80');
+      await tester.tap(find.text('Speichern'));
+      await tester.pump();
+
+      expect(mockNotifier.updateAmountCalls.length, 1);
+      expect(mockNotifier.updateAmountCalls.first.$2, 80);
+      expect(
+        mockNotifier.updateAmountCalls.first.$3,
+        FridgeItemRemovalType.thrownAway,
+      );
+      expect(find.text('80 g entfernt (Wegwerfen)'), findsOneWidget);
+    });
+
+    testWidgets('shows SnackBar when amount update fails', (
+      WidgetTester tester,
+    ) async {
+      mockNotifier.shouldThrowOnUpdateAmount = true;
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.tap(find.byIcon(Icons.remove));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Essen'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '100');
+      await tester.tap(find.text('Speichern'));
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
@@ -166,132 +229,47 @@ void main() {
       );
     });
 
-    testWidgets('SnackBar has floating behavior on error', (
+    testWidgets('CounterPill is read-only and buttons disabled when archived', (
       WidgetTester tester,
     ) async {
-      mockNotifier.shouldThrowOnUpdate = true;
+      final archivedItem = testItem.copyWith(isArchived: true);
 
-      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpWidget(createWidgetUnderTest(item: archivedItem));
 
-      await tester.tap(find.byIcon(Icons.remove));
-      await tester.pumpAndSettle();
+      final counterPill = tester.widget<CounterPill>(find.byType(CounterPill));
+      expect(counterPill.onUpdate, isNull);
 
-      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-      expect(snackBar.behavior, SnackBarBehavior.floating);
+      final eatButton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Essen'),
+      );
+      final throwButton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Wegwerfen'),
+      );
+      expect(eatButton.onPressed, isNull);
+      expect(throwButton.onPressed, isNull);
     });
 
-    testWidgets('no SnackBar shown when updateQuantity succeeds', (
+    testWidgets('out of stock item disables amount actions', (
       WidgetTester tester,
     ) async {
-      mockNotifier.shouldThrowOnUpdate = false;
-
-      await tester.pumpWidget(createWidgetUnderTest());
-
-      await tester.tap(find.byIcon(Icons.remove));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SnackBar), findsNothing);
-    });
-
-    testWidgets('out of stock item is displayed with strikethrough', (
-      WidgetTester tester,
-    ) async {
-      final outOfStockItem = FridgeItem(
-        id: '2',
-        name: 'Out of Stock Item',
+      final outOfStockItem = testItem.copyWith(
         quantity: 0,
-        storeName: 'Test Store',
-        entryDate: DateTime.now(),
+        remainingAmountBase: 0,
       );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            fridgeItemProvider(
-              outOfStockItem.id,
-            ).overrideWithValue(outOfStockItem),
-            fridgeItemsProvider.overrideWith(() => mockNotifier),
-          ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(body: InventoryItemRow(itemId: outOfStockItem.id)),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createWidgetUnderTest(item: outOfStockItem));
 
-      expect(find.text('Out of Stock Item'), findsOneWidget);
-    });
-
-    testWidgets('CounterPill is read-only when item is archived', (
-      WidgetTester tester,
-    ) async {
-      final archivedItem = FridgeItem(
-        id: 'archived-1',
-        name: 'Archived Item',
-        quantity: 2,
-        storeName: 'Store',
-        entryDate: DateTime.now(),
-        initialQuantity: 5,
-        isArchived: true,
+      final eatButton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Essen'),
       );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            fridgeItemProvider(archivedItem.id).overrideWithValue(archivedItem),
-            fridgeItemsProvider.overrideWith(() => mockNotifier),
-          ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(body: InventoryItemRow(itemId: archivedItem.id)),
-          ),
-        ),
+      final throwButton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Wegwerfen'),
       );
+      expect(eatButton.onPressed, isNull);
+      expect(throwButton.onPressed, isNull);
 
-      // find CounterPill
-      final counterPillFinder = find.byType(CounterPill);
-      expect(counterPillFinder, findsOneWidget);
-
-      final CounterPill counterPill = tester.widget(counterPillFinder);
-      expect(
-        counterPill.onUpdate,
-        isNull,
-        reason: 'onUpdate should be null for archived items',
-      );
-
-      final minusButton = find.descendant(
-        of: counterPillFinder,
-        matching: find.byIcon(Icons.remove),
-      );
-      final plusButton = find.descendant(
-        of: counterPillFinder,
-        matching: find.byIcon(Icons.add),
-      );
-
-      // InkWell onTap should be null
-      final minusInkWell = tester.widget<InkWell>(
-        find.descendant(
-          of: find.ancestor(
-            of: minusButton,
-            matching: find.byType(ActionButton),
-          ),
-          matching: find.byType(InkWell),
-        ),
-      );
-      final plusInkWell = tester.widget<InkWell>(
-        find.descendant(
-          of: find.ancestor(
-            of: plusButton,
-            matching: find.byType(ActionButton),
-          ),
-          matching: find.byType(InkWell),
-        ),
-      );
-
-      expect(minusInkWell.onTap, isNull);
-      expect(plusInkWell.onTap, isNull);
+      final itemText = tester.widget<Text>(find.text('Test Apple'));
+      expect(itemText.style?.decoration, TextDecoration.lineThrough);
     });
 
     testWidgets('swiping right adds item to shopping list', (
@@ -308,28 +286,12 @@ void main() {
       ).thenAnswer((_) async {});
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
-            fridgeItemsProvider.overrideWith(() => mockNotifier),
-            shoppingListRepositoryProvider.overrideWithValue(
-              mockShoppingListRepo,
-            ),
-          ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('de'),
-            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
-          ),
-        ),
+        createWidgetUnderTest(shoppingListRepository: mockShoppingListRepo),
       );
 
-      // Swipe right
       await tester.drag(find.byType(InventoryItemRow), const Offset(500, 0));
       await tester.pumpAndSettle();
 
-      // Verify addOrMergeItem was called
       verify(
         () => mockShoppingListRepo.addOrMergeItem(
           name: 'Test Apple',
@@ -354,28 +316,12 @@ void main() {
       ).thenAnswer((_) async {});
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            fridgeItemProvider(testItem.id).overrideWithValue(testItem),
-            fridgeItemsProvider.overrideWith(() => mockNotifier),
-            shoppingListRepositoryProvider.overrideWithValue(
-              mockShoppingListRepo,
-            ),
-          ],
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('de'),
-            home: Scaffold(body: InventoryItemRow(itemId: testItem.id)),
-          ),
-        ),
+        createWidgetUnderTest(shoppingListRepository: mockShoppingListRepo),
       );
 
-      // Long press
       await tester.longPress(find.byType(InventoryItemRow));
       await tester.pumpAndSettle();
 
-      // Verify addOrMergeItem was called
       verify(
         () => mockShoppingListRepo.addOrMergeItem(
           name: 'Test Apple',

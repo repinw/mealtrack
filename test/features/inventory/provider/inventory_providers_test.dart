@@ -206,7 +206,7 @@ void main() {
         name: 'B',
         storeName: 'S',
         quantity: 1,
-      ).copyWith(quantity: 0);
+      ).adjustQuantity(-1);
 
       // Set up mock BEFORE creating container
       when(
@@ -378,7 +378,7 @@ void main() {
         storeName: 'Store B',
         quantity: 1,
         unitPrice: 5.0,
-      ).copyWith(quantity: 0);
+      ).adjustQuantity(-1);
 
       // Set up mock BEFORE creating container
       when(
@@ -448,7 +448,7 @@ void main() {
         storeName: 'S',
         quantity: 1,
         receiptId: 'R2',
-      ).copyWith(quantity: 0);
+      ).adjustQuantity(-1);
 
       when(
         () => mockRepository.watchItems(),
@@ -478,7 +478,7 @@ void main() {
           storeName: 'S',
           quantity: 1,
           receiptId: 'R1',
-        ).copyWith(quantity: 0);
+        ).adjustQuantity(-1);
 
         when(
           () => mockRepository.watchItems(),

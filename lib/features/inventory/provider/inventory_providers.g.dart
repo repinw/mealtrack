@@ -35,7 +35,7 @@ final class FridgeItemsProvider
   FridgeItems create() => FridgeItems();
 }
 
-String _$fridgeItemsHash() => r'ba5d8160fd51f51b6b248a96f6da427e18c5649e';
+String _$fridgeItemsHash() => r'2b866a23b8f082a4951940e461ff8e641928acbd';
 
 abstract class _$FridgeItems extends $StreamNotifier<List<FridgeItem>> {
   Stream<List<FridgeItem>> build();
@@ -248,7 +248,7 @@ final class AvailableFridgeItemsProvider
 }
 
 String _$availableFridgeItemsHash() =>
-    r'2c51d7bfcbb3b8a442300969f77db2e36bf4a199';
+    r'9a9469847eac4dd0261d4031d1175739c8dcdea2';
 
 @ProviderFor(groupedFridgeItems)
 const groupedFridgeItemsProvider = GroupedFridgeItemsProvider._();
@@ -330,4 +330,4 @@ final class InventoryStatsProvider
   }
 }
 
-String _$inventoryStatsHash() => r'314bf143a4d50f6fcd8beba5403f4ea90d34b364';
+String _$inventoryStatsHash() => r'2fde8ac1b778a99fb2a66e7a0e82b1dc1f7e6993';

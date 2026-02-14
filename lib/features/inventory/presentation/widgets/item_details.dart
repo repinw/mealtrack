@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
+import 'package:mealtrack/features/inventory/presentation/widgets/inventory_amount_picker_dialog.dart';
 
 class ItemDetails extends StatelessWidget {
   final FridgeItem item;
@@ -39,17 +40,15 @@ class ItemDetails extends StatelessWidget {
             decoration: isOutOfStock ? TextDecoration.lineThrough : null,
           ),
         ),
-        if (item.weight != null && item.weight!.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            item.weight!,
-            style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
+        const SizedBox(height: 4),
+        Text(
+          '${formatInventoryAmount(item.resolvedRemainingAmountBase)} / ${formatInventoryAmount(item.resolvedInitialAmountBase)} ${item.resolvedAmountUnit.symbol}',
+          style: TextStyle(
+            fontSize: 13,
+            color: colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
           ),
-        ],
+        ),
       ],
     );
   }

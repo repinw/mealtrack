@@ -142,7 +142,7 @@ void main() {
       storeName: 'Store A',
       quantity: 1,
       now: () => fixedDate,
-    ).copyWith(quantity: 0, receiptId: sharedReceiptId);
+    ).copyWith(receiptId: sharedReceiptId).adjustQuantity(-1);
     final item3 = createTestFridgeItem(
       name: 'Carrot',
       storeName: 'Store B',

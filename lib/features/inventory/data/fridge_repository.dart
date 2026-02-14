@@ -92,6 +92,27 @@ class FridgeRepository {
     }
   }
 
+  Future<void> updateAmount(
+    FridgeItem item, {
+    required double amountDeltaBase,
+    required FridgeItemRemovalType removalType,
+  }) async {
+    try {
+      await _collection
+          .doc(item.id)
+          .update(
+            item
+                .adjustAmount(
+                  amountDeltaBase: amountDeltaBase,
+                  removalType: removalType,
+                )
+                .toJson(),
+          );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> deleteAllItems() async {
     try {
       final snapshot = await _collection.get();
@@ -115,7 +136,7 @@ class FridgeRepository {
   Future<List<FridgeItem>> getAvailableItems() async {
     try {
       final items = await getItems();
-      return items.where((item) => item.quantity > 0).toList();
+      return items.where((item) => !item.isConsumed).toList();
     } catch (e) {
       rethrow;
     }

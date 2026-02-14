@@ -106,6 +106,11 @@ class ReceiptEditViewModel extends _$ReceiptEditViewModel {
       }
     }
 
-    return itemsToSave;
+    return itemsToSave
+        .map(
+          (item) =>
+              normalizeFridgeItemForStorage(item, resetRemovalCounters: true),
+        )
+        .toList();
   }
 }
