@@ -61,7 +61,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     if (selectedAmount == null || selectedAmount <= fridgeItemAmountEpsilon) {
       return;
     }
-
     final fridgeItemsNotifier = ref.read(fridgeItemsProvider.notifier);
     try {
       await fridgeItemsNotifier.updateAmount(
