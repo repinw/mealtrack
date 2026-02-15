@@ -5,7 +5,7 @@ import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.
 import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/category_products_dialog.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/dismissible_shopping_item.dart';
-import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_sliver_app_bar.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_appbar/shopping_list_sliver_app_bar.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/suggestion_area.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
