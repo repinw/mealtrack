@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/core/provider/firebase_providers.dart';
 import 'package:mealtrack/features/home/presentation/home_menu.dart';
+import 'package:mealtrack/features/calories/presentation/calories_page.dart';
 import 'package:mealtrack/features/inventory/data/fridge_repository.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
@@ -219,7 +220,7 @@ void main() {
   });
 
   group('HomeMenu - Edge Cases (Coming Soon Features)', () {
-    testWidgets('tapping Einkaufsliste shows featureInProgress snackbar', (
+    testWidgets('tapping Einkaufsliste opens shopping list page', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
@@ -231,16 +232,14 @@ void main() {
       expect(find.byType(ShoppingListPage), findsOneWidget);
     });
 
-    testWidgets('tapping Kalorien shows featureInProgress snackbar', (
-      tester,
-    ) async {
+    testWidgets('tapping Kalorien opens calories page', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       await tester.tap(find.text(l10n.calories));
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n.featureInProgress), findsOneWidget);
+      expect(find.byType(CaloriesPage), findsOneWidget);
     });
 
     testWidgets('tapping Statistik shows featureInProgress snackbar', (
@@ -255,7 +254,7 @@ void main() {
       expect(find.text(l10n.featureInProgress), findsOneWidget);
     });
 
-    testWidgets('navigation index does not change when tapping coming soon', (
+    testWidgets('navigation index does not change when tapping statistics', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
@@ -263,7 +262,7 @@ void main() {
 
       expect(find.byType(InventoryPage), findsOneWidget);
 
-      await tester.tap(find.text(l10n.calories));
+      await tester.tap(find.text(l10n.statistics));
       await tester.pumpAndSettle();
 
       expect(find.byType(InventoryPage), findsOneWidget);

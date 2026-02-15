@@ -86,7 +86,7 @@ void main() {
           tester.element(find.byType(InventoryPage)),
         )!.stockValue,
       ),
-      findsOneWidget,
+      findsWidgets,
     );
     expect(find.text('Test Inventory'), findsNothing);
   });

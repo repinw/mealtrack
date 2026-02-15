@@ -1,49 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:mealtrack/core/formatting/currency_formatter_cache.dart';
 import 'package:mealtrack/core/presentation/widgets/feature_sliver_header_content.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_app_bar_actions.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_collapsed_stats_row.dart';
-import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_expanded_summary.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_appbar/shopping_list_collapsed_stats_row.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_appbar/shopping_list_cost_summary.dart';
+import 'package:mealtrack/l10n/app_localizations.dart';
 
-class InventoryHeaderContent extends StatelessWidget {
-  const InventoryHeaderContent({
+class ShoppingListHeaderContent extends StatelessWidget {
+  const ShoppingListHeaderContent({
     super.key,
     required this.title,
     required this.collapseProgress,
-    required this.stockValueLabel,
-    required this.purchasesStatLabel,
-    required this.itemsStatLabel,
-    required this.purchasesLabel,
-    required this.itemsLabel,
-    required this.purchaseCount,
+    required this.approximateCostLabel,
     required this.totalValue,
     required this.articleCount,
-    this.onOpenSharing,
-    this.onOpenSettings,
+    required this.clearListTooltip,
+    required this.onClearList,
   });
 
   final String title;
   final double collapseProgress;
-  final String stockValueLabel;
-  final String purchasesStatLabel;
-  final String itemsStatLabel;
-  final String purchasesLabel;
-  final String itemsLabel;
-  final int purchaseCount;
+  final String approximateCostLabel;
   final double totalValue;
   final int articleCount;
-  final VoidCallback? onOpenSharing;
-  final VoidCallback? onOpenSettings;
+  final String clearListTooltip;
+  final VoidCallback onClearList;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final formattedTotalValue = CurrencyFormatterCache.formatEur(
-      context,
-      totalValue,
-    );
-    final titleStyle = theme.textTheme.headlineSmall?.copyWith(
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final titleStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
       color: colorScheme.primary,
       fontWeight: FontWeight.w900,
       letterSpacing: 0.4,
@@ -57,6 +43,7 @@ class InventoryHeaderContent extends StatelessWidget {
           children: [
             Expanded(
               child: Opacity(
+                key: const ValueKey('shopping-expanded-title-opacity'),
                 opacity: state.titleOpacity,
                 child: Text(
                   title.toUpperCase(),
@@ -66,10 +53,10 @@ class InventoryHeaderContent extends StatelessWidget {
                 ),
               ),
             ),
-            InventoryAppBarActions(
-              collapseProgress: state.collapseProgress,
-              onOpenSharing: onOpenSharing,
-              onOpenSettings: onOpenSettings,
+            IconButton(
+              tooltip: clearListTooltip,
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: onClearList,
             ),
           ],
         ),
@@ -79,15 +66,14 @@ class InventoryHeaderContent extends StatelessWidget {
         children: [
           if (state.hasRoomForExpandedSummary)
             Opacity(
+              key: const ValueKey('shopping-expanded-summary-opacity'),
               opacity: state.expandedContentOpacity,
               child: Align(
                 alignment: Alignment.bottomLeft,
-                child: InventoryExpandedSummary(
-                  key: const ValueKey('inventory-expanded-summary'),
-                  stockValueLabel: stockValueLabel,
-                  totalValue: formattedTotalValue,
-                  purchasesLabel: purchasesLabel,
-                  itemsLabel: itemsLabel,
+                child: ShoppingListCostSummary(
+                  label: approximateCostLabel,
+                  totalValue: totalValue,
+                  itemCountLabel: l10n.items(articleCount),
                   compact: state.useCompactSummary,
                   hideMetaLine: state.hideMetaLine,
                   bottomPadding: state.expandedBottomPadding,
@@ -97,14 +83,15 @@ class InventoryHeaderContent extends StatelessWidget {
           Align(
             alignment: Alignment.bottomCenter,
             child: Opacity(
+              key: const ValueKey('shopping-collapsed-stats-opacity'),
               opacity: state.collapsedContentOpacity,
-              child: InventoryCollapsedStatsRow(
-                key: const ValueKey('inventory-collapsed-stats'),
-                stockValueLabel: stockValueLabel,
-                stockValue: formattedTotalValue,
-                purchasesStatLabel: purchasesStatLabel,
-                purchaseCount: purchaseCount,
-                itemsStatLabel: itemsStatLabel,
+              child: ShoppingListCollapsedStatsRow(
+                costLabel: approximateCostLabel,
+                costValue: CurrencyFormatterCache.formatEur(
+                  context,
+                  totalValue,
+                ),
+                itemsLabel: l10n.itemsLabel,
                 articleCount: articleCount,
                 bottomPadding: state.collapsedBottomPadding,
               ),

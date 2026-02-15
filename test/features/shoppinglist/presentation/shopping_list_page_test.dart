@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:mealtrack/core/presentation/widgets/feature_sliver_app_bar.dart';
 import 'package:mealtrack/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/shopping_list_page.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_appbar/shopping_list_cost_summary.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_appbar/shopping_list_sliver_app_bar.dart';
 import 'package:mealtrack/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:mealtrack/features/shoppinglist/data/category_stats_repository.dart';
 import 'package:mealtrack/features/shoppinglist/domain/category_suggestion.dart';
 import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
 import 'package:mealtrack/features/shoppinglist/domain/product_suggestion.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
-import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 
 // Fake Repository for UI Test
 class FakeShoppingListRepository implements ShoppingListRepository {
@@ -161,16 +163,85 @@ void main() {
     );
 
     // Verify Title
-    expect(find.text('Einkaufsliste'), findsOneWidget);
+    expect(find.text('EINKAUFSLISTE'), findsOneWidget);
 
     // Verify Items
     expect(find.text('Apples'), findsOneWidget);
     expect(find.text('Bananas'), findsOneWidget);
 
     // Verify Stats Header
-    expect(find.byType(SummaryHeader), findsOneWidget);
-    expect(find.text('UNGEFÄHRE KOSTEN'), findsOneWidget);
+    expect(find.byType(ShoppingListCostSummary), findsOneWidget);
+    expect(find.text('UNGEFÄHRE KOSTEN'), findsWidgets);
+    expect(find.byType(FeatureSliverAppBar), findsOneWidget);
+
+    final summaryAlignmentFinder = find.ancestor(
+      of: find.byType(ShoppingListCostSummary),
+      matching: find.byWidgetPredicate((widget) {
+        return widget is Align && widget.alignment == Alignment.bottomLeft;
+      }),
+    );
+    expect(summaryAlignmentFinder, findsOneWidget);
   });
+
+  testWidgets(
+    'title and expanded summary collapse while collapsed stats fade in',
+    (tester) async {
+      final repository = FakeShoppingListRepository(
+        List.generate(
+          24,
+          (index) => ShoppingListItem(id: '$index', name: 'Item $index'),
+        ),
+      );
+
+      await pumpShoppingListPage(
+        tester,
+        repository,
+        const [],
+        FakeCategoryStatsRepository(const []),
+      );
+
+      final titleOpacityFinder = find.byKey(
+        const ValueKey('shopping-expanded-title-opacity'),
+      );
+      final expandedSummaryOpacityFinder = find.byKey(
+        const ValueKey('shopping-expanded-summary-opacity'),
+      );
+      final collapsedStatsOpacityFinder = find.byKey(
+        const ValueKey('shopping-collapsed-stats-opacity'),
+      );
+
+      final titleOpacityAtTop = tester
+          .widget<Opacity>(titleOpacityFinder)
+          .opacity;
+      final expandedSummaryOpacityAtTop = tester
+          .widget<Opacity>(expandedSummaryOpacityFinder)
+          .opacity;
+      final collapsedStatsOpacityAtTop = tester
+          .widget<Opacity>(collapsedStatsOpacityFinder)
+          .opacity;
+
+      expect(titleOpacityAtTop, greaterThan(0.9));
+      expect(expandedSummaryOpacityAtTop, greaterThan(0.9));
+      expect(collapsedStatsOpacityAtTop, lessThan(0.1));
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
+      await tester.pumpAndSettle();
+
+      final titleOpacityAfterScroll = tester
+          .widget<Opacity>(titleOpacityFinder)
+          .opacity;
+      final expandedSummaryOpacityAfterScroll = tester
+          .widget<Opacity>(expandedSummaryOpacityFinder)
+          .opacity;
+      final collapsedStatsOpacityAfterScroll = tester
+          .widget<Opacity>(collapsedStatsOpacityFinder)
+          .opacity;
+
+      expect(titleOpacityAfterScroll, lessThan(0.1));
+      expect(expandedSummaryOpacityAfterScroll, lessThan(0.1));
+      expect(collapsedStatsOpacityAfterScroll, greaterThan(0.9));
+    },
+  );
 
   testWidgets('ShoppingListPage renders empty state', (tester) async {
     final repository = FakeShoppingListRepository([]);

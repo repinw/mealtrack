@@ -235,6 +235,7 @@ void main() {
           name: 'Käse (alt)',
           consumptionEvents: [newDate],
           quantity: 0,
+          remainingAmountBase: 0,
         );
 
         expect(updatedItem.id, item.id);

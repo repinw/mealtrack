@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mealtrack/core/presentation/widgets/feature_sliver_app_bar.dart';
+import 'package:mealtrack/core/theme/feature_sliver_app_bar_defaults.dart';
 import 'package:mealtrack/features/inventory/presentation/widgets/inventory_appbar/inventory_header_content.dart';
 import 'package:mealtrack/features/inventory/provider/inventory_providers.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
@@ -17,9 +18,6 @@ class InventorySliverAppBar extends ConsumerWidget {
   final VoidCallback? onOpenSharing;
   final VoidCallback? onOpenSettings;
 
-  static const double _expandedHeight = 160.0;
-  static const double _collapsedHeight = 56.0;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -27,8 +25,8 @@ class InventorySliverAppBar extends ConsumerWidget {
     final headerTitle = l10n.inventory.isNotEmpty ? l10n.inventory : title;
 
     return FeatureSliverAppBar(
-      expandedHeight: _expandedHeight,
-      collapsedHeight: _collapsedHeight,
+      expandedHeight: FeatureSliverAppBarDefaults.expandedHeight,
+      collapsedHeight: FeatureSliverAppBarDefaults.collapsedHeight,
       toolbarHeight: 0,
       pinned: true,
       elevation: 0,
