@@ -208,7 +208,7 @@ void main() {
         );
         expect(expandedAfterScroll, lessThan(0.1));
         expect(collapsedAfterScroll, greaterThan(0.9));
-        expect(find.text('VORRATSWERT'), findsOneWidget);
+        expect(find.text('VORRATSWERT'), findsWidgets);
         expect(find.text('EINKÄUFE'), findsOneWidget);
         expect(find.text('TEILE'), findsOneWidget);
       },

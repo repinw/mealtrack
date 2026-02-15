@@ -5,8 +5,8 @@ import 'package:mealtrack/features/shoppinglist/provider/shopping_list_provider.
 import 'package:mealtrack/features/shoppinglist/provider/suggestions_provider.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/category_products_dialog.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/dismissible_shopping_item.dart';
+import 'package:mealtrack/features/shoppinglist/presentation/widgets/shopping_list_sliver_app_bar.dart';
 import 'package:mealtrack/features/shoppinglist/presentation/widgets/suggestion_area.dart';
-import 'package:mealtrack/core/presentation/widgets/summary_header.dart';
 import 'package:mealtrack/l10n/app_localizations.dart';
 
 class ShoppingListPage extends ConsumerWidget {
@@ -22,31 +22,21 @@ class ShoppingListPage extends ConsumerWidget {
 
     final stats = ref.watch(shoppingListStatsProvider);
     final bottomScrollSpacing = ScrollSpacing.homeContentBottomPadding(context);
-
-    const double bottomHeight = 80.0;
+    final sliverAppBar = ShoppingListSliverAppBar(
+      title: l10n.shoppinglist,
+      approximateCostLabel: l10n.approximateCostLabel,
+      totalValue: stats.totalValue,
+      articleCount: stats.articleCount,
+      clearListTooltip: l10n.delete,
+      onClearList: () => _confirmClearList(context, ref),
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.shoppinglist),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_sweep),
-            onPressed: () => _confirmClearList(context, ref),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(bottomHeight),
-          child: SummaryHeader(
-            label: l10n.approximateCostLabel,
-            totalValue: stats.totalValue,
-            articleCount: stats.articleCount,
-          ),
-        ),
-      ),
       body: shoppingListAsync.when(
         data: (items) {
           return CustomScrollView(
             slivers: [
+              sliverAppBar,
               SliverToBoxAdapter(
                 child: SuggestionArea(
                   title: l10n.add,
@@ -103,9 +93,24 @@ class ShoppingListPage extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) =>
-            Center(child: Text(l10n.errorDisplay(err.toString()))),
+        loading: () => CustomScrollView(
+          slivers: [
+            sliverAppBar,
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+        ),
+        error: (err, stack) => CustomScrollView(
+          slivers: [
+            sliverAppBar,
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: Text(l10n.errorDisplay(err.toString()))),
+            ),
+          ],
+        ),
       ),
     );
   }

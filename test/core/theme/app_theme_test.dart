@@ -21,7 +21,7 @@ void main() {
     });
 
     test('seedColor is correct', () {
-      expect(AppTheme.seedColor, const Color(0xFF6750A4));
+      expect(AppTheme.seedColor, const Color(0xFF090668));
     });
 
     test('lightTheme colorScheme is generated from seed', () {

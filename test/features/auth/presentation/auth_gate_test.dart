@@ -8,6 +8,9 @@ import 'package:mealtrack/core/models/fridge_item.dart';
 import 'package:mealtrack/features/auth/presentation/auth_gate.dart';
 import 'package:mealtrack/features/auth/presentation/welcome_page.dart';
 import 'package:mealtrack/features/auth/provider/auth_service.dart';
+import 'package:mealtrack/features/calories/domain/calorie_goal_settings.dart';
+import 'package:mealtrack/features/calories/provider/calorie_log_provider.dart';
+import 'package:mealtrack/features/calories/provider/calorie_settings_provider.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_filter_type.dart';
 import 'package:mealtrack/features/inventory/domain/inventory_stats.dart';
 import 'package:mealtrack/features/inventory/presentation/inventory_page.dart';
@@ -180,6 +183,17 @@ void main() {
           shoppingListProvider.overrideWith(() => MockShoppingList()),
           suggestionsProvider.overrideWith((ref) => <CategorySuggestion>[]),
           quickProductSuggestionsProvider.overrideWith((ref) => const []),
+          calorieEntriesForSelectedDay.overrideWith(
+            (ref) => Stream.value(const []),
+          ),
+          calorieGoalProgress.overrideWithValue(
+            CalorieGoalProgress(
+              settings: CalorieGoalSettings.empty(),
+              consumedKcal: 0,
+              remainingKcal: null,
+              progress01: null,
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
